@@ -337,7 +337,12 @@ nav .badge{position:absolute;top:4px;left:calc(50% + 8px);background:var(--seal)
   <label class="f">Học để làm gì? (chọn nhiều)</label>
   <div class="chips wrap" id="pfGoals"></div>
   <label class="f" for="pfSource">Bài tiếp theo lấy từ</label>
-  <select id="pfSource"><option value="smart">Lộ trình thông minh (app tự soạn theo mục tiêu)</option><option value="book">Giáo trình PDF đã nhập</option></select>
+  <select id="pfSource"><option value="book">Giáo trình chuẩn HSK soạn sẵn (khuyên dùng)</option><option value="smart">Bài AI soạn theo mục tiêu (tốn lượt Gemini)</option></select>
+  <label class="f" for="pfVoice">Giọng đọc tiếng Trung</label>
+  <div class="btnrow" style="flex-wrap:nowrap"><select id="pfVoice" style="flex:1"></select><button class="btn sm" id="pfVoiceTest" type="button">▶ Nghe</button></div>
+  <label class="f" for="pfRate">Tốc độ đọc</label>
+  <select id="pfRate"><option value="0.7">Chậm (mới học)</option><option value="0.85">Vừa</option><option value="1">Bình thường</option></select>
+  <p class="small muted" id="pfVoiceNote"></p>
   <label class="f" for="pfKey">API key riêng (không bắt buộc)</label>
   <input id="pfKey" type="password" autocomplete="off" placeholder="Để trống thì dùng key chung">
   <div class="btnrow" style="margin-top:16px"><button class="btn" id="pfDel" hidden>Xóa người này</button><button class="btn pri" id="pfSave">Lưu</button></div>
@@ -492,7 +497,17 @@ const hanOnly = s => [...String(s || '')].filter(isHan).join('');
 
 /* =============== speech synthesis =============== */
 let zhVoice = null;
-function pickVoice() { try { const vs = speechSynthesis.getVoices(); zhVoice = vs.find(v => /zh[-_]CN/i.test(v.lang)) || vs.find(v => /^zh/i.test(v.lang) && !/HK|TW/i.test(v.lang)) || vs.find(v => /^zh/i.test(v.lang)) || null; } catch (e) {} }
+// Mainland Mandarin voices; premium/enhanced ones (downloaded in iOS/Android settings) are preferred automatically
+const QUALITY = /premium|enhanced|cao cấp|nâng cao|高级|增强|neural|natural/i;
+function zhVoices() {
+  try { return speechSynthesis.getVoices().filter(v => /^zh/i.test(v.lang) && !/HK|TW|yue/i.test(v.lang)); } catch (e) { return []; }
+}
+const voiceScore = v => (QUALITY.test(v.name + ' ' + v.voiceURI) ? 10 : 0) + (/premium|cao cấp|高级/i.test(v.name + ' ' + v.voiceURI) ? 5 : 0) + (/zh[-_]CN/i.test(v.lang) ? 2 : 0) + (v.localService ? 1 : 0);
+function pickVoice() {
+  const vs = zhVoices(); if (!vs.length) { zhVoice = null; return; }
+  let want = ''; try { want = (P && P.voice) || settings.voice || ''; } catch (e) {}
+  zhVoice = (want && vs.find(v => v.voiceURI === want || v.name === want)) || [...vs].sort((a, b) => voiceScore(b) - voiceScore(a))[0];
+}
 if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
 let speakRate = 0.85;
 // iOS only allows speech after a user tap: speak a silent utterance on the first tap so later replies can play
@@ -572,14 +587,21 @@ async function gemini(opts) {
   const first = hasAudio ? audioModel() : ((settings.model || '').trim() || DEFAULT_MODEL);
   const second = hasAudio ? ((settings.model || '').trim() || DEFAULT_MODEL) : null;
   try { curModel = first; return await geminiOnce(opts); }
-  catch (e) { if (second && second !== first && /hết lượt|Không tìm thấy mô hình/.test(e.message)) { curModel = second; return await geminiOnce(opts); } throw e; }
+  catch (e) {
+    if (second && second !== first && /hết lượt|Không tìm thấy mô hình/.test(e.message)) { curModel = second; return await geminiOnce(opts); }
+    if (e.badJson || /quá dài/.test(e.message)) {
+      curModel = hasAudio ? first : audioModel();
+      try { return await geminiOnce({ ...opts, temperature: 0.2 }); } catch (e2) { if (!hasAudio) { curModel = first; return await geminiOnce({ ...opts, temperature: 0.1 }); } throw e2; }
+    }
+    throw e;
+  }
   finally { curModel = null; }
 }
 async function geminiOnce({ system, parts, history, json = true, temperature = 0.4, key }) {
   const k = key || apiKey();
   if (!k) { openSettingsForKey(); throw new Error('Chưa có API key. Vào Cài đặt để dán key Gemini.'); }
   const contents = [...(history || []), { role: 'user', parts }];
-  const body = { contents, generationConfig: { temperature } };
+  const body = { contents, generationConfig: { temperature, maxOutputTokens: 16384 } };
   if (json) body.generationConfig.responseMimeType = 'application/json';
   if (system) body.systemInstruction = { parts: [{ text: system }] };
   let r; countUse();
@@ -601,15 +623,18 @@ async function geminiOnce({ system, parts, history, json = true, temperature = 0
   if (!cand || !cand.content) throw new Error('Gemini không trả lời (có thể do bộ lọc nội dung). Thử lại với câu khác.');
   const text = (cand.content.parts || []).filter(p => !p.thought).map(p => p.text || '').join('');
   if (!json) return text;
-  return parseJSON(text);
+  try { return parseJSON(text); }
+  catch (e) { if (cand.finishReason === 'MAX_TOKENS') e.message = 'Nội dung AI trả về quá dài nên bị cắt. Thử lại.'; throw e; }
 }
 function parseJSON(text) {
-  const t = text.replace(/```json|```/g, '').trim();
-  try { return JSON.parse(t); } catch (e) {
-    const a = t.indexOf('{'), b = t.lastIndexOf('}');
-    if (a >= 0 && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch (e2) {} }
-    throw new Error('Gemini trả về dữ liệu không đọc được. Thử lại.');
-  }
+  let t = String(text || '').replace(/```json|```/g, '').trim();
+  const tries = [t];
+  const a = t.indexOf('{'), b = t.lastIndexOf('}');
+  if (a >= 0 && b > a) t = t.slice(a, b + 1), tries.push(t);
+  tries.push(t.replace(/,\s*([}\]])/g, '$1'));                       // trailing commas
+  tries.push(t.replace(/[“”]/g, '\\"').replace(/,\s*([}\]])/g, '$1')); // curly quotes used inside strings
+  for (const s of tries) { try { return JSON.parse(s); } catch (e) {} }
+  const err = new Error('Gemini trả về dữ liệu không đọc được. Thử lại.'); err.badJson = true; throw err;
 }
 const PY_RULE = 'Pinyin must use tone marks, lowercase, one syllable per space-separated token, exactly one syllable per Chinese character, no punctuation (e.g. "wǒ xiǎng hē chá").';
 
@@ -702,7 +727,7 @@ const unitByKey = key => buildPath().find(u => u.key === key) || null;
 const lp = key => (D.lp[key] = D.lp[key] || { steps: {}, done: false });
 const stepCount = key => { const s = D.lp[key]; return s ? STEPS.filter(x => s.steps[x[0]]).length : 0; };
 function nextUnit() {
-  if (P.source === 'book') {
+  if (P.source !== 'smart' && lessons.some(l => l.curriculum)) {
     const b = lessons.filter(l => l.kind !== 'chat' && !l.unitKey).sort(bookSort).find(l => !(D.lp[l.id] && D.lp[l.id].done));
     if (b) return { key: b.id, t: b.title, lv: b.level, kind: 'book' };
   }
@@ -755,19 +780,30 @@ $('#plist').onclick = e => {
 function openProfileForm(p) {
   editingProfile = p; pfEmoji = p ? p.emoji : EMOJIS[profiles.length % EMOJIS.length]; pfGoals = p ? [...arr(p.goals)] : ['life'];
   $('#pfTitle').textContent = p ? 'Sửa hồ sơ' : 'Thêm người học';
-  $('#pfName').value = p ? p.name : ''; $('#pfLevel').value = p ? p.level : 1; $('#pfKey').value = p ? (p.key || '') : ''; $('#pfSource').value = p ? (p.source || 'smart') : 'smart';
-  $('#pfDel').hidden = !p; renderEmo(); renderGoals(); openModal('profile');
+  $('#pfName').value = p ? p.name : ''; $('#pfLevel').value = p ? p.level : 1; $('#pfKey').value = p ? (p.key || '') : ''; $('#pfSource').value = p ? (p.source || 'book') : 'book';
+  $('#pfDel').hidden = !p; renderEmo(); renderGoals(); fillVoices(p ? p.voice || '' : ''); $('#pfRate').value = String(p && p.rate ? p.rate : 0.85); openModal('profile');
 }
+function fillVoices(sel) {
+  const vs = zhVoices().sort((a, b) => voiceScore(b) - voiceScore(a));
+  const tag = v => /premium|cao cấp|高级/i.test(v.name + ' ' + v.voiceURI) ? ' · Cao cấp' : QUALITY.test(v.name + ' ' + v.voiceURI) ? ' · Nâng cao' : '';
+  $('#pfVoice').innerHTML = '<option value="">Tự chọn giọng tốt nhất trên máy</option>' + vs.map(v => `<option value="${esc(v.voiceURI)}"${v.voiceURI === sel ? ' selected' : ''}>${esc(v.name)}${tag(v)}</option>`).join('');
+  $('#pfVoiceNote').textContent = vs.length ? `Máy có ${vs.length} giọng tiếng Phổ thông. Giọng Cao cấp/Nâng cao bạn đã tải được ưu tiên tự động.` : 'Chưa thấy giọng tiếng Trung nào trên máy. Xem hướng dẫn tải giọng trong phần Tôi.';
+}
+$('#pfVoiceTest').onclick = () => {
+  const vs = zhVoices(), uri = $('#pfVoice').value, v = uri ? vs.find(x => x.voiceURI === uri) : [...vs].sort((a, b) => voiceScore(b) - voiceScore(a))[0];
+  if (!('speechSynthesis' in window)) return toast('Máy này chưa có giọng đọc');
+  speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('你好，我们一起学习汉语吧。'); u.lang = 'zh-CN'; u.rate = +$('#pfRate').value; if (v) u.voice = v; speechSynthesis.speak(u);
+};
 function renderEmo() { $('#pfEmo').innerHTML = EMOJIS.map(e => `<button class="${e === pfEmoji ? 'on' : ''}" data-e="${e}">${e}</button>`).join(''); }
 function renderGoals() { $('#pfGoals').innerHTML = GOALS.map(g => `<button class="chip${pfGoals.includes(g[0]) ? ' on' : ''}" data-g="${g[0]}">${g[1]}</button>`).join(''); }
 $('#pfEmo').onclick = e => { const b = e.target.closest('[data-e]'); if (b) { pfEmoji = b.dataset.e; renderEmo(); } };
 $('#pfGoals').onclick = e => { const b = e.target.closest('[data-g]'); if (!b) return; const g = b.dataset.g; pfGoals = pfGoals.includes(g) ? pfGoals.filter(x => x !== g) : [...pfGoals, g]; renderGoals(); };
 $('#pfSave').onclick = async () => {
   const name = $('#pfName').value.trim(); if (!name) { toast('Nhập tên người học'); return; }
-  const meta = { name, emoji: pfEmoji, level: +$('#pfLevel').value, key: $('#pfKey').value.trim(), goals: pfGoals, source: $('#pfSource').value };
+  const meta = { srcV2: true, name, emoji: pfEmoji, level: +$('#pfLevel').value, key: $('#pfKey').value.trim(), goals: pfGoals, source: $('#pfSource').value, voice: $('#pfVoice').value, rate: +$('#pfRate').value };
   if (editingProfile) Object.assign(editingProfile, meta); else { const p = { id: uid(), ...meta }; profiles.push(p); await Store.set('p:' + p.id, newData()); }
   await Store.set('profiles', profiles); closeModal('profile'); renderPicker();
-  if (P && editingProfile && editingProfile.id === P.id) { P = editingProfile; renderWho(); go(curView === 'lesson' ? 'home' : curView); }
+  if (P && editingProfile && editingProfile.id === P.id) { P = editingProfile; speakRate = P.rate || 0.85; pickVoice(); renderWho(); go(curView === 'lesson' ? 'home' : curView); }
 };
 $('#pfDel').onclick = async () => {
   if (!editingProfile || !confirm('Xóa ' + editingProfile.name + ' và toàn bộ tiến độ học của người này?')) return;
@@ -778,7 +814,8 @@ async function selectProfile(id) {
   P = profiles.find(p => p.id === id); D = Object.assign(newData(), await Store.get('p:' + id) || {});
   if (!D.current && D.activeLesson) D.current = D.activeLesson;
   if (!P.goals) P.goals = ['life'];
-  pathTab = 'smart'; talk = null;
+  pathTab = 'book'; talk = null;
+  if (!P.srcV2) { P.source = 'book'; P.srcV2 = true; Store.set('profiles', profiles); }  // one-time: move everyone to the built-in textbook speakRate = P.rate || 0.85; pickVoice();
   await Store.set('lastProfile', id);
   $('#picker').hidden = true; $('#main').hidden = false; $('#nav').hidden = false;
   renderWho(); go('home');
@@ -887,10 +924,10 @@ function weakItems() {
 }
 
 /* =============== PATH =============== */
-let pathTab = 'smart';
+let pathTab = 'book';
 function renderPath() {
   const box = $('#v-path'); const nu = nextUnit();
-  const seg = `<div class="seg" id="pathSeg"><button data-t="smart" class="${pathTab === 'smart' ? 'on' : ''}">Lộ trình</button><button data-t="book" class="${pathTab === 'book' ? 'on' : ''}">Giáo trình PDF</button><button data-t="chat" class="${pathTab === 'chat' ? 'on' : ''}">Từ chat</button></div>`;
+  const seg = `<div class="seg" id="pathSeg"><button data-t="book" class="${pathTab === 'book' ? 'on' : ''}">Giáo trình</button><button data-t="smart" class="${pathTab === 'smart' ? 'on' : ''}">AI theo mục tiêu</button><button data-t="chat" class="${pathTab === 'chat' ? 'on' : ''}">Từ chat</button></div>`;
   const row = (key, title, sub, tagHtml) => {
     const s = D.lp[key], n = stepCount(key), done = s && s.done;
     return `<button class="unit${done ? ' done' : n ? ' part' : ''}${nu && nu.key === key ? ' next' : ''}" data-key="${esc(key)}"><span class="st">${done ? '✓' : n ? n + '/6' : '○'}</span><span class="tx"><b>${tagHtml || ''}${esc(title)}</b><small>${esc(sub)}</small></span><span class="muted">›</span></button>`;
@@ -898,7 +935,7 @@ function renderPath() {
   let html = `<h1>Lộ trình</h1>`;
   if (pathTab === 'smart') {
     const path = buildPath(); const goalNames = arr(P.goals).map(g => (GOALS.find(x => x[0] === g) || [])[1]).filter(Boolean).join(', ');
-    html += `<p class="sub">Bài được soạn theo trình độ và mục tiêu của ${esc(P.name)}: <b>${esc(goalNames || 'Giao tiếp đời sống')}</b>. Có thể học bất kỳ bài nào, không cần theo thứ tự. <button class="btn ghost sm" id="editGoals">Đổi mục tiêu</button></p>` + seg;
+    html += `<p class="sub">Bài thêm do AI soạn theo mục tiêu của ${esc(P.name)}: <b>${esc(goalNames || 'Giao tiếp đời sống')}</b>. Mở bài lần đầu, AI soạn mất 20–40 giây và tốn 1 lượt Gemini, sau đó lưu lại dùng chung. <button class="btn ghost sm" id="editGoals">Đổi mục tiêu</button></p>` + seg;
     for (let lv = 1; lv <= 4; lv++) {
       const us = path.filter(u => u.lv === lv), dn = us.filter(u => D.lp[u.key] && D.lp[u.key].done).length;
       html += `<details class="lv"${lv === (nu ? nu.lv : P.level) ? ' open' : ''}><summary>HSK ${lv} <span class="muted small" style="font-weight:400;margin-left:auto;margin-right:8px">${dn}/${us.length} bài</span></summary>
@@ -906,9 +943,14 @@ function renderPath() {
     }
   } else if (pathTab === 'book') {
     const bl = lessons.filter(l => l.kind !== 'chat' && !l.unitKey).sort(bookSort);
-    html += seg + `<button class="btn pri full" id="lImport" style="margin-bottom:12px">＋ Nhập bài từ PDF</button>`;
-    html += bl.length ? [1, 2, 3, 4, 0].map(lv => { const g = bl.filter(l => (l.level || 0) === lv); return g.length ? `<h3>${lv ? 'HSK ' + lv : 'Khác'}</h3>` + g.map(l => row(l.id, l.title, `${l.source && l.curriculum ? l.source + ' · ' : ''}${arr(l.vocab).length} từ · ${arr(l.exercises).length} bài tập`)).join('') : ''; }).join('')
-      : `<div class="empty">Chưa có bài nào từ sách.<br>Nhập trang PDF của từng bài, hoặc nhập file giáo trình Claude soạn sẵn trong Tôi → Cài đặt → Nhập file.</div>`;
+    const nCur = bl.filter(l => l.curriculum).length;
+    html += seg + (nCur ? `<p class="sub">Giáo trình chuẩn HSK 1–4 soạn sẵn (${nCur} bài). Học không tốn lượt AI, chỉ phần chấm phát âm và hội thoại mới dùng Gemini.</p>`
+      : `<div class="infobox">Chưa nạp được giáo trình soạn sẵn. Kiểm tra trên GitHub đã có thư mục <b>giao-trinh</b> nằm cạnh index.html chưa, rồi mở lại app.</div>`);
+    const openLv = nu && nu.kind === 'book' ? nu.lv : P.level;
+    html += bl.length ? [1, 2, 3, 4, 5, 6, 0].map(lv => { const g = bl.filter(l => (l.level || 0) === lv); if (!g.length) return ''; const dn = g.filter(l => D.lp[l.id] && D.lp[l.id].done).length;
+      return `<details class="lv"${lv === openLv ? ' open' : ''}><summary>${lv ? 'HSK ' + lv : 'Khác'} <span class="muted small" style="font-weight:400;margin-left:auto;margin-right:8px">${dn}/${g.length} bài</span></summary>` + g.map(l => row(l.id, l.title, `${l.curriculum ? (l.source || '').replace('Giáo trình chuẩn ', '') + ' · ' : ''}${arr(l.vocab).length} từ · ${arr(l.exercises).length} bài tập`)).join('') + '</details>'; }).join('')
+      : `<div class="empty">Chưa có bài nào.<br>Nhập trang PDF của từng bài, hoặc nhập file giáo trình Claude soạn sẵn trong Tôi → Cài đặt → Nhập file.</div>`;
+    html += `<button class="btn full" id="lImport" style="margin-top:12px">＋ Nhập thêm bài từ PDF</button>`;
   } else {
     const cl = lessons.filter(l => l.kind === 'chat').sort((a, b) => b.createdAt - a.createdAt);
     html += seg + `<button class="btn pri full" id="lPaste" style="margin-bottom:12px">📋 Dán đoạn chat mới</button>`;
@@ -1430,12 +1472,14 @@ function renderMe() {
     <div class="card"><b>Chữ hay đọc sai</b><p class="small muted" style="margin:4px 0 8px">Chạm để nghe. Mục “Sửa chữ hay đọc sai” ở Hôm nay sẽ cho luyện lại.</p>${weak.length ? `<div class="weak">${weak.map(c => `<span data-say="${esc(c)}">${esc(c)}</span>`).join('')}</div>` : '<p class="small muted">Chưa có dữ liệu.</p>'}</div>
     <div class="menu">
       <button data-m="profile">✎ <span>Sửa hồ sơ, trình độ, mục tiêu</span>›</button>
+      <button data-m="profile">🔊 <span>Giọng đọc: ${esc(zhVoice ? zhVoice.name : 'chưa có')}</span>›</button>
       <button data-m="kb">⌨ <span>Cách gõ tiếng Trung trên điện thoại</span>›</button>
+      <button data-m="path">书 <span>Giáo trình đã nạp: ${lessons.filter(l => l.curriculum).length} bài</span>›</button>
       <button data-m="settings">⚙︎ <span>Cài đặt API key, sao lưu dữ liệu</span>›</button>
       <button data-m="switch">⇄ <span>Đổi người học</span>›</button>
     </div>`;
   $('#v-me').onclick = e => { const m = e.target.closest('[data-m]'); if (!m) return; const k = m.dataset.m;
-    if (k === 'profile') openProfileForm(P); if (k === 'kb') openModal('kb'); if (k === 'settings') { fillSettings(); openModal('settings'); } if (k === 'switch') switchProfile(); };
+    if (k === 'profile') openProfileForm(P); if (k === 'kb') openModal('kb'); if (k === 'settings') { fillSettings(); openModal('settings'); } if (k === 'switch') switchProfile(); if (k === 'path') { pathTab = 'book'; go('path'); } };
 }
 
 /* =============== PDF import & chat paste =============== */
