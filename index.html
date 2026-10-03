@@ -324,6 +324,14 @@ nav .badge{position:absolute;top:4px;left:calc(50% + 8px);background:var(--seal)
   <p class="small" id="sUse"></p>
   <div class="btnrow"><button class="btn" id="sTest">Kiểm tra key</button><button class="btn pri" id="sSave">Lưu</button></div>
   <p class="small" id="sMsg"></p>
+  <h3>iFLYTEK: chấm phát âm và giọng chuẩn</h3>
+  <p class="small muted">Lấy ở global.xfyun.cn → Console → ứng dụng của bạn. Có key iFLYTEK thì phần chấm phát âm dùng iFLYTEK (nhanh, chi tiết âm đầu, vần, thanh), không tốn lượt Gemini.</p>
+  <label class="f" for="xfApp">APPID</label><input id="xfApp" autocomplete="off">
+  <label class="f" for="xfKey">APIKey</label><input id="xfKey" type="password" autocomplete="off">
+  <label class="f" for="xfSec">APISecret</label><input id="xfSec" type="password" autocomplete="off">
+  <label class="f" for="xfVcn">Mã giọng đọc iFLYTEK (vcn)</label><input id="xfVcn" placeholder="xiaoyan">
+  <div class="btnrow" style="margin-top:10px"><button class="btn" id="xfTest">Thử kết nối iFLYTEK</button></div>
+  <p class="small" id="xfMsg"></p>
   <h3>Sao lưu dữ liệu</h3>
   <p class="small muted">Dữ liệu chỉ nằm trên máy này. Xuất file để cất giữ hoặc chuyển sang máy khác (gồm bài học và tiến độ của mọi người, không gồm API key). Cũng dùng “Nhập file” để nạp giáo trình Claude soạn sẵn.</p>
   <div class="btnrow"><button class="btn" id="bExport">⇩ Xuất file</button><label class="btn" style="cursor:pointer">⇧ Nhập file<input type="file" id="bImport" accept="application/json,.json" hidden></label></div>
@@ -560,6 +568,11 @@ let ttsSeq = 0;
 async function say(text, rate) {
   text = String(text || '').trim(); if (!text) return;
   const pref = voicePref(), today = new Date().toISOString().slice(0, 10);
+  if (pref === 'xf' && XF.ok()) {
+    const seq = ++ttsSeq; try { speechSynthesis.cancel(); } catch (e) {} ttsAudio.pause();
+    try { const url = await xfTts(text); if (seq !== ttsSeq) return; ttsAudio.src = url; ttsAudio.playbackRate = Math.max(0.5, Math.min(1.2, (rate || speakRate) / 0.85)); await ttsAudio.play(); return; }
+    catch (e) { if (seq === ttsSeq) { toast(e.message, 3000); sayDevice(text, rate); } return; }
+  }
   if (!pref.startsWith('gemini:') || ttsOffDay === today || !apiKey()) return sayDevice(text, rate);
   const seq = ++ttsSeq; try { speechSynthesis.cancel(); } catch (e) {} ttsAudio.pause();
   let slow = setTimeout(() => toast('Đang tạo giọng AI…', 1500), 600);
@@ -694,6 +707,139 @@ function parseJSON(text) {
 }
 const PY_RULE = 'Pinyin must use tone marks, lowercase, one syllable per space-separated token, exactly one syllable per Chinese character, no punctuation (e.g. "wǒ xiǎng hē chá").';
 
+
+/* =============== iFLYTEK (global): pronunciation assessment + standard voice =============== */
+const XF = {
+  ok() { return !!(settings.xfAppId && settings.xfKey && settings.xfSecret); },
+  async authUrl(host, path) {
+    const date = new Date().toUTCString();
+    const origin = `host: ${host}\ndate: ${date}\nGET ${path} HTTP/1.1`;
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(settings.xfSecret.trim()), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const sig = b64(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(origin)));
+    const auth = btoa(unescape(encodeURIComponent(`api_key="${settings.xfKey.trim()}", algorithm="hmac-sha256", headers="host date request-line", signature="${sig}"`)));
+    return `wss://${host}${path}?authorization=${encodeURIComponent(auth)}&date=${encodeURIComponent(date)}&host=${encodeURIComponent(host)}`;
+  },
+  session(url, onOpen, onMsg, timeoutMs = 20000) {
+    return new Promise((resolve, reject) => {
+      let done = false; const ws = new WebSocket(url);
+      const fail = m => { if (!done) { done = true; try { ws.close(); } catch (e) {} reject(new Error(m)); } };
+      const t = setTimeout(() => fail('iFLYTEK phản hồi quá lâu. Kiểm tra mạng rồi thử lại.'), timeoutMs);
+      ws.onopen = () => onOpen(ws).catch(e => fail(e.message));
+      ws.onerror = () => fail('Không kết nối được iFLYTEK. Kiểm tra lại APPID, APIKey, APISecret.');
+      ws.onclose = ev => { if (!done) fail('iFLYTEK đóng kết nối' + (ev.reason ? ': ' + ev.reason : '. Kiểm tra key và dịch vụ đã kích hoạt chưa.')); };
+      ws.onmessage = ev => {
+        let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+        if (m.code && m.code !== 0) { clearTimeout(t); return fail(xfErr(m.code, m.message)); }
+        const r = onMsg(m); if (r !== undefined) { done = true; clearTimeout(t); try { ws.close(1000); } catch (e) {} resolve(r); }
+      };
+    });
+  }
+};
+function xfErr(code, msg) {
+  if (code === 11200 || code === 11201) return 'Tài khoản iFLYTEK chưa được phép dùng dịch vụ này hoặc đã hết lượt (mã ' + code + '). Kiểm tra trong Console.';
+  if (code === 10313 || code === 10106) return 'APPID không đúng (mã ' + code + ').';
+  return 'iFLYTEK báo lỗi ' + code + (msg ? ': ' + msg : '');
+}
+async function toPcm16(blob) {
+  const buf = await blob.arrayBuffer();
+  const AC = window.AudioContext || window.webkitAudioContext; const ac = new AC();
+  const audio = await new Promise((res, rej) => ac.decodeAudioData(buf.slice(0), res, rej)); ac.close && ac.close();
+  const rate = 16000, len = Math.max(1, Math.ceil(audio.duration * rate));
+  const off = new OfflineAudioContext(1, len, rate); const src = off.createBufferSource(); src.buffer = audio; src.connect(off.destination); src.start();
+  const f = (await off.startRendering()).getChannelData(0); const out = new Uint8Array(f.length * 2); const v = new DataView(out.buffer);
+  for (let i = 0; i < f.length; i++) { const s = Math.max(-1, Math.min(1, f[i])); v.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true); }
+  return out;
+}
+const MARKS = { a: 'āáǎà', o: 'ōóǒò', e: 'ēéěè', i: 'īíǐì', u: 'ūúǔù', v: 'ǖǘǚǜ' };
+function numToMark(sym) {
+  const m = String(sym || '').toLowerCase().match(/^([a-zü]+)(\d)?$/); if (!m) return sym || '';
+  let s = m[1].replace(/v/g, 'ü'), t = +(m[2] || 0); if (t < 1 || t > 4) return s;
+  const pick = s.includes('a') ? 'a' : s.includes('e') ? 'e' : s.includes('ou') ? 'o' : null;
+  let idx = pick ? s.indexOf(pick) : (() => { for (let i = s.length - 1; i >= 0; i--) if ('aeiouü'.includes(s[i])) return i; return -1; })();
+  if (idx < 0) return s; const ch = s[idx] === 'ü' ? 'v' : s[idx];
+  return s.slice(0, idx) + MARKS[ch][t - 1] + s.slice(idx + 1);
+}
+const TONE_TIP = ['Thanh nhẹ: đọc ngắn và nhẹ, không nhấn.', 'Thanh 1: giữ giọng cao và bằng từ đầu đến cuối.', 'Thanh 2: giọng đi lên đều từ giữa lên cao, như dấu sắc kéo dài.', 'Thanh 3: hạ giọng xuống thật thấp trước, rồi mới hơi lên (đứng trước chữ khác thì chỉ hạ thấp).', 'Thanh 4: bắt đầu cao rồi rơi mạnh, dứt khoát; đừng đọc thành dấu huyền.'];
+function initialTip(ini) {
+  if (/^(zh|ch|sh|r)$/.test(ini)) return `Âm đầu "${ini}" là âm uốn lưỡi: cong đầu lưỡi lên chạm vòm trên.` + (ini === 'ch' ? ' Nhớ bật hơi.' : '');
+  if (/^(z|c|s)$/.test(ini)) return `Âm đầu "${ini}" để lưỡi thẳng, đầu lưỡi chạm sau răng cửa, không uốn lưỡi.` + (ini === 'c' ? ' Nhớ bật hơi.' : '');
+  if (/^(j|q|x)$/.test(ini)) return `Âm đầu "${ini}": áp mặt lưỡi lên vòm miệng, môi dẹt như đang cười.` + (ini === 'q' ? ' Nhớ bật hơi.' : '');
+  if (/^(p|t|k)$/.test(ini)) return `Âm đầu "${ini}" phải bật hơi mạnh (để tay trước miệng thấy hơi phả ra).`;
+  if (/^(b|d|g)$/.test(ini)) return `Âm đầu "${ini}" không bật hơi, đọc nhẹ.`;
+  if (ini === 'h') return 'Âm đầu "h" ma sát ở cuống lưỡi, gần "kh" tiếng Việt.';
+  if (/^(n|l)$/.test(ini)) return 'Phân biệt rõ n và l.';
+  if (ini === 'f') return 'Âm đầu "f" đọc như "ph".';
+  return `Âm đầu "${ini}" chưa chuẩn, nghe mẫu chậm rồi đọc lại.`;
+}
+function finalTip(fin, ini) {
+  if (/ü|^v/.test(fin) || (/^(j|q|x|y)$/.test(ini) && /^u/.test(fin))) return 'Vần có ü: môi chu tròn như "u" nhưng lưỡi đặt như "i".';
+  if (/^i$/.test(fin) && /^(z|c|s|zh|ch|sh|r)$/.test(ini)) return 'Chữ "i" sau âm này đọc gần "ư", không đọc "i".';
+  if (/ng$/.test(fin)) return `Vần "${fin}" kết thúc bằng -ng: cuống lưỡi nâng lên, đừng đọc thành -n.`;
+  if (/n$/.test(fin)) return `Vần "${fin}" kết thúc bằng -n: đầu lưỡi chạm lợi trên, đừng đọc thành -ng.` + (fin === 'ian' ? ' "ian" đọc như "iên".' : '');
+  if (/^e$/.test(fin)) return 'Vần "e" đọc gần "ơ/ưa", không đọc như "e" tiếng Việt.';
+  return `Vần "${fin}" chưa chuẩn, nghe mẫu chậm rồi đọc lại.`;
+}
+async function iseScore(it, blob) {
+  const pcm = await toPcm16(blob);
+  const text = String(it.hz || '').replace(/[A-Za-z0-9]/g, '').trim();
+  const n = hanCount(text), cat = n <= 1 ? 'read_syllable' : (n <= 4 && hanOnly(text) === text) ? 'read_word' : 'read_sentence';
+  const url = await XF.authUrl('ise-api-sg.xf-yun.com', '/v2/ise');
+  const xml = await XF.session(url, async ws => {
+    ws.send(JSON.stringify({ common: { app_id: settings.xfAppId.trim() }, business: { sub: 'ise', ent: 'cn_vip', category: cat, cmd: 'ssb', text: '\uFEFF' + text, tte: 'utf-8', ttp_skip: true, aue: 'raw', auf: 'audio/L16;rate=16000', rstcd: 'utf8', group: 'adult', check_type: 'common', rst: 'entirety', ise_unite: '1', extra_ability: 'syll_phone_err_msg;multi_dimension' }, data: { status: 0 } }));
+    const F = 12800;
+    for (let i = 0; i < pcm.length; i += F) {
+      const last = i + F >= pcm.length, aus = i === 0 ? 1 : last ? 4 : 2;
+      ws.send(JSON.stringify({ business: { cmd: 'auw', aus }, data: { status: last ? 2 : 1, data: b64(pcm.subarray(i, i + F)) } }));
+      await wait(20);
+    }
+    if (!pcm.length) ws.send(JSON.stringify({ business: { cmd: 'auw', aus: 4 }, data: { status: 2, data: '' } }));
+  }, m => (m.data && m.data.status === 2 && m.data.data) ? decodeURIComponent(escape(atob(m.data.data))) : undefined);
+  return parseIse(xml, it);
+}
+function parseIse(xml, it) {
+  const doc = new DOMParser().parseFromString(xml, 'text/xml');
+  const top = doc.querySelector('rec_paper > *') || doc.querySelector('read_sentence, read_word, read_syllable');
+  const num = (el, a) => el && el.getAttribute(a) != null ? Math.round(+el.getAttribute(a)) : null;
+  if (top && top.getAttribute('is_rejected') === 'true') return { audio_ok: false };
+  const chars = [];
+  doc.querySelectorAll('syll').forEach(s => {
+    if (s.getAttribute('rec_node_type') !== 'paper') return;
+    const hz = s.getAttribute('content'), sym = s.getAttribute('symbol') || '', tone = +(sym.match(/\d$/) || [0])[0] % 5;
+    const dp = +s.getAttribute('dp_message') || 0, phones = [...s.querySelectorAll('phone')];
+    const ini = phones.find(p => p.getAttribute('is_yun') === '0'), fin = phones.find(p => p.getAttribute('is_yun') === '1');
+    const iniC = ini ? ini.getAttribute('content').replace(/^_.*/, '') : '', finC = fin ? fin.getAttribute('content') : '';
+    const iniErr = ini && +ini.getAttribute('perr_msg') === 1, fe = fin ? +fin.getAttribute('perr_msg') : 0;
+    let issue = 'none', tip = '';
+    if (dp === 16) { issue = 'missing'; tip = 'Bạn bỏ sót chữ này.'; }
+    else if (dp === 128) { issue = 'final'; tip = 'Chữ này bị đọc thành âm khác hẳn. Nghe mẫu chậm rồi đọc lại.'; }
+    else {
+      const parts = [];
+      if (iniErr) { issue = 'initial'; parts.push(initialTip(iniC)); }
+      if (fe === 1 || fe === 3) { issue = issue === 'none' ? 'final' : issue; parts.push(finalTip(finC, iniC)); }
+      if (fe === 2 || fe === 3) { issue = issue === 'none' ? 'tone' : issue; parts.unshift('Sai thanh. ' + TONE_TIP[tone]); }
+      tip = parts.join(' ');
+    }
+    chars.push({ hz, target_py: numToMark(sym), heard_py: '', ok: issue === 'none', issue, tip });
+  });
+  const total = num(top, 'total_score'), tone = num(top, 'tone_score'), phone = num(top, 'phone_score'), flu = num(top, 'fluency_score');
+  const bad = chars.filter(c => !c.ok).length;
+  const parts = []; if (phone != null) parts.push('phát âm ' + phone); if (tone != null) parts.push('thanh điệu ' + tone); if (flu != null && flu > 0) parts.push('lưu loát ' + flu);
+  return { audio_ok: true, score: total ?? (chars.length ? Math.round(100 * (chars.length - bad) / chars.length) : 0), chars,
+    summary: (parts.length ? 'Điểm thành phần: ' + parts.join(', ') + '. ' : '') + (bad ? `Có ${bad} chữ cần sửa, xem gợi ý bên dưới.` : 'Không phát hiện lỗi.'), heard_text: '', engine: 'iFLYTEK' };
+}
+async function xfTts(text) {
+  const vcn = (settings.xfVcn || '').trim() || 'xiaoyan', key = 'xf:' + vcn + ':' + text;
+  if (ttsMem[key]) return ttsMem[key];
+  const cached = await Store.get(key);
+  const toUrl = b => URL.createObjectURL(new Blob([Uint8Array.from(atob(b), c => c.charCodeAt(0))], { type: 'audio/mpeg' }));
+  if (cached) return (ttsMem[key] = toUrl(cached));
+  const url = await XF.authUrl('tts-api-sg.xf-yun.com', '/v2/tts'); const chunks = [];
+  await XF.session(url, async ws => {
+    ws.send(JSON.stringify({ common: { app_id: settings.xfAppId.trim() }, business: { aue: 'lame', sfl: 1, auf: 'audio/L16;rate=16000', vcn, tte: 'UTF8', speed: 45 }, data: { status: 2, text: btoa(unescape(encodeURIComponent(text))) } }));
+  }, m => { if (m.data && m.data.audio) chunks.push(m.data.audio); return (m.data && m.data.status === 2) ? true : undefined; });
+  const bytes = chunks.map(c => atob(c)).join(''); const all = btoa(bytes);
+  Store.set(key, all); return (ttsMem[key] = toUrl(all));
+}
 
 /* =============== state =============== */
 let settings = { apiKey: '', model: '' };
@@ -843,10 +989,15 @@ function openProfileForm(p) {
 function fillVoices(sel) {
   const vs = zhVoices().sort((a, b) => voiceScore(b) - voiceScore(a));
   const tag = v => /premium|cao cấp|高级/i.test(v.name + ' ' + v.voiceURI) ? ' · Cao cấp' : QUALITY.test(v.name + ' ' + v.voiceURI) ? ' · Nâng cao' : '';
-  $('#pfVoice').innerHTML = `<option value="gemini:Kore"${sel === 'gemini:Kore' ? ' selected' : ''}>Giọng AI Gemini – nữ (tự nhiên nhất)</option><option value="gemini:Charon"${sel === 'gemini:Charon' ? ' selected' : ''}>Giọng AI Gemini – nam</option><option value="system"${sel === 'system' ? ' selected' : ''}>Giọng mặc định trong Cài đặt iPhone (thử Lili)</option><option value=""${!sel ? ' selected' : ''}>Giọng của máy (tự chọn tốt nhất)</option>` + vs.map(v => `<option value="${esc(v.voiceURI)}"${v.voiceURI === sel ? ' selected' : ''}>${esc(v.name)}${tag(v)}</option>`).join('');
+  $('#pfVoice').innerHTML = `<option value="xf"${sel === 'xf' ? ' selected' : ''}>Giọng iFLYTEK (chuẩn Phổ thông)</option><option value="gemini:Kore"${sel === 'gemini:Kore' ? ' selected' : ''}>Giọng AI Gemini – nữ (tự nhiên nhất)</option><option value="gemini:Charon"${sel === 'gemini:Charon' ? ' selected' : ''}>Giọng AI Gemini – nam</option><option value="system"${sel === 'system' ? ' selected' : ''}>Giọng mặc định trong Cài đặt iPhone (thử Lili)</option><option value=""${!sel ? ' selected' : ''}>Giọng của máy (tự chọn tốt nhất)</option>` + vs.map(v => `<option value="${esc(v.voiceURI)}"${v.voiceURI === sel ? ' selected' : ''}>${esc(v.name)}${tag(v)}</option>`).join('');
   $('#pfVoiceNote').textContent = 'Giọng AI Gemini nghe tự nhiên như người thật. Mỗi câu nghe lần đầu tốn 1 lượt Gemini, sau đó lưu trên máy nghe lại miễn phí. Hết lượt thì tự dùng giọng của máy. ' + (vs.length ? `Máy cho trang web dùng ${vs.length} giọng tiếng Phổ thông.` : '');
 }
 $('#pfVoiceTest').onclick = async () => {
+  if ($('#pfVoice').value === 'xf') {
+    if (!XF.ok()) { toast('Cần điền key iFLYTEK trong Cài đặt trước'); return; }
+    try { const url = await xfTts('你好，我们一起学习汉语吧。'); ttsAudio.src = url; ttsAudio.playbackRate = +$('#pfRate').value / 0.85; await ttsAudio.play(); } catch (e) { toast(e.message, 4000); }
+    return;
+  }
   if ($('#pfVoice').value.startsWith('gemini:')) {
     if (!apiKey()) { toast('Cần dán API key trong Cài đặt trước'); return; }
     toast('Đang tạo giọng AI…', 1500);
@@ -890,9 +1041,16 @@ function renderWho() { $('#whoAv').textContent = P.emoji; $('#whoName').textCont
 $('#whoBtn').onclick = switchProfile;
 
 /* =============== settings & backup =============== */
-function fillSettings() { $('#sTts').value = settings.ttsModel || ''; $('#sKey').value = settings.apiKey || ''; $('#sModel').value = settings.model || ''; $('#sAudio').value = settings.audioModel || ''; $('#sMsg').textContent = ''; $('#sUse').textContent = 'Hôm nay máy này đã gọi Gemini ' + usedToday() + ' lượt.'; }
+function fillSettings() { $('#xfApp').value = settings.xfAppId || ''; $('#xfKey').value = settings.xfKey || ''; $('#xfSec').value = settings.xfSecret || ''; $('#xfVcn').value = settings.xfVcn || ''; $('#sTts').value = settings.ttsModel || ''; $('#sKey').value = settings.apiKey || ''; $('#sModel').value = settings.model || ''; $('#sAudio').value = settings.audioModel || ''; $('#sMsg').textContent = ''; $('#sUse').textContent = 'Hôm nay máy này đã gọi Gemini ' + usedToday() + ' lượt.'; }
 function openSettingsForKey() { fillSettings(); openModal('settings'); $('#sMsg').textContent = 'Lấy key miễn phí tại aistudio.google.com → Get API key, rồi dán vào ô trên.'; }
-$('#sSave').onclick = async () => { settings.apiKey = $('#sKey').value.trim(); settings.model = $('#sModel').value.trim(); settings.audioModel = $('#sAudio').value.trim(); settings.ttsModel = $('#sTts').value.trim(); await Store.set('settings', settings); closeModal('settings'); toast('Đã lưu cài đặt'); };
+$('#sSave').onclick = async () => { settings.apiKey = $('#sKey').value.trim(); settings.model = $('#sModel').value.trim(); settings.audioModel = $('#sAudio').value.trim(); settings.ttsModel = $('#sTts').value.trim(); settings.xfAppId = $('#xfApp').value.trim(); settings.xfKey = $('#xfKey').value.trim(); settings.xfSecret = $('#xfSec').value.trim(); settings.xfVcn = $('#xfVcn').value.trim(); await Store.set('settings', settings); closeModal('settings'); toast('Đã lưu cài đặt'); };
+$('#xfTest').onclick = async () => {
+  const old = { ...settings }; Object.assign(settings, { xfAppId: $('#xfApp').value.trim(), xfKey: $('#xfKey').value.trim(), xfSecret: $('#xfSec').value.trim(), xfVcn: $('#xfVcn').value.trim() });
+  $('#xfMsg').innerHTML = spinner('Đang thử kết nối iFLYTEK…');
+  try { if (!XF.ok()) throw new Error('Điền đủ APPID, APIKey, APISecret.'); const url = await xfTts('你好，我们一起学习汉语吧。'); ttsAudio.src = url; await ttsAudio.play().catch(() => {}); $('#xfMsg').innerHTML = '<span style="color:var(--jade)">Kết nối được, đang phát giọng mẫu iFLYTEK. Bấm Lưu để dùng.</span>'; }
+  catch (e) { $('#xfMsg').innerHTML = '<span class="err">' + esc(e.message) + '</span><br><span class="small muted">Nếu chỉ lỗi phần giọng đọc (chưa kích hoạt Online TTS), phần chấm điểm vẫn có thể dùng: bấm Lưu rồi thử Đọc theo câu.</span>'; }
+  Object.assign(settings, old);
+};
 $('#sTest').onclick = async () => {
   const k = $('#sKey').value.trim(); const old = settings.model; settings.model = $('#sModel').value.trim();
   $('#sMsg').innerHTML = spinner('Đang kiểm tra…');
@@ -1267,7 +1425,7 @@ function mountReadAlong(box, items) {
     if (k !== 'rec') return;
     const btn = a, timer = box.querySelector('.timer'), res = box.querySelector('.res');
     if (!Rec.recording) {
-      if (!apiKey()) { openSettingsForKey(); return; }
+      if (!apiKey() && !XF.ok()) { openSettingsForKey(); return; }
       try { speechSynthesis && speechSynthesis.cancel(); Rec.autoStop = () => btn.click();
         await Rec.start(ms => timer.textContent = 'Đang ghi âm ' + (ms / 1000).toFixed(1) + 's. Đọc xong bấm “Dừng và chấm”.');
         btn.classList.add('rec'); btn.textContent = '■ Dừng và chấm'; res.innerHTML = '';
@@ -1279,9 +1437,17 @@ function mountReadAlong(box, items) {
     try {
       if (!rec || rec.ms < 600) throw new Error('Bản ghi quá ngắn. Bấm một lần để bắt đầu, đọc hết câu, rồi mới bấm dừng.');
       res.innerHTML = spinner('Gemini đang nghe và chấm từng chữ…');
-      const audio = await toWavBase64(rec.blob);
-      if (audio.peak < 0.01) throw new Error('Không nghe thấy tiếng. Kiểm tra micro hoặc nói to hơn.');
-      const r = await scorePronunciation(it, audio);
+      let r;
+      if (XF.ok()) {
+        res.innerHTML = spinner('iFLYTEK đang chấm…');
+        try { r = await iseScore(it, rec.blob); } catch (e) { toast(e.message + ' Đang chấm tạm bằng Gemini.', 4000); }
+      }
+      if (!r) {
+        if (!apiKey()) throw new Error('Chưa có key chấm điểm. Vào Tôi → Cài đặt để dán key iFLYTEK hoặc Gemini.');
+        const audio = await toWavBase64(rec.blob);
+        if (audio.peak < 0.01) throw new Error('Không nghe thấy tiếng. Kiểm tra micro hoặc nói to hơn.');
+        r = await scorePronunciation(it, audio);
+      }
       box._audio = new Audio(URL.createObjectURL(rec.blob));
       res.innerHTML = scoreHtml(it, r, idx < items.length - 1);
     } catch (err) { res.innerHTML = '<p class="err small" style="margin-top:12px">' + esc(err.message) + '</p>'; }
@@ -1313,9 +1479,9 @@ function scoreHtml(it, res, hasNext) {
   logActivity('speak', { score, item: it.hz, lesson: D.current, bad: bad.map(c => c.hz) });
   bad.forEach(c => addCard({ f: c.hz, py: c.target_py, vi: (c.tip || labelIssue(c.issue)) + (c.heard_py ? ' (bạn đọc: ' + c.heard_py + ')' : ''), kind: 'e', sub: 'pron', ctx: it.hz }));
   return `<div class="score"><b style="color:${col}">${score}</b><span>/ 100 điểm</span></div>
-    <div class="chars">${chars.map(c => `<div class="ch${c.ok === false ? ' bad' : ''}"><span class="h">${esc(c.hz)}</span><small class="c${toneOf(c.target_py)}">${esc(c.target_py)}</small>${c.ok === false ? `<small class="heard">${c.heard_py ? 'bạn: ' + esc(c.heard_py) : 'bỏ sót'}</small>` : ''}</div>`).join('')}</div>
+    <div class="chars">${chars.map(c => `<div class="ch${c.ok === false ? ' bad' : ''}"><span class="h">${esc(c.hz)}</span><small class="c${toneOf(c.target_py)}">${esc(c.target_py)}</small>${c.ok === false ? `<small class="heard">${c.issue === 'missing' ? 'bỏ sót' : c.heard_py ? 'bạn: ' + esc(c.heard_py) : ({ tone: 'sai thanh', initial: 'sai âm đầu', final: 'sai vần' }[c.issue] || 'cần sửa')}</small>` : ''}</div>`).join('')}</div>
     ${bad.map(c => `<div class="issue"><b class="hz">${esc(c.hz)}</b> ${esc(c.target_py)}: ${esc(c.tip || labelIssue(c.issue))}</div>`).join('') || '<div class="goodbox">Không phát hiện lỗi rõ ràng. Rất tốt!</div>'}
-    ${res.summary ? `<p class="small">${esc(res.summary)}</p>` : ''}${res.heard_text ? `<p class="small muted">Gemini nghe được: <span class="hz">${esc(res.heard_text)}</span></p>` : ''}
+    ${res.summary ? `<p class="small">${esc(res.summary)}</p>` : ''}${res.engine ? `<p class="small muted">Chấm bởi ${esc(res.engine)}</p>` : res.heard_text ? `<p class="small muted">Gemini nghe được: <span class="hz">${esc(res.heard_text)}</span></p>` : ''}
     <div class="btnrow"><button class="btn sm" data-a="mine">▶ Giọng bạn</button><button class="btn sm" data-a="slow">▶ Mẫu chậm</button>${hasNext ? '<button class="btn sm pri" data-a="next">Câu tiếp ›</button>' : ''}</div>`;
 }
 
@@ -1552,7 +1718,7 @@ function renderMe() {
     <div class="card"><b>Chữ hay đọc sai</b><p class="small muted" style="margin:4px 0 8px">Chạm để nghe. Mục “Sửa chữ hay đọc sai” ở Hôm nay sẽ cho luyện lại.</p>${weak.length ? `<div class="weak">${weak.map(c => `<span data-say="${esc(c)}">${esc(c)}</span>`).join('')}</div>` : '<p class="small muted">Chưa có dữ liệu.</p>'}</div>
     <div class="menu">
       <button data-m="profile">✎ <span>Sửa hồ sơ, trình độ, mục tiêu</span>›</button>
-      <button data-m="profile">🔊 <span>Giọng đọc: ${String(P.voice || '').startsWith('gemini:') ? 'Giọng AI Gemini' : esc(zhVoice ? zhVoice.name : 'chưa có')}</span>›</button>
+      <button data-m="profile">🔊 <span>Giọng đọc: ${P.voice === 'xf' ? 'Giọng iFLYTEK' : String(P.voice || '').startsWith('gemini:') ? 'Giọng AI Gemini' : esc(zhVoice ? zhVoice.name : 'chưa có')}</span>›</button>
       <button data-m="kb">⌨ <span>Cách gõ tiếng Trung trên điện thoại</span>›</button>
       <button data-m="path">书 <span>Giáo trình đã nạp: ${lessons.filter(l => l.curriculum).length} bài</span>›</button>
       <button data-m="settings">⚙︎ <span>Cài đặt API key, sao lưu dữ liệu</span>›</button>
