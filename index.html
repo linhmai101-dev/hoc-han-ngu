@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2C7A66">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Học Hán ngữ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF0EC; --paper:#F8FBF9; --ink:#1D2B28; --muted:#5E6F6A; --line:#CFDCD5;
+  --jade:#2C7A66; --jade-soft:#D6E9E1; --seal:#B5322A; --seal-soft:#F6DEDA; --gold:#B7860B; --gold-soft:#F5EBCF;
+  --t1:#C0392B; --t2:#C9780E; --t3:#25865A; --t4:#2A5CA8; --t0:#8A9692;
+  --hz:"Noto Serif SC","Songti SC","SimSun","PingFang SC",serif;
+  --ui:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#13201D; --paper:#1A2A26; --ink:#E4EEEA; --muted:#93A7A0; --line:#2C403A;
+    --jade:#5DBB9F; --jade-soft:#21413A; --seal:#E5675D; --seal-soft:#3E2422; --gold:#E0B03C; --gold-soft:#3A3220;
+    --t1:#EF6B5E; --t2:#F0A23C; --t3:#55C28A; --t4:#6E9BEA; --t0:#7E8F8A;
+  }
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:16px/1.55 var(--ui);-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--jade);outline-offset:2px}
+input,select,textarea{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%}
+.app{max-width:520px;margin:0 auto;padding:0 16px 120px}
+header.top{display:flex;align-items:center;justify-content:space-between;padding:12px 0 8px;gap:8px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.seal{width:34px;height:34px;flex:none;border-radius:7px;background:var(--seal);color:#fff;display:grid;place-items:center;font:700 19px var(--hz);transform:rotate(-4deg)}
+.brand b{font-size:17px}
+.who{display:flex;align-items:center;gap:6px;border:1.5px solid var(--jade);border-radius:20px;padding:3px 12px 3px 4px;background:none;font-weight:600;font-size:14px;color:var(--jade)}
+.who .av{width:26px;height:26px;border-radius:50%;background:var(--jade-soft);display:grid;place-items:center;font-size:15px}
+.icon{border:none;background:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--muted);font-size:18px}
+.icon:hover{background:var(--jade-soft)}
+h1{font-size:24px;margin:8px 0 2px;line-height:1.25}
+h2{font-size:20px;margin:6px 0 4px;line-height:1.3}
+h3{font-size:16px;margin:20px 0 8px}
+.sub{color:var(--muted);font-size:14px;margin:0 0 14px}
+.view{display:none}.view.on{display:block}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap}
+.btn{flex:1;min-width:110px;border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px}
+.btn.pri{background:var(--jade);color:#fff;border-color:var(--jade)}
+.btn.rec{background:var(--seal);border-color:var(--seal);color:#fff;animation:pulse 1s infinite}
+.btn.sm{flex:none;min-width:0;min-height:0;padding:6px 12px;font-size:14px;border-radius:10px}
+.btn.ghost{background:none;border-color:transparent;color:var(--jade)}
+.btn:disabled{opacity:.45;cursor:default}
+.full{width:100%}
+@keyframes pulse{50%{box-shadow:0 0 0 10px rgba(181,50,42,.15)}}
+.seg{display:flex;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:3px;margin-bottom:14px}
+.seg button{flex:1;border:none;background:none;border-radius:9px;padding:9px 4px;font-weight:600;font-size:14px;color:var(--muted)}
+.seg button.on{background:var(--jade);color:#fff}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none;flex-wrap:nowrap}
+.chips.wrap{flex-wrap:wrap;overflow:visible}
+.chip{flex:none;border:1px solid var(--line);background:var(--paper);border-radius:20px;padding:7px 14px;font-size:14px}
+.chip.on{background:var(--jade);border-color:var(--jade);color:#fff}
+.muted{color:var(--muted)}.small{font-size:14px}.err{color:var(--seal)}
+.empty{text-align:center;color:var(--muted);padding:24px 10px;font-size:15px}
+.hz{font-family:var(--hz)}
+
+/* ruby + tones */
+.rb{display:inline-flex;flex-direction:column;align-items:center;margin:0 1px;vertical-align:bottom}
+.rb i{font:500 11.5px/1.2 var(--ui);font-style:normal}
+.rb span{font:500 24px/1.25 var(--hz)}
+.punct{font:500 24px/1.25 var(--hz);vertical-align:bottom}
+.hzline{font:500 24px/1.3 var(--hz)}
+.pyline{font-size:14px}
+.c1{color:var(--t1)}.c2{color:var(--t2)}.c3{color:var(--t3)}.c4{color:var(--t4)}.c0{color:var(--t0)}
+.big .rb span,.big .punct,.big .hzline{font-size:30px}.big .rb i{font-size:13px}
+.nopy .rb i,.nopy .pyline{visibility:hidden}
+
+/* home */
+.hello{display:flex;align-items:center;gap:14px;margin:6px 0 16px}
+.ring{flex:none;width:76px;height:76px;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:17px}
+.task{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
+.task .ic{flex:none;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font:700 22px var(--hz);background:var(--jade-soft);color:var(--jade)}
+.task .ic.red{background:var(--seal-soft);color:var(--seal)}.task .ic.gold{background:var(--gold-soft);color:var(--gold)}
+.task .tx{flex:1;min-width:0}
+.task .tx b{display:block;font-size:15.5px}
+.task .tx small{color:var(--muted);font-size:13.5px;display:block}
+.task .go{color:var(--muted);font-size:20px}
+.task.done{opacity:.6}.task.done .go{color:var(--jade)}
+.task.main{border:2px solid var(--jade)}
+.bar{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--jade)}
+
+/* path */
+.unit{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:8px}
+.unit .st{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:700;border:2px solid var(--line);color:var(--muted)}
+.unit.done .st{background:var(--jade);border-color:var(--jade);color:#fff}
+.unit.part .st{border-color:var(--jade);color:var(--jade)}
+.unit.next{border:2px solid var(--jade)}
+.unit .tx{flex:1;min-width:0}
+.unit .tx b{display:block;font-size:15px;line-height:1.35}
+.unit .tx small{color:var(--muted);font-size:13px}
+.tag{display:inline-block;font-size:11.5px;font-weight:600;border-radius:6px;padding:1px 7px;margin-right:4px;vertical-align:1px}
+.tag.tr{background:var(--gold-soft);color:var(--gold)}.tag.e{background:var(--seal-soft);color:var(--seal)}.tag.n{background:var(--jade-soft);color:var(--jade)}
+details.lv{margin-bottom:8px}
+details.lv summary{cursor:pointer;font-weight:700;padding:10px 2px;list-style:none;display:flex;justify-content:space-between}
+details.lv summary::-webkit-details-marker{display:none}
+details.lv summary::after{content:"▾";color:var(--muted)}
+details.lv:not([open]) summary::after{content:"▸"}
+
+/* lesson flow */
+.flowhead{display:flex;align-items:center;gap:8px;margin:4px 0 10px}
+.flowhead h2{flex:1;margin:0;font-size:18px;min-width:0}
+.stepper{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:14px}
+.stepper button{border:none;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--muted)}
+.stepper .d{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:13px;background:var(--paper)}
+.stepper .ok .d{background:var(--jade);border-color:var(--jade);color:#fff}
+.stepper .cur .d{border-color:var(--ink);color:var(--ink)}
+.stepper .cur{color:var(--ink);font-weight:600}
+.flowfoot{position:sticky;bottom:calc(66px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;padding:10px 0;background:linear-gradient(transparent,var(--bg) 30%)}
+.vrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.vrow:first-child{border-top:none}
+.vrow .h{font:500 24px var(--hz)}
+.vrow .m{font-size:14px;line-height:1.4}
+.acts{display:flex}
+.play{border:none;background:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--jade);flex:none;font-size:17px}
+.play:hover{background:var(--jade-soft)}
+.gram{padding:10px 0;border-top:1px solid var(--line)}
+.gram:first-child{border-top:none}
+.row{display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
+.who-l{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:2px}
+.celebrate{text-align:center;padding:26px 10px}
+.celebrate .big{font:700 56px var(--hz);color:var(--seal)}
+
+/* read-along */
+.target{text-align:center;padding:6px 0}
+.vi-c{text-align:center;color:var(--muted);font-size:14px;margin:4px 0 12px}
+.nav2{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:13px;color:var(--muted)}
+.timer{text-align:center;font-size:13px;color:var(--seal);min-height:20px;margin-top:6px}
+.score{display:flex;align-items:baseline;gap:8px;margin:14px 0 10px}
+.score b{font-size:40px;line-height:1}
+.chars{display:flex;flex-wrap:wrap;gap:6px}
+.ch{border:1.5px solid var(--line);border-radius:10px;padding:5px 6px;min-width:44px;text-align:center;background:var(--paper)}
+.ch .h{font:500 22px/1.2 var(--hz);display:block}
+.ch small{font-size:11.5px;display:block}
+.ch .heard{color:var(--seal);font-weight:600}
+.ch.bad{border-color:var(--seal);background:var(--seal-soft)}
+.issue{border-left:3px solid var(--seal);background:var(--seal-soft);border-radius:0 10px 10px 0;padding:8px 12px;font-size:14px;margin:8px 0}
+.goodbox{border-left:3px solid var(--jade);background:var(--jade-soft);border-radius:0 10px 10px 0;padding:8px 12px;font-size:14px;margin:8px 0}
+.infobox{border-left:3px solid var(--gold);background:var(--gold-soft);border-radius:0 10px 10px 0;padding:8px 12px;font-size:14px;margin:8px 0}
+.loading{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px;padding:10px 0}
+.spin{width:18px;height:18px;flex:none;border:2.5px solid var(--line);border-top-color:var(--jade);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* typing */
+.tprompt{font-size:18px;font-weight:600;margin-bottom:4px}
+.tin{font:500 22px var(--hz);padding:12px}
+.diff{font:500 26px/1.5 var(--hz);margin:10px 0;letter-spacing:.04em}
+.diff .ok{color:var(--jade)}.diff .miss{color:var(--seal);text-decoration:underline wavy}.diff .extra{color:var(--seal);text-decoration:line-through;opacity:.7}
+
+/* writer */
+.board{position:relative;width:min(100%,280px);aspect-ratio:1;margin:8px auto 10px;background:var(--paper);border:2px solid var(--seal);border-radius:6px}
+.board svg.grid{position:absolute;inset:0;width:100%;height:100%}
+.board .hwbox{position:absolute;inset:0}
+.wchars{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:6px}
+.wchars button{width:42px;height:42px;border:1px solid var(--line);background:var(--paper);border-radius:10px;font:500 22px var(--hz)}
+.wchars button.on{border-color:var(--ink);border-width:2px}
+.wchars button.ok{background:var(--jade-soft);border-color:var(--jade)}
+
+/* talk */
+.thread{display:flex;flex-direction:column;gap:12px;margin-bottom:12px}
+.msg{background:var(--paper);border-radius:4px 16px 16px 16px;padding:12px 14px;border:1px solid var(--line);max-width:94%}
+.msg.me{align-self:flex-end;border-radius:16px 4px 16px 16px;background:var(--jade-soft);border-color:transparent}
+.msg .vi{font-size:14px;color:var(--muted);margin-top:4px}
+.fix{margin-top:10px;border-left:3px solid var(--seal);background:var(--seal-soft);border-radius:0 10px 10px 0;padding:8px 12px;font-size:14px}
+.fix.good{border-color:var(--jade);background:var(--jade-soft)}
+.tip{margin-top:8px;font-size:14px;color:var(--muted)}
+.hint{margin-top:8px;font-size:14px;border-top:1px dashed var(--line);padding-top:8px}
+.micbar{position:sticky;bottom:calc(76px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:10px;pointer-events:none}
+.mic{pointer-events:auto;width:66px;height:66px;border-radius:50%;border:none;background:var(--seal);color:#fff;display:grid;place-items:center;box-shadow:0 6px 18px rgba(181,50,42,.35)}
+.mic.rec{animation:pulse 1s infinite;background:var(--ink)}
+.mic:disabled{opacity:.5}
+.miclabel{font-size:13px;color:var(--muted);background:var(--bg);padding:0 8px;border-radius:8px}
+
+/* practice tiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:left;min-height:108px;display:flex;flex-direction:column;gap:4px}
+.tile .g{font:700 26px var(--hz);color:var(--jade)}
+.tile b{font-size:15px}
+.tile small{color:var(--muted);font-size:12.5px;line-height:1.35}
+
+/* exercises */
+.qnum{font-size:13px;color:var(--muted);margin-bottom:6px}
+.qtext{font-size:17px;margin-bottom:12px}
+.qtext .hz{font-size:22px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:12px 14px;text-align:left;min-height:48px}
+.opt.right{border-color:var(--jade);background:var(--jade-soft)}
+.opt.wrong{border-color:var(--seal);background:var(--seal-soft)}
+.ordline{min-height:56px;border:1.5px dashed var(--line);border-radius:12px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.wchip{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:7px 12px;font:500 20px var(--hz)}
+.wbank{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.prog{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin-bottom:12px}
+.prog i{display:block;height:100%;background:var(--jade)}
+
+/* review */
+.flash{min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;user-select:none}
+.flash .front{font:700 44px/1.2 var(--hz)}
+.flash .errt{font:500 22px/1.4 var(--hz)}
+.flash .back{margin-top:10px;display:none}
+.flash.open .back{display:block}.flash.open .tapnote{display:none}
+.grade{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.grade button{border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:9px 4px;font-size:14px;font-weight:600}
+.grade small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+
+/* me */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center}
+.stat b{display:block;font-size:22px}
+.stat span{font-size:12px;color:var(--muted)}
+.bars{display:flex;align-items:flex-end;gap:8px;height:110px;padding-top:6px}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11px;color:var(--muted)}
+.bars i{display:block;width:100%;background:var(--jade);border-radius:5px 5px 0 0;min-height:2px}
+.weak{display:flex;flex-wrap:wrap;gap:6px}
+.weak span{background:var(--seal-soft);border-radius:8px;padding:4px 10px;font:500 18px var(--hz);cursor:pointer}
+.menu{background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:12px}
+.menu button{display:flex;align-items:center;gap:12px;width:100%;border:none;border-top:1px solid var(--line);background:none;padding:14px 16px;text-align:left;font-weight:500}
+.menu button:first-child{border-top:none}
+.menu button span{flex:1}
+
+/* profiles */
+.plist{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:10px}
+.pcard{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px 10px;text-align:center;position:relative;cursor:pointer}
+.pcard .av{font-size:42px;line-height:1.2}
+.pcard b{display:block;margin-top:6px}
+.pcard small{color:var(--muted)}
+.pcard.add{border-style:dashed;color:var(--jade);font-weight:600;display:grid;place-items:center;min-height:132px}
+.pedit{position:absolute;top:4px;right:4px;width:34px;height:34px;font-size:15px}
+.emojis{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 4px}
+.emojis button{width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--paper);font-size:22px}
+.emojis button.on{border-color:var(--jade);background:var(--jade-soft)}
+label.f{display:block;font-size:14px;color:var(--muted);margin:12px 0 5px}
+
+/* nav, fab, modal, toast */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--paper);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav .in{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav button{border:none;background:none;padding:8px 0 10px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;color:var(--muted);position:relative}
+nav button .g{font:500 21px/1.2 var(--hz)}
+nav button.on{color:var(--jade);font-weight:600}
+nav .badge{position:absolute;top:4px;left:calc(50% + 8px);background:var(--seal);color:#fff;font-size:10.5px;font-weight:700;border-radius:9px;padding:0 5px;min-width:18px;line-height:17px}
+.fab{position:fixed;right:max(16px,calc(50% - 244px));bottom:calc(78px + env(safe-area-inset-bottom,0px));z-index:11;border:none;background:var(--ink);color:var(--bg);border-radius:24px;padding:11px 16px;font-weight:600;font-size:14px;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+.modal{position:fixed;inset:0;z-index:40;background:rgba(10,20,18,.45);display:none;align-items:flex-end;justify-content:center}
+.modal.on{display:flex}
+.modal .box{background:var(--bg);width:100%;max-width:520px;max-height:92vh;max-height:92dvh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+.modal .mtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.modal .mtop h2{margin:0}
+.chatbox{display:flex;flex-direction:column;height:85vh;height:85dvh}
+.chatlog{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:4px 0 10px}
+.cm{background:var(--paper);border:1px solid var(--line);border-radius:4px 14px 14px 14px;padding:10px 12px;font-size:15px;max-width:92%;white-space:pre-wrap;word-wrap:break-word}
+.cm.me{align-self:flex-end;background:var(--jade-soft);border-color:transparent;border-radius:14px 4px 14px 14px}
+.cm .hz{font-size:18px}
+.quick{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+.quick button{flex:none;border:1px solid var(--line);background:var(--paper);border-radius:16px;padding:5px 12px;font-size:13px}
+.chatin{display:flex;gap:8px;align-items:flex-end}
+.chatin textarea{resize:none;height:48px;max-height:120px}
+.guide ol{padding-left:20px;margin:6px 0}.guide li{margin-bottom:6px}
+.guide kbd{background:var(--paper);border:1px solid var(--line);border-radius:5px;padding:0 5px;font-family:var(--ui)}
+.toast{position:fixed;left:50%;bottom:140px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60;max-width:90%;text-align:center}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="app" id="picker">
+  <header class="top"><div class="brand"><div class="seal">汉</div><b>Học Hán ngữ</b></div>
+    <button class="icon" data-open="settings" aria-label="Cài đặt">⚙︎</button></header>
+  <h1>Ai đang học?</h1>
+  <p class="sub">Chọn thẻ của bạn. Mỗi người có lộ trình, tiến độ và lỗi sai riêng.</p>
+  <div class="plist" id="plist"></div>
+</div>
+
+<div class="app" id="main" hidden>
+  <header class="top">
+    <div class="brand"><div class="seal">汉</div><b>Học Hán ngữ</b></div>
+    <button class="who" id="whoBtn" aria-label="Đổi người học"><span class="av" id="whoAv"></span><span id="whoName"></span></button>
+  </header>
+  <section class="view" id="v-home"></section>
+  <section class="view" id="v-path"></section>
+  <section class="view" id="v-lesson"></section>
+  <section class="view" id="v-practice"></section>
+  <section class="view" id="v-rev"></section>
+  <section class="view" id="v-me"></section>
+</div>
+
+<button class="fab" id="fab" hidden>💬 Hỏi thầy</button>
+
+<nav id="nav" hidden><div class="in">
+  <button data-v="home"><span class="g">今</span>Hôm nay</button>
+  <button data-v="path"><span class="g">书</span>Lộ trình</button>
+  <button data-v="practice"><span class="g">练</span>Luyện</button>
+  <button data-v="rev"><span class="g">复</span>Ôn tập<span class="badge" id="revBadge" hidden></span></button>
+  <button data-v="me"><span class="g">我</span>Tôi</button>
+</div></nav>
+
+<!-- settings -->
+<div class="modal" id="m-settings"><div class="box">
+  <div class="mtop"><h2>Cài đặt</h2><button class="icon" data-close>✕</button></div>
+  <label class="f" for="sKey">Gemini API key dùng chung trên máy này</label>
+  <input id="sKey" type="password" autocomplete="off" placeholder="Dán key lấy từ aistudio.google.com">
+  <label class="f" for="sModel">Mô hình Gemini</label>
+  <input id="sModel" placeholder="gemini-flash-lite-latest">
+  <label class="f" for="sAudio">Mô hình chấm phát âm (nghe giọng nói)</label>
+  <input id="sAudio" placeholder="gemini-flash-latest">
+  <p class="small muted">Để trống là dùng mặc định: Flash-Lite cho soạn bài, bài tập, hỏi thầy (nhiều lượt miễn phí hơn); Flash cho chấm giọng nói (nghe kỹ hơn). Hết lượt Flash thì app tự chuyển sang Flash-Lite. Xem hạn mức thật của bạn tại aistudio.google.com/rate-limit.</p>
+  <p class="small" id="sUse"></p>
+  <div class="btnrow"><button class="btn" id="sTest">Kiểm tra key</button><button class="btn pri" id="sSave">Lưu</button></div>
+  <p class="small" id="sMsg"></p>
+  <h3>Sao lưu dữ liệu</h3>
+  <p class="small muted">Dữ liệu chỉ nằm trên máy này. Xuất file để cất giữ hoặc chuyển sang máy khác (gồm bài học và tiến độ của mọi người, không gồm API key). Cũng dùng “Nhập file” để nạp giáo trình Claude soạn sẵn.</p>
+  <div class="btnrow"><button class="btn" id="bExport">⇩ Xuất file</button><label class="btn" style="cursor:pointer">⇧ Nhập file<input type="file" id="bImport" accept="application/json,.json" hidden></label></div>
+</div></div>
+
+<!-- profile -->
+<div class="modal" id="m-profile"><div class="box">
+  <div class="mtop"><h2 id="pfTitle">Thêm người học</h2><button class="icon" data-close>✕</button></div>
+  <label class="f" for="pfName">Tên</label><input id="pfName" maxlength="20" placeholder="Ví dụ: Bố, Mẹ, Dương">
+  <label class="f">Biểu tượng</label><div class="emojis" id="pfEmo"></div>
+  <label class="f" for="pfLevel">Trình độ hiện tại</label>
+  <select id="pfLevel"><option value="1">Mới bắt đầu (HSK 1)</option><option value="2">Đã biết cơ bản (HSK 2)</option><option value="3">Giao tiếp được (HSK 3)</option><option value="4">Khá (HSK 4)</option></select>
+  <label class="f">Học để làm gì? (chọn nhiều)</label>
+  <div class="chips wrap" id="pfGoals"></div>
+  <label class="f" for="pfSource">Bài tiếp theo lấy từ</label>
+  <select id="pfSource"><option value="smart">Lộ trình thông minh (app tự soạn theo mục tiêu)</option><option value="book">Giáo trình PDF đã nhập</option></select>
+  <label class="f" for="pfKey">API key riêng (không bắt buộc)</label>
+  <input id="pfKey" type="password" autocomplete="off" placeholder="Để trống thì dùng key chung">
+  <div class="btnrow" style="margin-top:16px"><button class="btn" id="pfDel" hidden>Xóa người này</button><button class="btn pri" id="pfSave">Lưu</button></div>
+</div></div>
+
+<!-- import pdf -->
+<div class="modal" id="m-import"><div class="box">
+  <div class="mtop"><h2>Nhập bài từ PDF</h2><button class="icon" data-close>✕</button></div>
+  <p class="small muted">Chọn file giáo trình hoặc sách bài tập, rồi chọn các trang của một bài (nên dưới 15 trang).</p>
+  <label class="f" for="iFile">File PDF</label><input id="iFile" type="file" accept="application/pdf">
+  <p class="small" id="iInfo"></p>
+  <div class="btnrow"><div style="flex:1"><label class="f" for="iFrom">Từ trang</label><input id="iFrom" type="number" min="1" inputmode="numeric"></div><div style="flex:1"><label class="f" for="iTo">Đến trang</label><input id="iTo" type="number" min="1" inputmode="numeric"></div></div>
+  <label class="f" for="iLevel">Cấp độ</label>
+  <select id="iLevel"><option value="1">HSK 1</option><option value="2">HSK 2</option><option value="3">HSK 3</option><option value="4">HSK 4</option></select>
+  <label class="f" for="iName">Tên bài (không bắt buộc)</label><input id="iName" placeholder="Để trống, AI sẽ tự đặt theo sách">
+  <div style="margin-top:14px"><button class="btn pri full" id="iGo">Đọc và tạo bài học</button></div>
+  <div id="iStatus"></div>
+</div></div>
+
+<!-- paste chat -->
+<div class="modal" id="m-paste"><div class="box">
+  <div class="mtop"><h2>Học từ đoạn chat</h2><button class="icon" data-close>✕</button></div>
+  <p class="small muted">Trong WeChat: giữ ngón tay trên tin nhắn → Sao chép, rồi dán vào đây. Tên người, giờ gửi và emoji được tự bỏ qua. App sẽ dạy bạn đọc, viết tay và gõ lại chính các câu này.</p>
+  <label class="f" for="pText">Các câu tiếng Trung</label>
+  <textarea id="pText" rows="7" placeholder="朋友圈里点开我就可以看得到&#10;明天几点到？"></textarea>
+  <label class="f" for="pMT">Bản dịch của WeChat (không bắt buộc)</label>
+  <textarea id="pMT" rows="3" placeholder="Dán bản dịch máy nếu muốn biết nó dịch sai chỗ nào"></textarea>
+  <p class="small muted">Tránh dán số điện thoại, địa chỉ hay thông tin riêng tư: nội dung được gửi tới Google để phân tích.</p>
+  <button class="btn pri full" id="pGo">Phân tích và tạo bài học</button>
+  <div id="pStatus"></div>
+</div></div>
+
+<!-- custom sentence -->
+<div class="modal" id="m-custom"><div class="box">
+  <div class="mtop"><h2>Tự nhập câu</h2><button class="icon" data-close>✕</button></div>
+  <label class="f" for="cText">Câu tiếng Trung (chữ Hán) hoặc câu tiếng Việt muốn nói</label><input id="cText" placeholder="我想喝一杯茶  hoặc  Tôi muốn mua 1 cân kỷ tử">
+  <div style="margin-top:12px"><button class="btn pri full" id="cGo">Thêm để luyện</button></div>
+  <div id="cStatus"></div>
+</div></div>
+
+<!-- keyboard guide -->
+<div class="modal" id="m-kb"><div class="box guide">
+  <div class="mtop"><h2>Gõ tiếng Trung trên điện thoại</h2><button class="icon" data-close>✕</button></div>
+  <p class="small">Cách nhanh nhất là gõ <b>pinyin không dấu</b> rồi chọn chữ. Cần bật bàn phím tiếng Trung một lần.</p>
+  <div class="seg" id="kbSeg"><button class="on" data-k="ios">iPhone</button><button data-k="and">Android</button></div>
+  <div id="kb-ios">
+    <ol><li>Mở <b>Cài đặt</b> → <b>Cài đặt chung</b> → <b>Bàn phím</b> → <b>Bàn phím</b> → <b>Thêm bàn phím mới…</b></li>
+      <li>Chọn <b>Tiếng Trung (Giản thể)</b>, tích <b>Bính âm – QWERTY</b> và <b>Viết tay</b>, bấm <b>Xong</b>.</li>
+      <li>Khi gõ, giữ hoặc bấm biểu tượng <b>quả địa cầu</b> 🌐 để chuyển sang 拼音 hoặc 手写 (viết tay).</li></ol>
+  </div>
+  <div id="kb-and" hidden>
+    <ol><li>Mở ứng dụng <b>Gboard</b> (hoặc Cài đặt → Hệ thống → Bàn phím → Gboard) → <b>Ngôn ngữ</b> → <b>Thêm bàn phím</b>.</li>
+      <li>Tìm <b>中文（简体）</b>, chọn kiểu <b>Bính âm</b> (Pinyin) và thêm cả <b>Viết tay</b> nếu muốn → <b>Xong</b>.</li>
+      <li>Khi gõ, bấm biểu tượng <b>quả địa cầu</b> 🌐 hoặc giữ phím cách để chuyển bàn phím.</li></ol>
+  </div>
+  <h3>Mẹo gõ pinyin</h3>
+  <ol>
+    <li>Gõ liền, không dấu: <kbd>pengyouquan</kbd> → chọn <span class="hz">朋友圈</span>.</li>
+    <li>Âm <b>ü</b> gõ bằng phím <kbd>v</kbd>: <kbd>lvcha</kbd> → <span class="hz">绿茶</span>.</li>
+    <li>Từ quen có thể gõ chữ cái đầu: <kbd>xx</kbd> → <span class="hz">谢谢</span>, <kbd>mgx</kbd> → <span class="hz">没关系</span>. Không thấy chữ cần tìm thì gõ đủ pinyin.</li>
+    <li>Gõ cả cụm hoặc cả câu, bộ gõ tự đoán chính xác hơn gõ từng chữ.</li>
+    <li>Không biết pinyin một chữ? Chuyển sang <b>viết tay</b> và vẽ chữ bằng ngón tay.</li>
+  </ol>
+  <p class="small muted">Luyện trong mục <b>Gõ</b> của mỗi bài: app cho câu tiếng Việt, bạn gõ bằng bàn phím tiếng Trung, app chỉ ra chữ đúng sai.</p>
+</div></div>
+
+<!-- writer (ad hoc) -->
+<div class="modal" id="m-write"><div class="box">
+  <div class="mtop"><h2>Viết chữ</h2><button class="icon" data-close>✕</button></div>
+  <div id="wBox"></div>
+</div></div>
+
+<!-- tutor chat -->
+<div class="modal" id="m-chat"><div class="box chatbox">
+  <div class="mtop"><h2>Hỏi thầy</h2><div><button class="btn sm" id="chClear">Xóa</button> <button class="icon" data-close style="display:inline-grid">✕</button></div></div>
+  <div class="chatlog" id="chatLog"></div>
+  <div class="quick" id="chatQuick"></div>
+  <div class="chatin">
+    <textarea id="chatIn" placeholder="Hỏi bằng tiếng Việt, ví dụ: 了 dùng khi nào?"></textarea>
+    <button class="icon" id="chatMic" aria-label="Nói câu hỏi" style="background:var(--paper);border:1px solid var(--line);flex:none">🎤</button>
+    <button class="btn pri sm" id="chatSend" style="height:48px">Gửi</button>
+  </div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* =============== utilities =============== */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const DAY = 864e5;
+const dayKey = t => { const d = new Date(t); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
+let tt; function toast(m, ms = 2600) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), ms); }
+function openModal(id) { $('#m-' + id).classList.add('on'); }
+function closeModal(id) { $('#m-' + id).classList.remove('on'); }
+document.addEventListener('click', e => {
+  const c = e.target.closest('[data-close]'); if (c) c.closest('.modal').classList.remove('on');
+  const o = e.target.closest('[data-open]'); if (o) { if (o.dataset.open === 'settings') fillSettings(); openModal(o.dataset.open); }
+  if (e.target.classList.contains('modal')) e.target.classList.remove('on');
+});
+const spinner = t => `<div class="loading"><div class="spin"></div>${esc(t)}</div>`;
+function loadScript(src) {
+  return new Promise((res, rej) => { if ([...document.scripts].some(s => s.src === src)) return res();
+    const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('Không tải được thư viện, kiểm tra mạng.')); document.head.appendChild(s); });
+}
+
+/* =============== storage (IndexedDB with localStorage fallback) =============== */
+const Store = {
+  db: null,
+  async open() {
+    try {
+      this.db = await new Promise((res, rej) => { const r = indexedDB.open('hanngu', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    } catch (e) { this.db = null; }
+  },
+  async get(k) {
+    if (this.db) { try { return await new Promise((res, rej) => { const q = this.db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); } catch (e) {} }
+    try { const v = localStorage.getItem('hn:' + k); return v ? JSON.parse(v) : undefined; } catch (e) { return undefined; }
+  },
+  async set(k, v) {
+    if (this.db) { try { await new Promise((res, rej) => { const tx = this.db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); return; } catch (e) {} }
+    try { localStorage.setItem('hn:' + k, JSON.stringify(v)); } catch (e) { toast('Không lưu được dữ liệu trên máy này'); }
+  },
+  async del(k) {
+    if (this.db) { try { await new Promise(res => { const tx = this.db.transaction('kv', 'readwrite'); tx.objectStore('kv').delete(k); tx.oncomplete = res; tx.onerror = res; }); } catch (e) {} }
+    try { localStorage.removeItem('hn:' + k); } catch (e) {}
+  }
+};
+
+/* =============== pinyin helpers =============== */
+const TONES = { 1: 'āēīōūǖ', 2: 'áéíóúǘ', 3: 'ǎěǐǒǔǚ', 4: 'àèìòùǜ' };
+function toneOf(syl) { syl = String(syl || '').toLowerCase(); for (const t in TONES) for (const ch of TONES[t]) if (syl.includes(ch)) return +t; return 0; }
+const isHan = c => /\p{Script=Han}/u.test(c);
+const hanCount = s => [...String(s || '')].filter(isHan).length;
+const cleanPy = py => String(py || '').toLowerCase().replace(/[^\p{L}\s']/gu, ' ').trim().split(/\s+/).filter(Boolean);
+const colorPy = py => String(py || '').split(/\s+/).map(s => `<span class="c${toneOf(s)}">${esc(s)}</span>`).join(' ');
+function ruby(hz, py) {
+  const syls = cleanPy(py);
+  if (syls.length !== hanCount(hz)) return `<div class="hzline">${esc(hz)}</div><div class="pyline">${colorPy(py)}</div>`;
+  let i = 0, out = '';
+  for (const c of String(hz)) {
+    if (isHan(c)) { const s = syls[i++]; out += `<span class="rb"><i class="c${toneOf(s)}">${esc(s)}</i><span>${esc(c)}</span></span>`; }
+    else if (c.trim()) out += `<span class="punct">${esc(c)}</span>`;
+  }
+  return out;
+}
+const hanOnly = s => [...String(s || '')].filter(isHan).join('');
+
+/* =============== speech synthesis =============== */
+let zhVoice = null;
+function pickVoice() { try { const vs = speechSynthesis.getVoices(); zhVoice = vs.find(v => /zh[-_]CN/i.test(v.lang)) || vs.find(v => /^zh/i.test(v.lang) && !/HK|TW/i.test(v.lang)) || vs.find(v => /^zh/i.test(v.lang)) || null; } catch (e) {} }
+if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+let speakRate = 0.85;
+// iOS only allows speech after a user tap: speak a silent utterance on the first tap so later replies can play
+let speechUnlocked = false;
+document.addEventListener('touchend', unlockSpeech, { passive: true }); document.addEventListener('click', unlockSpeech);
+function unlockSpeech() { if (speechUnlocked || !('speechSynthesis' in window)) return; speechUnlocked = true; try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch (e) {} }
+function say(text, rate) {
+  if (!('speechSynthesis' in window)) { toast('Máy này chưa có giọng đọc tiếng Trung'); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text); u.lang = 'zh-CN'; u.rate = rate || speakRate; if (zhVoice) u.voice = zhVoice;
+  speechSynthesis.speak(u);
+}
+const playIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+document.addEventListener('click', e => { const b = e.target.closest('[data-say]'); if (b) say(b.dataset.say, b.dataset.rate ? +b.dataset.rate : undefined); });
+
+/* =============== recorder: tap to start, tap to stop =============== */
+const Rec = {
+  stream: null, mr: null, chunks: [], startAt: 0, timerId: null, maxMs: 30000,
+  supported() { return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder); },
+  async start(onTick) {
+    if (!this.supported()) throw new Error('Trình duyệt này không ghi âm được. Hãy dùng Chrome (Android) hoặc Safari (iPhone).');
+    try { this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
+    catch (e) { throw new Error(e.name === 'NotAllowedError' ? 'Chưa được phép dùng micro. Bấm biểu tượng ổ khóa trên thanh địa chỉ và cho phép Micro.' : 'Không mở được micro: ' + e.message); }
+    const types = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm', 'audio/ogg;codecs=opus'];
+    const mt = types.find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t));
+    this.mr = new MediaRecorder(this.stream, mt ? { mimeType: mt } : undefined);
+    this.chunks = []; this.mr.ondataavailable = e => { if (e.data && e.data.size) this.chunks.push(e.data); };
+    this.mr.start(250); this.startAt = Date.now();
+    this.timerId = setInterval(() => { const ms = Date.now() - this.startAt; onTick && onTick(ms); if (ms >= this.maxMs) this.autoStop && this.autoStop(); }, 200);
+  },
+  get recording() { return !!(this.mr && this.mr.state === 'recording'); },
+  async stop() {
+    clearInterval(this.timerId);
+    if (!this.mr) return null;
+    const mr = this.mr; const done = new Promise(r => mr.onstop = r);
+    if (mr.state !== 'inactive') mr.stop(); await done;
+    this.stream.getTracks().forEach(t => t.stop());
+    const blob = new Blob(this.chunks, { type: mr.mimeType || 'audio/webm' });
+    const ms = Date.now() - this.startAt; this.mr = null;
+    return { blob, ms };
+  },
+  cancel() { clearInterval(this.timerId); try { this.mr && this.mr.state !== 'inactive' && this.mr.stop(); } catch (e) {} try { this.stream && this.stream.getTracks().forEach(t => t.stop()); } catch (e) {} this.mr = null; }
+};
+// convert recording to 16 kHz mono WAV (format Gemini reliably accepts)
+async function toWavBase64(blob) {
+  const buf = await blob.arrayBuffer();
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext; const ac = new AC();
+    const audio = await new Promise((res, rej) => ac.decodeAudioData(buf.slice(0), res, rej)); ac.close && ac.close();
+    const rate = 16000, len = Math.max(1, Math.ceil(audio.duration * rate));
+    const off = new OfflineAudioContext(1, len, rate); const src = off.createBufferSource(); src.buffer = audio; src.connect(off.destination); src.start();
+    const out = (await off.startRendering()).getChannelData(0);
+    let peak = 0; for (let i = 0; i < out.length; i++) peak = Math.max(peak, Math.abs(out[i]));
+    const ab = new ArrayBuffer(44 + out.length * 2), v = new DataView(ab);
+    const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+    w(0, 'RIFF'); v.setUint32(4, 36 + out.length * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, out.length * 2, true);
+    for (let i = 0; i < out.length; i++) { const s = Math.max(-1, Math.min(1, out[i])); v.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true); }
+    return { data: b64(ab), mime: 'audio/wav', peak };
+  } catch (e) {
+    return { data: b64(buf), mime: (blob.type || 'audio/webm').split(';')[0], peak: 1 };
+  }
+}
+function b64(ab) { const bytes = new Uint8Array(ab); let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s); }
+
+/* =============== Gemini =============== */
+function apiKey() { return (P && P.key) || settings.apiKey; }
+const DEFAULT_MODEL = 'gemini-flash-lite-latest', DEFAULT_AUDIO_MODEL = 'gemini-flash-latest';
+let curModel = null;
+function modelName() { return curModel || (settings.model || '').trim() || DEFAULT_MODEL; }
+function audioModel() { return (settings.audioModel || '').trim() || DEFAULT_AUDIO_MODEL; }
+function countUse() { try { const k = 'use:' + new Date().toISOString().slice(0, 10); const n = (+localStorage.getItem('hn:' + k) || 0) + 1; localStorage.setItem('hn:' + k, n); } catch (e) {} }
+function usedToday() { try { return +localStorage.getItem('hn:use:' + new Date().toISOString().slice(0, 10)) || 0; } catch (e) { return 0; } }
+// audio tasks prefer the stronger model; if its daily quota is used up, fall back to the main model automatically
+async function gemini(opts) {
+  const hasAudio = (opts.parts || []).some(p => p.inline_data && /^audio/.test(p.inline_data.mime_type));
+  const first = hasAudio ? audioModel() : ((settings.model || '').trim() || DEFAULT_MODEL);
+  const second = hasAudio ? ((settings.model || '').trim() || DEFAULT_MODEL) : null;
+  try { curModel = first; return await geminiOnce(opts); }
+  catch (e) { if (second && second !== first && /hết lượt|Không tìm thấy mô hình/.test(e.message)) { curModel = second; return await geminiOnce(opts); } throw e; }
+  finally { curModel = null; }
+}
+async function geminiOnce({ system, parts, history, json = true, temperature = 0.4, key }) {
+  const k = key || apiKey();
+  if (!k) { openSettingsForKey(); throw new Error('Chưa có API key. Vào Cài đặt để dán key Gemini.'); }
+  const contents = [...(history || []), { role: 'user', parts }];
+  const body = { contents, generationConfig: { temperature } };
+  if (json) body.generationConfig.responseMimeType = 'application/json';
+  if (system) body.systemInstruction = { parts: [{ text: system }] };
+  let r; countUse();
+  try {
+    r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName())}:generateContent`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': k }, body: JSON.stringify(body) });
+  } catch (e) { throw new Error('Không kết nối được Gemini. Kiểm tra mạng rồi thử lại.'); }
+  if (!r.ok) {
+    let msg = ''; try { msg = (await r.json()).error.message || ''; } catch (e) {}
+    if (r.status === 429) throw new Error('Đã dùng hết lượt miễn phí của mô hình ' + modelName() + '. Đợi 1 phút, hoặc sang ngày mai nếu hết lượt trong ngày (tính theo giờ Mỹ, khoảng 14–15 giờ chiều ở Việt Nam).');
+    if (r.status === 400 && /api key/i.test(msg)) throw new Error('API key không hợp lệ. Kiểm tra lại trong Cài đặt.');
+    if (r.status === 403) throw new Error('API key không có quyền dùng Gemini. Tạo key mới tại aistudio.google.com.');
+    if (r.status === 404) throw new Error('Không tìm thấy mô hình "' + modelName() + '". Đổi tên mô hình trong Cài đặt.');
+    if (r.status >= 500) throw new Error('Máy chủ Gemini đang bận. Thử lại sau ít giây.');
+    throw new Error('Gemini báo lỗi ' + r.status + (msg ? ': ' + msg : ''));
+  }
+  const data = await r.json();
+  const cand = data.candidates && data.candidates[0];
+  if (!cand || !cand.content) throw new Error('Gemini không trả lời (có thể do bộ lọc nội dung). Thử lại với câu khác.');
+  const text = (cand.content.parts || []).filter(p => !p.thought).map(p => p.text || '').join('');
+  if (!json) return text;
+  return parseJSON(text);
+}
+function parseJSON(text) {
+  const t = text.replace(/```json|```/g, '').trim();
+  try { return JSON.parse(t); } catch (e) {
+    const a = t.indexOf('{'), b = t.lastIndexOf('}');
+    if (a >= 0 && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch (e2) {} }
+    throw new Error('Gemini trả về dữ liệu không đọc được. Thử lại.');
+  }
+}
+const PY_RULE = 'Pinyin must use tone marks, lowercase, one syllable per space-separated token, exactly one syllable per Chinese character, no punctuation (e.g. "wǒ xiǎng hē chá").';
+
+
+/* =============== state =============== */
+let settings = { apiKey: '', model: '' };
+let profiles = [];
+let lessons = [];
+let P = null, D = null;
+const newData = () => ({ cards: [], history: [], chat: [], custom: [], lp: {}, current: null });
+let saveTimer;
+function saveD() { clearTimeout(saveTimer); const id = P.id, data = D; saveTimer = setTimeout(() => Store.set('p:' + id, data), 300); }
+function logActivity(type, extra = {}) { D.history.push({ type, at: Date.now(), ...extra }); if (D.history.length > 4000) D.history = D.history.slice(-4000); saveD(); }
+const arr = x => Array.isArray(x) ? x : [];
+const today = () => dayKey(Date.now());
+const todayHist = type => D.history.filter(h => h.type === type && dayKey(h.at) === today());
+
+/* =============== smart syllabus (original outline, content generated per unit) =============== */
+const CORE = {
+  1: [['Chào hỏi, cảm ơn, tạm biệt', 'chào hỏi lịch sự, cảm ơn, xin lỗi, tạm biệt', '你好/您好; 谢谢/不客气; 对不起/没关系'],
+      ['Tên và quốc tịch', 'giới thiệu tên, hỏi tên, nói mình là người nước nào', '是 sentence; 吗 question; 什么; 叫'],
+      ['Gia đình', 'giới thiệu thành viên gia đình, hỏi nhà có mấy người', '有/没有; 几; 的 (possessive)'],
+      ['Số đếm, tuổi, tiền', 'đếm số, hỏi tuổi, hỏi giá', '几/多少; 岁; 块/元'],
+      ['Ngày giờ', 'hỏi ngày, thứ, giờ, hẹn giờ', '今天几号; 星期; 点/分; 现在'],
+      ['Ăn uống', 'gọi món, gọi đồ uống', '想/要; 杯/个/碗 measure words'],
+      ['Ở đâu', 'hỏi vị trí người và đồ vật', '在; 哪儿; 这儿/那儿; 里'],
+      ['Mua sắm đơn giản', 'hỏi giá, nói đắt rẻ, mua đồ', '多少钱; 太…了; 能'],
+      ['Thời tiết, cảm giác', 'nói về thời tiết và cảm giác', '很 + adj; 怎么样; 冷/热'],
+      ['Việc đã làm', 'kể việc đã làm hôm qua, hỏi đáp ngắn', '了 (completed action); 呢; 会']],
+  2: [['Sở thích', 'nói về sở thích, rủ bạn làm cùng', '喜欢 + V; 常常; 一起'],
+      ['Hỏi đường, đi lại', 'hỏi đường, phương tiện, khoảng cách', '从…到…; 坐; 离…远/近; 往'],
+      ['Đi khám bệnh', 'nói chỗ khó chịu, lời khuyên', '怎么了; 吧; 别/不要'],
+      ['So sánh khi mua đồ', 'so sánh giá, chất lượng, kích cỡ', '比; 一点儿; 有点儿'],
+      ['Đang làm gì', 'nói việc đang làm, trạng thái', '正在…呢; 着'],
+      ['Trải nghiệm', 'kể đã từng đi đâu, làm gì', '过; 第一次; 还没'],
+      ['Bao lâu', 'nói khoảng thời gian làm việc gì', 'V + 了 + duration; 已经'],
+      ['Kết quả và mức độ', 'nói làm xong chưa, làm tốt không', '完/到/好 result complements; 得 degree complement'],
+      ['Mời và hẹn', 'mời, nhận lời, từ chối khéo', '要…了; 就; 能/可以'],
+      ['Lý do', 'giải thích lý do, nói nhưng mà', '因为…所以…; 但是; 虽然…但是…']],
+  3: [['Một ngày bận rộn', 'mô tả nhịp sống, làm hai việc cùng lúc', '一边…一边…; 越来越'],
+      ['Sắp xếp nhà cửa', 'nhờ ai đặt, dọn, mang đồ', '把 sentence'],
+      ['Thói quen sức khỏe', 'nói thói quen tốt xấu, lời khuyên', '被; 对…有好处'],
+      ['Mua bán online', 'đặt hàng, điều kiện, đổi trả', '只要…就…; 如果…就…'],
+      ['Du lịch', 'đi lên đi xuống, xem có hiểu không', 'directional complements 上来/下去; potential complements 看得懂'],
+      ['Văn hóa ăn uống', 'ngoài ra còn, mời ăn', '除了…以外, 还/也…'],
+      ['Bạn bè và cảm xúc', 'mô tả người, cảm xúc mạnh', '又…又…; …极了'],
+      ['Học tập', 'trình tự làm việc, vừa…là', '先…然后…; 一…就…'],
+      ['Mùa và khí hậu', 'so sánh mức độ, giống nhau', '比…多了; 跟…一样'],
+      ['Kế hoạch', 'dự định và mục đích', '打算; 为了']],
+  4: [['Phỏng vấn, công việc', 'giới thiệu kinh nghiệm, điểm mạnh', '不仅…而且…; 由于'],
+      ['Đàm phán giá', 'thương lượng điều kiện', '无论…都…; 只有…才…'],
+      ['Hợp đồng, giao hàng', 'xác nhận điều khoản, cảnh báo', '否则; 既然'],
+      ['Sức khỏe và dưỡng sinh', 'nói về thói quen dưỡng sinh, thay đổi theo thời gian', '随着; 对于'],
+      ['Văn hóa trà', 'lịch sử, cách pha, mời trà', '不管…都…; 甚至'],
+      ['Mạng xã hội', 'thói quen dùng mạng, ý kiến', '即使…也…; 尽管'],
+      ['Môi trường', 'nguyên nhân, kết quả', '之所以…是因为…'],
+      ['Cuộc sống thành phố', 'ngạc nhiên, phản bác', '竟然; 难道'],
+      ['Quan hệ con người', 'nhấn mạnh, ngay cả', '连…都/也…'],
+      ['Trình bày ý kiến', 'trình bày có thứ tự, kết luận', '首先…其次…最后; 总之']]
+};
+const TRACKS = {
+  tea: { name: 'Trà & dược liệu', units: [['Gọi tên trà và vị thuốc', 'tên các loại trà, vị dược liệu thông dụng, hỏi đây là gì'], ['Xuất xứ và chất lượng', '产地, 品质, 等级, 新鲜, 干燥'], ['Giá sỉ và số lượng', '批发, 公斤, 起订量, 便宜一点, 样品'], ['Cách pha và cách dùng', '泡, 煮, 每天, 用量 — chỉ nói chung, không chẩn bệnh'], ['Đặt hàng và giao hàng', '下单, 发货, 快递, 几天到, 包装']] },
+  market: { name: 'Buôn bán & mặc cả', units: [['Hỏi hàng ở chợ', '有没有, 还有别的吗, 颜色, 尺寸'], ['Mặc cả', '太贵了, 便宜点儿, 最低多少, 多买几个'], ['Thanh toán', '现金, 扫码, 转账, 找钱, 收据'], ['Đổi trả và khiếu nại', '换, 退, 质量问题, 不满意']] },
+  wechat: { name: 'Chat WeChat', units: [['Kết bạn và chào hỏi', '加微信, 扫一扫, 朋友圈, 你好呀'], ['Hẹn gặp và xác nhận', '约, 几点, 没问题, 好的收到, 不好意思'], ['Chuyển tiền và hóa đơn', '转账, 红包, 收款码, 发票'], ['Từ lóng và biểu cảm', '哈哈, 嗯嗯, 辛苦了, 亲, 666, 好滴']] },
+  travel: { name: 'Du lịch & đi lại', units: [['Sân bay và khách sạn', 'check-in, 护照, 房间, 预订'], ['Taxi, tàu, hỏi đường', '打车, 地铁, 高铁, 到…怎么走'], ['Nhà hàng', '点菜, 不要辣, 买单, 打包'], ['Mua sắm ở Quảng Châu', '商场, 批发市场, 打折, 发货到越南']] },
+  family: { name: 'Gia đình & trường học', units: [['Giới thiệu gia đình', 'thành viên, nghề nghiệp, tính cách'], ['Ở trường', 'môn học, thầy cô, bài tập'], ['Cuối tuần', 'sở thích, thể thao, rủ bạn đi chơi']] }
+};
+const GOALS = [['life', 'Giao tiếp đời sống'], ['tea', 'Trà & dược liệu'], ['market', 'Buôn bán & mặc cả'], ['wechat', 'Chat WeChat'], ['travel', 'Du lịch'], ['family', 'Gia đình & trường học'], ['hsk', 'Thi HSK']];
+const STEPS = [['vocab', 'Từ mới', '词'], ['text', 'Bài khóa', '文'], ['write', 'Viết', '写'], ['type', 'Gõ', '打'], ['speak', 'Nói', '说'], ['ex', 'Bài tập', '练']];
+
+function buildPath() {
+  const goals = arr(P.goals).filter(g => TRACKS[g]); const tIdx = {}; let rot = 0; const out = [];
+  for (let lv = 1; lv <= 4; lv++) {
+    let count = 0;
+    CORE[lv].forEach((u, i) => {
+      out.push({ key: 'h' + lv + '-' + (i + 1), lv, kind: 'core', t: u[0], topic: u[1], gram: u[2] });
+      if (lv >= P.level && goals.length && ++count % 2 === 0) {
+        for (let k = 0; k < goals.length; k++) {
+          const g = goals[rot++ % goals.length], j = tIdx[g] || 0;
+          if (j < TRACKS[g].units.length) { tIdx[g] = j + 1; const tu = TRACKS[g].units[j];
+            out.push({ key: g + '-' + (j + 1) + '@' + lv, lv, kind: 'track', track: g, t: tu[0], topic: tu[1], gram: '' }); break; }
+        }
+      }
+    });
+  }
+  return out;
+}
+const lessonByKey = key => lessons.find(l => l.id === key || l.unitKey === key) || null;
+const unitByKey = key => buildPath().find(u => u.key === key) || null;
+const lp = key => (D.lp[key] = D.lp[key] || { steps: {}, done: false });
+const stepCount = key => { const s = D.lp[key]; return s ? STEPS.filter(x => s.steps[x[0]]).length : 0; };
+function nextUnit() {
+  if (P.source === 'book') {
+    const b = lessons.filter(l => l.kind !== 'chat' && !l.unitKey).sort(bookSort).find(l => !(D.lp[l.id] && D.lp[l.id].done));
+    if (b) return { key: b.id, t: b.title, lv: b.level, kind: 'book' };
+  }
+  return buildPath().find(u => u.lv >= P.level && !(D.lp[u.key] && D.lp[u.key].done)) || null;
+}
+function currentLesson() { return D.current ? lessonByKey(D.current) : null; }
+
+/* =============== curriculum files hosted next to index.html (giao-trinh/) =============== */
+async function loadCurricula() {
+  try {
+    const r = await fetch('giao-trinh/danh-sach.json', { cache: 'no-cache' }); if (!r.ok) return;
+    const list = await r.json(); let changed = 0;
+    for (const f of arr(list.files)) {
+      try {
+        const c = await (await fetch('giao-trinh/' + f, { cache: 'no-cache' })).json();
+        for (const l of arr(c.lessons)) {
+          const i = lessons.findIndex(x => x.id === l.id);
+          if (i < 0) { lessons.push(l); changed++; } else if ((lessons[i].version || 0) < (l.version || 0)) { lessons[i] = l; changed++; }
+        }
+      } catch (e) {}
+    }
+    if (changed) await Store.set('lessons', lessons);
+  } catch (e) {}
+}
+const bookSort = (a, b) => ((a.level || 9) - (b.level || 9)) || ((a.order || 0) - (b.order || 0)) || (a.createdAt - b.createdAt);
+
+/* =============== boot, profiles =============== */
+async function boot() {
+  await Store.open();
+  settings = Object.assign(settings, await Store.get('settings') || {});
+  profiles = await Store.get('profiles') || [];
+  lessons = await Store.get('lessons') || [];
+  await loadCurricula();
+  renderPicker();
+  const last = await Store.get('lastProfile');
+  if (last && profiles.some(p => p.id === last)) selectProfile(last);
+}
+const EMOJIS = ['👨', '👩', '👦', '👧', '🧑', '👴', '👵', '🐼', '🐯', '🐉', '🌸', '🍵'];
+let editingProfile = null, pfEmoji = EMOJIS[0], pfGoals = [];
+function renderPicker() {
+  $('#plist').innerHTML = profiles.map(p => `<div class="pcard" data-pid="${p.id}" role="button" tabindex="0"><div class="av">${esc(p.emoji)}</div><b>${esc(p.name)}</b><small>HSK ${p.level}</small><button class="icon pedit" data-edit="${p.id}" aria-label="Sửa ${esc(p.name)}">✎</button></div>`).join('')
+    + `<button class="pcard add" id="addProfile">＋ Thêm người học</button>`;
+}
+$('#plist').onkeydown = e => { if (e.key === 'Enter' && e.target.dataset.pid) selectProfile(e.target.dataset.pid); };
+$('#plist').onclick = e => {
+  if (e.target.closest('#addProfile')) return openProfileForm(null);
+  const ed = e.target.closest('[data-edit]'); if (ed) return openProfileForm(profiles.find(p => p.id === ed.dataset.edit));
+  const c = e.target.closest('[data-pid]'); if (c) selectProfile(c.dataset.pid);
+};
+function openProfileForm(p) {
+  editingProfile = p; pfEmoji = p ? p.emoji : EMOJIS[profiles.length % EMOJIS.length]; pfGoals = p ? [...arr(p.goals)] : ['life'];
+  $('#pfTitle').textContent = p ? 'Sửa hồ sơ' : 'Thêm người học';
+  $('#pfName').value = p ? p.name : ''; $('#pfLevel').value = p ? p.level : 1; $('#pfKey').value = p ? (p.key || '') : ''; $('#pfSource').value = p ? (p.source || 'smart') : 'smart';
+  $('#pfDel').hidden = !p; renderEmo(); renderGoals(); openModal('profile');
+}
+function renderEmo() { $('#pfEmo').innerHTML = EMOJIS.map(e => `<button class="${e === pfEmoji ? 'on' : ''}" data-e="${e}">${e}</button>`).join(''); }
+function renderGoals() { $('#pfGoals').innerHTML = GOALS.map(g => `<button class="chip${pfGoals.includes(g[0]) ? ' on' : ''}" data-g="${g[0]}">${g[1]}</button>`).join(''); }
+$('#pfEmo').onclick = e => { const b = e.target.closest('[data-e]'); if (b) { pfEmoji = b.dataset.e; renderEmo(); } };
+$('#pfGoals').onclick = e => { const b = e.target.closest('[data-g]'); if (!b) return; const g = b.dataset.g; pfGoals = pfGoals.includes(g) ? pfGoals.filter(x => x !== g) : [...pfGoals, g]; renderGoals(); };
+$('#pfSave').onclick = async () => {
+  const name = $('#pfName').value.trim(); if (!name) { toast('Nhập tên người học'); return; }
+  const meta = { name, emoji: pfEmoji, level: +$('#pfLevel').value, key: $('#pfKey').value.trim(), goals: pfGoals, source: $('#pfSource').value };
+  if (editingProfile) Object.assign(editingProfile, meta); else { const p = { id: uid(), ...meta }; profiles.push(p); await Store.set('p:' + p.id, newData()); }
+  await Store.set('profiles', profiles); closeModal('profile'); renderPicker();
+  if (P && editingProfile && editingProfile.id === P.id) { P = editingProfile; renderWho(); go(curView === 'lesson' ? 'home' : curView); }
+};
+$('#pfDel').onclick = async () => {
+  if (!editingProfile || !confirm('Xóa ' + editingProfile.name + ' và toàn bộ tiến độ học của người này?')) return;
+  profiles = profiles.filter(p => p.id !== editingProfile.id); await Store.del('p:' + editingProfile.id); await Store.set('profiles', profiles);
+  closeModal('profile'); if (P && P.id === editingProfile.id) switchProfile(); renderPicker();
+};
+async function selectProfile(id) {
+  P = profiles.find(p => p.id === id); D = Object.assign(newData(), await Store.get('p:' + id) || {});
+  if (!D.current && D.activeLesson) D.current = D.activeLesson;
+  if (!P.goals) P.goals = ['life'];
+  pathTab = 'smart'; talk = null;
+  await Store.set('lastProfile', id);
+  $('#picker').hidden = true; $('#main').hidden = false; $('#nav').hidden = false;
+  renderWho(); go('home');
+  if (!apiKey()) setTimeout(() => toast('Vào Tôi → Cài đặt để dán Gemini API key trước khi học', 4500), 400);
+}
+function switchProfile() { Rec.cancel(); P = null; D = null; Store.set('lastProfile', null); $('#main').hidden = true; $('#nav').hidden = true; $('#fab').hidden = true; $('#picker').hidden = false; renderPicker(); window.scrollTo(0, 0); }
+function renderWho() { $('#whoAv').textContent = P.emoji; $('#whoName').textContent = P.name; }
+$('#whoBtn').onclick = switchProfile;
+
+/* =============== settings & backup =============== */
+function fillSettings() { $('#sKey').value = settings.apiKey || ''; $('#sModel').value = settings.model || ''; $('#sAudio').value = settings.audioModel || ''; $('#sMsg').textContent = ''; $('#sUse').textContent = 'Hôm nay máy này đã gọi Gemini ' + usedToday() + ' lượt.'; }
+function openSettingsForKey() { fillSettings(); openModal('settings'); $('#sMsg').textContent = 'Lấy key miễn phí tại aistudio.google.com → Get API key, rồi dán vào ô trên.'; }
+$('#sSave').onclick = async () => { settings.apiKey = $('#sKey').value.trim(); settings.model = $('#sModel').value.trim(); settings.audioModel = $('#sAudio').value.trim(); await Store.set('settings', settings); closeModal('settings'); toast('Đã lưu cài đặt'); };
+$('#sTest').onclick = async () => {
+  const k = $('#sKey').value.trim(); const old = settings.model; settings.model = $('#sModel').value.trim();
+  $('#sMsg').innerHTML = spinner('Đang kiểm tra…');
+  try { const r = await gemini({ key: k, json: false, parts: [{ text: 'Reply with exactly: 好' }] }); $('#sMsg').innerHTML = '<span style="color:var(--jade)">Key dùng được. Gemini trả lời: ' + esc(r.trim()) + '</span>'; }
+  catch (e) { $('#sMsg').innerHTML = '<span class="err">' + esc(e.message) + '</span>'; }
+  settings.model = old;
+};
+$('#bExport').onclick = async () => {
+  const all = { app: 'hanngu', v: 2, at: Date.now(), profiles: profiles.map(p => ({ ...p, key: '' })), lessons, data: {} };
+  for (const p of profiles) all.data[p.id] = await Store.get('p:' + p.id);
+  const blob = new Blob([JSON.stringify(all)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'hoc-han-ngu-' + new Date().toISOString().slice(0, 10) + '.json'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+$('#bImport').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const all = JSON.parse(await f.text()); if (all.app !== 'hanngu') throw new Error('File không đúng định dạng của app.');
+    const nL = arr(all.lessons).length, nP = arr(all.profiles).length;
+    if (!confirm(`Nhập ${nL} bài học${nP ? ' và dữ liệu của ' + nP + ' người học' : ''}? Người trùng tên sẽ được gộp, tiến độ trong file thay tiến độ hiện có của người đó.`)) return;
+    for (const l of arr(all.lessons)) { const i = lessons.findIndex(x => x.id === l.id); if (i >= 0) lessons[i] = l; else lessons.push(l); }
+    for (const p of arr(all.profiles)) {
+      const ex = profiles.find(x => x.id === p.id || x.name === p.name);
+      const target = ex || { ...p }; if (!ex) profiles.push(target);
+      if (all.data && all.data[p.id]) await Store.set('p:' + target.id, all.data[p.id]);
+    }
+    await Store.set('lessons', lessons); await Store.set('profiles', profiles);
+    toast('Đã nhập dữ liệu'); closeModal('settings'); if (P) selectProfile(P.id); else renderPicker();
+  } catch (err) { toast(err.message || 'Không đọc được file'); }
+  e.target.value = '';
+};
+
+/* =============== navigation =============== */
+let curView = 'home';
+$('#nav').onclick = e => { const b = e.target.closest('button'); if (b) go(b.dataset.v); };
+function go(v) {
+  if (Rec.recording) Rec.cancel();
+  curView = v;
+  $$('#nav button').forEach(x => x.classList.toggle('on', x.dataset.v === v || (v === 'lesson' && x.dataset.v === 'path')));
+  $$('.view').forEach(x => x.classList.toggle('on', x.id === 'v-' + v)); window.scrollTo(0, 0);
+  $('#fab').hidden = !P || v === 'lesson';
+  const due = dueCards().length; $('#revBadge').hidden = !due; $('#revBadge').textContent = due > 99 ? '99+' : due;
+  const r = { home: renderHome, path: renderPath, practice: renderPractice, rev: renderReview, me: renderMe }[v]; if (r) r();
+}
+
+/* =============== HOME: daily plan =============== */
+function streakDays() {
+  const days = new Set(D.history.map(x => dayKey(x.at))); let s = 0;
+  for (let d = 0; d < 400; d++) { if (days.has(dayKey(Date.now() - d * DAY))) s++; else if (d > 0) break; }
+  return s;
+}
+function weakChars(n = 6) {
+  const m = {}; D.history.filter(x => x.type === 'speak').slice(-80).forEach(x => arr(x.bad).forEach(c => m[c] = (m[c] || 0) + 1));
+  D.cards.filter(c => c.kind === 'e' && c.sub === 'pron' && hanCount(c.f) <= 2).forEach(c => m[c.f] = (m[c.f] || 0) + (c.lapses || 1));
+  return Object.entries(m).sort((a, b) => b[1] - a[1]).slice(0, n).map(x => x[0]);
+}
+function renderHome() {
+  const due = dueCards().length, nu = nextUnit(), weak = weakChars(4);
+  const revToday = todayHist('rev').length, stepsToday = todayHist('step').length, speakToday = todayHist('speak').length, talkToday = todayHist('talk').length;
+  const tasks = [];
+  if (nu) { const done = stepCount(nu.key); tasks.push({ id: 'lesson', main: true, ic: '书', title: done ? 'Học tiếp: ' + nu.t : 'Bài tiếp theo: ' + nu.t, sub: `${nu.kind === 'track' ? TRACKS[nu.track].name + ' · ' : ''}HSK ${nu.lv}`, bar: done / 6, ok: stepsToday >= 2 }); }
+  else tasks.push({ id: 'path', ic: '书', title: 'Chọn bài để học', sub: 'Mở Lộ trình để chọn bài hoặc nhập giáo trình', ok: false });
+  tasks.push({ id: 'rev', ic: '复', cls: due ? 'red' : '', title: due ? `Ôn ${due} thẻ đến hạn` : 'Ôn tập', sub: due ? 'Lỗi sai được đưa lên trước' : 'Không có thẻ đến hạn', ok: due === 0 || revToday >= 15 });
+  if (weak.length) tasks.push({ id: 'weak', ic: '音', cls: 'gold', title: 'Sửa chữ hay đọc sai', sub: weak.join(' ') + ' · đọc lại có chấm điểm', ok: speakToday >= 5 });
+  tasks.push({ id: 'talk', ic: '话', title: 'Hội thoại 5 phút', sub: currentLesson() ? 'Theo bài: ' + currentLesson().title : 'Chọn tình huống, nói với AI', ok: talkToday > 0 });
+  tasks.push({ id: 'chat', ic: '微', title: 'Học từ đoạn chat WeChat', sub: 'Dán tin nhắn thật, học đọc, viết, gõ', ok: false, extra: true });
+  const core = tasks.filter(t => !t.extra), done = core.filter(t => t.ok).length, pct = core.length ? done / core.length : 0;
+  const C = 2 * Math.PI * 32;
+  $('#v-home').innerHTML = `<div class="hello"><div class="ring"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="32" fill="none" stroke="var(--line)" stroke-width="7"/><circle cx="38" cy="38" r="32" fill="none" stroke="var(--jade)" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct)}"/></svg><b>${done}/${core.length}</b></div>
+    <div><h1>Chào ${esc(P.name)}</h1><div class="small muted">${streakDays() ? '🔥 ' + streakDays() + ' ngày liên tiếp' : 'Bắt đầu chuỗi ngày học hôm nay'} · HSK ${P.level}</div></div></div>
+    <p class="sub">Việc nên làm hôm nay, khoảng 20 phút. Bấm vào từng mục để bắt đầu.</p>
+    ${tasks.map(t => `<button class="task${t.main ? ' main' : ''}${t.ok ? ' done' : ''}" data-task="${t.id}"><span class="ic ${t.cls || ''}">${t.ic}</span><span class="tx"><b>${esc(t.title)}</b><small>${esc(t.sub)}</small>${t.bar != null ? `<span class="bar"><i style="width:${Math.round(t.bar * 100)}%"></i></span>` : ''}</span><span class="go">${t.ok ? '✓' : '›'}</span></button>`).join('')}
+    ${!apiKey() ? '<div class="infobox">Chưa có API key. Vào <b>Tôi → Cài đặt</b> để dán key, nếu không các phần chấm điểm và soạn bài sẽ chưa chạy.</div>' : ''}`;
+  $('#v-home').onclick = e => {
+    const t = e.target.closest('[data-task]'); if (!t) return;
+    const id = t.dataset.task;
+    if (id === 'lesson') openLesson(nextUnit().key);
+    else if (id === 'path') go('path');
+    else if (id === 'rev') go('rev');
+    else if (id === 'weak') { go('practice'); openPractice('read', weakItems()); }
+    else if (id === 'talk') { go('practice'); openPractice('talk'); }
+    else if (id === 'chat') openPaste();
+  };
+}
+function weakItems() {
+  const items = [];
+  weakChars(6).forEach(c => {
+    let s = null; for (const l of lessons) { s = [...arr(l.sentences), ...arr(l.vocab)].find(x => x.hz && x.hz.includes(c) && hanCount(x.hz) <= 10); if (s) break; }
+    const card = D.cards.find(x => x.f === c);
+    items.push(s || { hz: c, py: card ? card.py : '', vi: card ? card.vi : '' });
+  });
+  return items.filter((x, i, a) => a.findIndex(y => y.hz === x.hz) === i);
+}
+
+/* =============== PATH =============== */
+let pathTab = 'smart';
+function renderPath() {
+  const box = $('#v-path'); const nu = nextUnit();
+  const seg = `<div class="seg" id="pathSeg"><button data-t="smart" class="${pathTab === 'smart' ? 'on' : ''}">Lộ trình</button><button data-t="book" class="${pathTab === 'book' ? 'on' : ''}">Giáo trình PDF</button><button data-t="chat" class="${pathTab === 'chat' ? 'on' : ''}">Từ chat</button></div>`;
+  const row = (key, title, sub, tagHtml) => {
+    const s = D.lp[key], n = stepCount(key), done = s && s.done;
+    return `<button class="unit${done ? ' done' : n ? ' part' : ''}${nu && nu.key === key ? ' next' : ''}" data-key="${esc(key)}"><span class="st">${done ? '✓' : n ? n + '/6' : '○'}</span><span class="tx"><b>${tagHtml || ''}${esc(title)}</b><small>${esc(sub)}</small></span><span class="muted">›</span></button>`;
+  };
+  let html = `<h1>Lộ trình</h1>`;
+  if (pathTab === 'smart') {
+    const path = buildPath(); const goalNames = arr(P.goals).map(g => (GOALS.find(x => x[0] === g) || [])[1]).filter(Boolean).join(', ');
+    html += `<p class="sub">Bài được soạn theo trình độ và mục tiêu của ${esc(P.name)}: <b>${esc(goalNames || 'Giao tiếp đời sống')}</b>. Có thể học bất kỳ bài nào, không cần theo thứ tự. <button class="btn ghost sm" id="editGoals">Đổi mục tiêu</button></p>` + seg;
+    for (let lv = 1; lv <= 4; lv++) {
+      const us = path.filter(u => u.lv === lv), dn = us.filter(u => D.lp[u.key] && D.lp[u.key].done).length;
+      html += `<details class="lv"${lv === (nu ? nu.lv : P.level) ? ' open' : ''}><summary>HSK ${lv} <span class="muted small" style="font-weight:400;margin-left:auto;margin-right:8px">${dn}/${us.length} bài</span></summary>
+        ${us.map(u => row(u.key, u.t, (u.kind === 'track' ? '' : u.gram.split(';')[0]) + (lessonByKey(u.key) ? '' : ' · chưa soạn'), u.kind === 'track' ? `<span class="tag tr">${esc(TRACKS[u.track].name)}</span>` : '')).join('')}</details>`;
+    }
+  } else if (pathTab === 'book') {
+    const bl = lessons.filter(l => l.kind !== 'chat' && !l.unitKey).sort(bookSort);
+    html += seg + `<button class="btn pri full" id="lImport" style="margin-bottom:12px">＋ Nhập bài từ PDF</button>`;
+    html += bl.length ? [1, 2, 3, 4, 0].map(lv => { const g = bl.filter(l => (l.level || 0) === lv); return g.length ? `<h3>${lv ? 'HSK ' + lv : 'Khác'}</h3>` + g.map(l => row(l.id, l.title, `${l.source && l.curriculum ? l.source + ' · ' : ''}${arr(l.vocab).length} từ · ${arr(l.exercises).length} bài tập`)).join('') : ''; }).join('')
+      : `<div class="empty">Chưa có bài nào từ sách.<br>Nhập trang PDF của từng bài, hoặc nhập file giáo trình Claude soạn sẵn trong Tôi → Cài đặt → Nhập file.</div>`;
+  } else {
+    const cl = lessons.filter(l => l.kind === 'chat').sort((a, b) => b.createdAt - a.createdAt);
+    html += seg + `<button class="btn pri full" id="lPaste" style="margin-bottom:12px">📋 Dán đoạn chat mới</button>`;
+    html += cl.length ? cl.map(l => row(l.id, l.title, `${arr(l.sentences).length} câu · ${new Date(l.createdAt).toLocaleDateString('vi-VN')}`)).join('') : `<div class="empty">Chưa có đoạn chat nào.<br>Sao chép tin nhắn trong WeChat rồi dán vào đây để học.</div>`;
+  }
+  box.innerHTML = html;
+  box.onclick = e => {
+    const s = e.target.closest('#pathSeg button'); if (s) { pathTab = s.dataset.t; renderPath(); return; }
+    if (e.target.closest('#editGoals')) return openProfileForm(P);
+    if (e.target.closest('#lImport')) return openImport();
+    if (e.target.closest('#lPaste')) return openPaste();
+    const u = e.target.closest('[data-key]'); if (u) openLesson(u.dataset.key);
+  };
+}
+
+/* =============== LESSON generation =============== */
+async function generateUnit(u) {
+  const goals = arr(P.goals).map(g => (GOALS.find(x => x[0] === g) || [])[1]).filter(Boolean).join(', ');
+  const hsk = arr(P.goals).includes('hsk');
+  const res = await gemini({ temperature: 0.7,
+    system: 'You are an expert Mandarin curriculum writer for Vietnamese adult learners. You write ORIGINAL lesson content (never copied from textbooks). Explanations in Vietnamese. Output JSON only.',
+    parts: [{ text:
+`Write one lesson. Level: HSK ${u.lv}. Unit title: "${u.t}". Topic and communicative goal: ${u.topic}. ${u.gram ? 'Grammar focus: ' + u.gram + '.' : 'Choose 2-3 grammar points suitable for HSK ' + u.lv + '.'}
+Learner interests: ${goals || 'everyday life'}. Use situations related to these interests when natural.
+Keep all language at or below HSK ${u.lv}, except the new words you list.
+Return JSON:
+{"title":"Vietnamese title (may include short Chinese)","intro_vi":"1-2 sentences: after this lesson the learner can …",
+ "vocab":[10-14 new words {"hz","py","vi"}],
+ "grammar":[{"pattern","vi":"clear Vietnamese explanation, 1-3 sentences","example_hz","example_py","example_vi"}],
+ "sentences":[a natural dialogue of 8-12 lines {"who":"A or B","hz","py","vi"}],
+ "exercises":[8 items: {"type":"mc","q","options":[4 options],"answer":index,"explain_vi"} or {"type":"order","words":[...],"answer":"sentence without punctuation","vi"}; mix meaning, pinyin/tone, fill-in-the-blank (___), measure words/grammar, and 2 ordering items${hsk ? '; style several items like HSK exam questions' : ''}]}
+${PY_RULE}` }] });
+  const l = { id: uid(), kind: 'smart', unitKey: u.key, level: u.lv, title: (res.title || u.t).slice(0, 80), intro_vi: res.intro_vi || '',
+    vocab: arr(res.vocab).filter(v => v.hz), grammar: arr(res.grammar), sentences: arr(res.sentences).filter(s => s.hz), exercises: arr(res.exercises).filter(validEx), createdAt: Date.now() };
+  if (!l.vocab.length || !l.sentences.length) throw new Error('AI soạn bài chưa đầy đủ. Thử lại.');
+  lessons.push(l); await Store.set('lessons', lessons); return l;
+}
+
+/* =============== LESSON flow =============== */
+let flow = null;
+async function openLesson(key) {
+  go('lesson'); const box = $('#v-lesson');
+  let l = lessonByKey(key); const u = l ? null : unitByKey(key);
+  if (!l && !u) { box.innerHTML = '<div class="empty">Không tìm thấy bài này.</div>'; return; }
+  D.current = key; saveD();
+  if (!l) {
+    if (!apiKey()) { box.innerHTML = `<div class="empty">Bài “${esc(u.t)}” cần AI soạn nội dung.<br>Hãy dán API key trong Tôi → Cài đặt trước.</div>`; openSettingsForKey(); return; }
+    box.innerHTML = `<button class="btn sm" data-back>‹ Lộ trình</button><div class="card" style="margin-top:12px"><h2>${esc(u.t)}</h2><p class="small muted">HSK ${u.lv}. ${esc(u.topic)}</p>${spinner('AI đang soạn bài riêng cho bạn, khoảng 20–40 giây…')}</div>`;
+    box.querySelector('[data-back]').onclick = () => go('path');
+    try { l = await generateUnit(u); }
+    catch (e) { box.querySelector('.card').insertAdjacentHTML('beforeend', `<p class="err small">${esc(e.message)}</p><button class="btn pri full" id="retryGen">Thử lại</button>`); $('#retryGen').onclick = () => openLesson(key); return; }
+    if (curView !== 'lesson' || D.current !== key) return;
+  }
+  const st = lp(key); const first = STEPS.findIndex(s => !st.steps[s[0]]);
+  flow = { key, l, step: first < 0 ? 0 : first };
+  renderFlow();
+}
+function renderFlow() {
+  const { key, l, step } = flow, st = lp(key), box = $('#v-lesson');
+  box.innerHTML = `<div class="flowhead"><button class="icon" data-back aria-label="Quay lại">‹</button><h2>${esc(l.title)}</h2><button class="icon" data-more aria-label="Thêm">⋯</button></div>
+    <div class="menu lmenu" hidden><button data-lm="ask">💬 <span>Hỏi thầy về bài này</span>›</button><button data-lm="talk">话 <span>Hội thoại với AI theo bài này</span>›</button><button data-lm="reset">↺ <span>Học lại từ đầu (xóa dấu tích)</span>›</button><button data-lm="${l.kind === 'smart' ? 'regen' : 'del'}">${l.kind === 'smart' ? '✦ <span>Soạn lại bài này bằng AI</span>' : '✕ <span>Xóa bài này cho cả nhà</span>'}›</button></div>
+    <div class="stepper">${STEPS.map((s, i) => `<button data-step="${i}" class="${st.steps[s[0]] ? 'ok' : ''}${i === step ? ' cur' : ''}"><span class="d">${st.steps[s[0]] ? '✓' : i + 1}</span>${s[1]}</button>`).join('')}</div>
+    <div id="stepBody"></div>
+    <div class="flowfoot">${step > 0 ? '<button class="btn" data-prev style="flex:0 0 auto;min-width:56px">‹</button>' : ''}<button class="btn pri" data-done>${step < 5 ? 'Xong bước này ›' : 'Hoàn thành bài ✓'}</button></div>`;
+  box.querySelector('[data-back]').onclick = () => go('path');
+  box.querySelector('[data-more]').onclick = () => { const m = box.querySelector('.lmenu'); m.hidden = !m.hidden; };
+  box.querySelector('.lmenu').onclick = e => { const b = e.target.closest('[data-lm]'); if (b) lessonAction(b.dataset.lm); };
+  box.querySelector('.stepper').onclick = e => { const b = e.target.closest('[data-step]'); if (b) { flow.step = +b.dataset.step; renderFlow(); window.scrollTo(0, 0); } };
+  const pv = box.querySelector('[data-prev]'); if (pv) pv.onclick = () => { flow.step--; renderFlow(); window.scrollTo(0, 0); };
+  box.querySelector('[data-done]').onclick = () => completeStep();
+  const body = $('#stepBody'), sid = STEPS[step][0];
+  if (sid === 'vocab') mountVocab(body, l);
+  if (sid === 'text') mountText(body, l);
+  if (sid === 'write') mountWriter(body, lessonChars(l));
+  if (sid === 'type') mountTyping(body, typeItems(l));
+  if (sid === 'speak') mountReadAlong(body, speakItems(l));
+  if (sid === 'ex') mountExStep(body, l);
+}
+function completeStep() {
+  const { key, l } = flow, st = lp(key), sid = STEPS[flow.step][0];
+  if (!st.steps[sid]) { st.steps[sid] = true; logActivity('step', { lesson: key, step: sid }); }
+  if (sid === 'vocab') { let n = 0; arr(l.vocab).forEach(v => n += addCard({ f: v.hz, py: v.py, vi: v.vi, kind: 'n' }) ? 1 : 0); if (n) toast(`Đã thêm ${n} từ vào Ôn tập`); }
+  if (STEPS.every(s => st.steps[s[0]])) { if (!st.done) { st.done = true; st.at = Date.now(); saveD(); return celebrate(); } }
+  saveD();
+  if (flow.step < 5) { flow.step++; renderFlow(); window.scrollTo(0, 0); }
+  else { const nx = STEPS.findIndex(s => !st.steps[s[0]]); if (nx >= 0) { flow.step = nx; renderFlow(); toast('Còn bước “' + STEPS[nx][1] + '” chưa làm'); } else celebrate(); }
+}
+function celebrate() {
+  const nu = nextUnit();
+  $('#v-lesson').innerHTML = `<div class="card celebrate"><div class="big">好!</div><h2>Xong bài “${esc(flow.l.title)}”</h2><p class="muted">Từ mới và lỗi sai của bài đã vào Ôn tập. Ôn đều mỗi ngày để nhớ lâu.</p>
+    <div class="btnrow" style="flex-direction:column">${nu ? `<button class="btn pri" id="cNext">Bài tiếp theo: ${esc(nu.t)}</button>` : ''}<button class="btn" id="cTalk">Hội thoại theo bài này</button><button class="btn" id="cHome">Về Hôm nay</button></div></div>`;
+  if (nu) $('#cNext').onclick = () => openLesson(nu.key);
+  $('#cTalk').onclick = () => { go('practice'); openPractice('talk'); };
+  $('#cHome').onclick = () => go('home');
+}
+function lessonAction(k) {
+  const { key, l } = flow;
+  if (k === 'talk') { go('practice'); openPractice('talk'); }
+  if (k === 'ask') { openModal('chat'); renderChat(); }
+  if (k === 'reset') { D.lp[key] = { steps: {}, done: false }; saveD(); flow.step = 0; renderFlow(); }
+  if (k === 'regen' || k === 'del') {
+    if (!confirm(k === 'regen' ? 'Soạn lại nội dung bài này? Nội dung cũ sẽ bị thay.' : 'Xóa bài “' + l.title + '” cho cả nhà?')) return;
+    lessons = lessons.filter(x => x.id !== l.id); Store.set('lessons', lessons);
+    if (k === 'regen') openLesson(key); else go('path');
+  }
+}
+const lessonChars = l => [...new Set(arr(l.vocab).flatMap(v => [...v.hz].filter(isHan)))].slice(0, 10);
+const typeItems = l => [...arr(l.sentences), ...arr(l.replies)].filter(s => hanCount(s.hz) >= 2 && hanCount(s.hz) <= 16).slice(0, 6);
+const speakItems = l => { const s = [...arr(l.sentences), ...arr(l.replies)]; return s.length ? s.slice(0, 12) : arr(l.vocab); };
+
+/* ---- step: vocabulary ---- */
+function mountVocab(box, l) {
+  box.innerHTML = `${l.intro_vi ? `<div class="goodbox">${esc(l.intro_vi)}</div>` : ''}${l.summary_vi ? `<div class="goodbox">${esc(l.summary_vi)}</div>` : ''}
+    <div class="card"><div class="row" style="align-items:center;margin-bottom:4px"><b>Từ mới (${arr(l.vocab).length})</b><button class="btn sm" data-all>▶ Nghe tất cả</button></div>
+    <p class="small muted" style="margin:0 0 6px">Nghe từng từ, đọc theo. Bấm ✎ để xem cách viết.</p>
+    ${arr(l.vocab).map((v, i) => `<div class="vrow"><div class="h">${esc(v.hz)}</div><div class="m">${colorPy(v.py)}<br><span class="muted">${esc(v.vi)}</span></div><div class="acts"><button class="play" data-say="${esc(v.hz)}" aria-label="Nghe">${playIcon}</button><button class="play" data-w="${i}" aria-label="Viết">✎</button></div></div>`).join('') || '<p class="muted small">Bài này không có từ mới.</p>'}</div>`;
+  box.onclick = async e => {
+    const w = e.target.closest('[data-w]'); if (w) openWriter(l.vocab[+w.dataset.w].hz);
+    if (e.target.closest('[data-all]')) { for (const v of arr(l.vocab)) { say(v.hz, 0.75); await wait(600 + hanCount(v.hz) * 450); if (curView !== 'lesson') break; } }
+  };
+}
+/* ---- step: text + grammar ---- */
+function mountText(box, l) {
+  const S = arr(l.sentences);
+  box.innerHTML = `<div class="card"><div class="row" style="align-items:center"><b>${l.kind === 'chat' ? 'Các câu trong đoạn chat' : 'Bài khóa'}</b><label class="small muted"><input type="checkbox" id="pyT" checked style="width:auto"> pinyin</label></div>
+    <div id="sents">${S.map((s, i) => `<div class="gram">${s.who ? `<div class="who-l">${esc(s.who)}</div>` : ''}<div class="row"><div>${ruby(s.hz, s.py)}</div><div class="acts"><button class="play" data-say="${esc(s.hz)}">${playIcon}</button></div></div><div class="small muted">${esc(s.vi)}</div>${sentenceDetail(s)}</div>`).join('')}</div></div>
+    ${arr(l.grammar).length ? `<div class="card"><b>Ngữ pháp</b>${l.grammar.map(g => `<div class="gram"><b class="hz" style="font-size:17px">${esc(g.pattern)}</b><div class="small">${esc(g.vi)}</div>${g.example_hz ? `<div style="margin-top:6px" class="row"><div><span class="hz" style="font-size:19px">${esc(g.example_hz)}</span><div class="small">${colorPy(g.example_py)}</div><div class="small muted">${esc(g.example_vi)}</div></div><button class="play" data-say="${esc(g.example_hz)}">${playIcon}</button></div>` : ''}</div>`).join('')}</div>` : ''}
+    ${arr(l.replies).length ? `<div class="card"><b>Câu trả lời gợi ý</b><p class="small muted" style="margin:4px 0 0">Bấm ⧉ để sao chép rồi dán vào WeChat.</p>${l.replies.map(s => `<div class="gram"><div class="row"><div>${ruby(s.hz, s.py)}</div><div class="acts"><button class="play" data-say="${esc(s.hz)}">${playIcon}</button><button class="play" data-copy="${esc(s.hz)}" aria-label="Sao chép">⧉</button></div></div><div class="small muted">${esc(s.vi)}</div></div>`).join('')}</div>` : ''}`;
+  box.querySelector('#pyT').onchange = e => box.querySelector('#sents').classList.toggle('nopy', !e.target.checked);
+  box.onclick = e => { const cp = e.target.closest('[data-copy]'); if (cp) copyText(cp.dataset.copy); };
+}
+function copyText(t) { try { navigator.clipboard.writeText(t).then(() => toast('Đã sao chép. Mở WeChat và dán để gửi.'), () => toast('Không sao chép được')); } catch (e) { toast('Không sao chép được'); } }
+function sentenceDetail(s) {
+  const words = arr(s.words), note = s.note_vi || '', mt = s.machine_note_vi || '';
+  if (!words.length && !note && !mt) return '';
+  return `<details class="small" style="margin-top:6px"><summary style="cursor:pointer;color:var(--jade);font-weight:600">Phân tích câu</summary>
+    ${words.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0">${words.map(w => `<span style="border:1px solid var(--line);border-radius:8px;padding:3px 8px;background:var(--bg)"><span class="hz" style="font-size:17px">${esc(w.hz)}</span> ${colorPy(w.py)}<br><span class="muted">${esc(w.vi)}</span></span>`).join('')}</div>` : ''}
+    ${note ? `<p style="margin:6px 0">${esc(note)}</p>` : ''}${mt ? `<p style="margin:6px 0;color:var(--seal)">Bản dịch máy: ${esc(mt)}</p>` : ''}</details>`;
+}
+
+/* ---- step / tool: handwriting (stroke order) ---- */
+async function mountWriter(box, chars, opts = {}) {
+  if (!chars.length) { box.innerHTML = '<div class="empty">Không có chữ để luyện viết.</div>'; return; }
+  box.innerHTML = spinner('Đang tải bộ viết chữ…');
+  try { await loadScript('https://cdn.jsdelivr.net/npm/hanzi-writer@3.7.2/dist/hanzi-writer.min.js'); } catch (e) { box.innerHTML = `<p class="err">${esc(e.message)}</p>`; return; }
+  const done = new Set(); let idx = 0, writer = null;
+  box.innerHTML = `<div class="card"><p class="small muted" style="margin:0 0 8px;text-align:center">Xem thứ tự nét, rồi tự viết bằng ngón tay. Nét sai sẽ được nhắc lại.</p>
+    <div class="wchars"></div><div class="board"><svg class="grid" viewBox="0 0 100 100" aria-hidden="true"><g stroke="var(--seal)" stroke-opacity=".28" stroke-width=".5" stroke-dasharray="2 2"><line x1="0" y1="0" x2="100" y2="100"/><line x1="100" y1="0" x2="0" y2="100"/><line x1="50" y1="0" x2="50" y2="100"/><line x1="0" y1="50" x2="100" y2="50"/></g></svg><div class="hwbox"></div></div>
+    <p class="small wfeed" style="text-align:center;min-height:22px;margin:0 0 10px"></p>
+    <div class="btnrow"><button class="btn" data-a="anim">▶ Thứ tự nét</button><button class="btn pri" data-a="quiz">✎ Tự viết</button></div></div>`;
+  const q = s => box.querySelector(s), feed = t => q('.wfeed').innerHTML = t;
+  const drawChips = () => q('.wchars').innerHTML = chars.map((c, i) => `<button data-i="${i}" class="${i === idx ? 'on' : ''}${done.has(c) ? ' ok' : ''}">${c}</button>`).join('');
+  const cv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  function show(i) {
+    idx = i; drawChips(); const hb = q('.hwbox'); hb.innerHTML = '';
+    const size = Math.round(hb.getBoundingClientRect().width) || 276;
+    writer = HanziWriter.create(hb, chars[i], { width: size, height: size, padding: 12, showOutline: true, strokeColor: cv('--ink'), outlineColor: cv('--line'), radicalColor: cv('--jade'), drawingColor: cv('--seal'), highlightColor: cv('--jade'), strokeAnimationSpeed: 1.1, delayBetweenStrokes: 250, onLoadCharDataError: () => feed('Chưa có dữ liệu nét cho chữ này.') });
+    feed(`Chữ ${i + 1}/${chars.length}. Bộ thủ tô màu xanh.`);
+  }
+  box.onclick = e => {
+    const c = e.target.closest('[data-i]'); if (c) return show(+c.dataset.i);
+    const a = e.target.closest('[data-a]'); if (!a || !writer) return;
+    if (a.dataset.a === 'anim') { feed('Đang vẽ thứ tự nét…'); writer.showCharacter(); writer.animateCharacter({ onComplete: () => feed('Xong. Bấm “Tự viết” để thử.') }); }
+    else { feed('Viết từng nét theo đúng thứ tự.'); writer.quiz({ onMistake: () => feed('Nét chưa đúng thứ tự hoặc hướng, thử lại.'), onCorrectStroke: d => feed(`Đúng nét ${d.strokeNum + 1}, còn ${d.strokesRemaining} nét.`),
+      onComplete: s => { done.add(chars[idx]); logActivity('write', { item: chars[idx], score: Math.max(0, 100 - s.totalMistakes * 15) });
+        feed(s.totalMistakes ? `Xong, sai ${s.totalMistakes} lần.` : '<b style="color:var(--jade)">Hoàn hảo!</b>');
+        drawChips(); if (idx < chars.length - 1) setTimeout(() => { if (box.isConnected) show(idx + 1); }, 1100); else feed('<b style="color:var(--jade)">Đã viết hết các chữ của bài.</b>'); } }); }
+  };
+  show(0);
+}
+function openWriter(word) { openModal('write'); mountWriter($('#wBox'), [...new Set([...word].filter(isHan))]); }
+
+/* ---- step / tool: typing on phone ---- */
+function lcsMark(target, input) {
+  const a = [...target], b = [...input], n = a.length, m = b.length, dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  let i = 0, j = 0, out = '';
+  while (i < n || j < m) {
+    if (i < n && j < m && a[i] === b[j]) { out += `<span class="ok">${esc(a[i])}</span>`; i++; j++; }
+    else if (j < m && (i >= n || dp[i][j + 1] >= dp[i + 1][j])) { out += `<span class="extra">${esc(b[j])}</span>`; j++; }
+    else { out += `<span class="miss">${esc(a[i])}</span>`; i++; }
+  }
+  return out;
+}
+function mountTyping(box, items) {
+  if (!items.length) { box.innerHTML = '<div class="empty">Không có câu để luyện gõ.</div>'; return; }
+  let idx = 0, showPy = P.level <= 2;
+  function render() {
+    const it = items[idx];
+    box.innerHTML = `<div class="card"><div class="nav2"><span>Câu ${idx + 1}/${items.length}</span><button class="btn sm ghost" data-a="kb">⌨ Cách bật bàn phím Trung</button></div>
+      <div class="tprompt">${esc(it.vi || '')}</div>
+      <div class="small" style="min-height:22px">${showPy ? 'Gợi ý: ' + colorPy(it.py) + ' <span class="muted">(gõ không dấu: ' + esc(cleanPy(it.py).join('').replace(/[üǖǘǚǜ]/g, 'v').normalize('NFD').replace(/[\u0300-\u036f]/g, '')) + ')</span>' : '<button class="btn sm ghost" data-a="py">Hiện gợi ý pinyin</button>'}</div>
+      <input class="tin" lang="zh-CN" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Gõ chữ Hán bằng bàn phím tiếng Trung">
+      <div class="diffbox"></div>
+      <div class="btnrow" style="margin-top:10px"><button class="btn" data-a="show">Xem đáp án</button><button class="btn pri" data-a="check">Kiểm tra</button></div></div>
+      <p class="small muted">Mẹo: gõ cả cụm pinyin liền nhau rồi chọn chữ; ü gõ bằng phím v. Không biết đọc thì chuyển sang bàn phím viết tay.</p>`;
+    const inp = box.querySelector('.tin'); inp.onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); check(); } };
+  }
+  function check() {
+    const it = items[idx], t = hanOnly(it.hz), v = hanOnly(box.querySelector('.tin').value);
+    if (!v) { toast('Gõ câu bằng chữ Hán trước'); return; }
+    const ok = v === t;
+    box.querySelector('.diffbox').innerHTML = `<div class="diff">${lcsMark(t, v)}</div>${ok ? '<div class="goodbox">Chính xác!</div>' : '<div class="issue">Chữ gạch dưới đỏ là chữ còn thiếu hoặc sai, chữ gạch ngang là chữ thừa. Thử gõ lại.</div>'}
+      ${ok ? `<div class="btnrow"><button class="btn sm" data-say="${esc(it.hz)}">▶ Nghe câu</button>${idx < items.length - 1 ? '<button class="btn sm pri" data-a="next">Câu tiếp ›</button>' : '<span class="small muted">Đã gõ hết, bấm “Xong bước này”.</span>'}</div>` : ''}`;
+    logActivity('type', { ok, item: it.hz });
+    if (!ok) [...t].forEach((c, i) => { if (!v.includes(c)) addCard({ f: c, py: cleanPy(it.py)[i] || '', vi: 'Chữ hay gõ sai, trong câu: ' + it.hz, kind: 'e', sub: 'type', ctx: it.hz }); });
+  }
+  box.onclick = e => {
+    const a = e.target.closest('[data-a]'); if (!a) return; const k = a.dataset.a;
+    if (k === 'kb') openModal('kb');
+    if (k === 'py') { showPy = true; const v = box.querySelector('.tin').value; render(); box.querySelector('.tin').value = v; }
+    if (k === 'check') check();
+    if (k === 'show') { const it = items[idx]; box.querySelector('.diffbox').innerHTML = `<div class="infobox"><span class="hz" style="font-size:22px">${esc(it.hz)}</span><br>${colorPy(it.py)}<br><span class="small">Gõ: ${esc(cleanPy(it.py).join(' '))}</span></div>`; }
+    if (k === 'next') { idx++; render(); box.querySelector('.tin').focus(); }
+  };
+  render();
+}
+$('#kbSeg').onclick = e => { const b = e.target.closest('button'); if (!b) return; $$('#kbSeg button').forEach(x => x.classList.toggle('on', x === b)); $('#kb-ios').hidden = b.dataset.k !== 'ios'; $('#kb-and').hidden = b.dataset.k !== 'and'; };
+
+/* ---- step / tool: read aloud with scoring ---- */
+function mountReadAlong(box, items) {
+  if (!items.length) { box.innerHTML = '<div class="empty">Không có câu để luyện đọc.</div>'; return; }
+  let idx = 0;
+  function render() {
+    const it = items[idx], last = D.history.filter(h => h.type === 'speak' && h.item === it.hz).slice(-1)[0];
+    box.innerHTML = `<div class="card"><div class="nav2"><button class="btn sm" data-a="prev" ${idx ? '' : 'disabled'}>‹ Trước</button><span>Câu ${idx + 1}/${items.length}</span><button class="btn sm" data-a="next" ${idx < items.length - 1 ? '' : 'disabled'}>Sau ›</button></div>
+      <div class="target big">${ruby(it.hz, it.py)}</div><div class="vi-c">${esc(it.vi || '')}</div>
+      <div class="btnrow"><button class="btn" data-a="listen">▶ Nghe mẫu</button><button class="btn pri" data-a="rec">● Bấm để đọc</button></div>
+      <div class="timer">${last ? `<span class="muted">Lần trước: ${last.score} điểm</span>` : ''}</div><div class="res"></div></div>`;
+  }
+  box.onclick = async e => {
+    const a = e.target.closest('[data-a]'); if (!a) return; const k = a.dataset.a, it = items[idx];
+    if (k === 'prev' && !Rec.recording) { idx--; render(); }
+    if (k === 'next' && !Rec.recording) { idx++; render(); }
+    if (k === 'listen') say(it.hz);
+    if (k === 'slow') say(it.hz, 0.6);
+    if (k === 'mine' && box._audio) { box._audio.currentTime = 0; box._audio.play(); }
+    if (k !== 'rec') return;
+    const btn = a, timer = box.querySelector('.timer'), res = box.querySelector('.res');
+    if (!Rec.recording) {
+      if (!apiKey()) { openSettingsForKey(); return; }
+      try { speechSynthesis && speechSynthesis.cancel(); Rec.autoStop = () => btn.click();
+        await Rec.start(ms => timer.textContent = 'Đang ghi âm ' + (ms / 1000).toFixed(1) + 's. Đọc xong bấm “Dừng và chấm”.');
+        btn.classList.add('rec'); btn.textContent = '■ Dừng và chấm'; res.innerHTML = '';
+      } catch (err) { toast(err.message, 5000); }
+      return;
+    }
+    btn.classList.remove('rec'); btn.textContent = '● Bấm để đọc'; btn.disabled = true;
+    const rec = await Rec.stop(); timer.textContent = '';
+    try {
+      if (!rec || rec.ms < 600) throw new Error('Bản ghi quá ngắn. Bấm một lần để bắt đầu, đọc hết câu, rồi mới bấm dừng.');
+      res.innerHTML = spinner('Gemini đang nghe và chấm từng chữ…');
+      const audio = await toWavBase64(rec.blob);
+      if (audio.peak < 0.01) throw new Error('Không nghe thấy tiếng. Kiểm tra micro hoặc nói to hơn.');
+      const r = await scorePronunciation(it, audio);
+      box._audio = new Audio(URL.createObjectURL(rec.blob));
+      res.innerHTML = scoreHtml(it, r, idx < items.length - 1);
+    } catch (err) { res.innerHTML = '<p class="err small" style="margin-top:12px">' + esc(err.message) + '</p>'; }
+    btn.disabled = false;
+  };
+  render();
+}
+async function scorePronunciation(it, audio) {
+  const chars = [...it.hz].filter(isHan);
+  return gemini({ temperature: 0.1,
+    system: 'You are a meticulous Mandarin pronunciation examiner for Vietnamese learners. You judge only what is actually audible in the recording. You never assume the learner said the target correctly. Explanations are in Vietnamese, short and practical.',
+    parts: [{ inline_data: { mime_type: audio.mime, data: audio.data } }, { text:
+`The learner (level HSK ${P.level}) tried to read aloud this target: "${it.hz}" (pinyin: ${it.py || 'unknown'}).
+Listen carefully and compare syllable by syllable. Typical Vietnamese learner errors: zh/z, ch/c, sh/s, r, j/q/x, ü vs u, -n vs -ng, tone 2 vs tone 3, tone 3 too short, tone 4 not falling enough, neutral tone too strong.
+Return JSON:
+{"audio_ok": true/false (false if silence, noise, or clearly not Chinese),
+ "heard_text": "Chinese characters you actually heard",
+ "score": 0-100 overall (accuracy of initials, finals and tones; 90+ only if near-native),
+ "chars": [ one object for EACH of these ${chars.length} target characters in order: ${chars.join(' ')}
+   {"hz":"target character","target_py":"correct pinyin with tone mark (apply tone sandhi as actually spoken)","heard_py":"pinyin of what learner actually said, or \\"\\" if skipped","ok":true/false,"issue":"none|tone|initial|final|missing","tip":"Vietnamese tip if not ok, otherwise \\"\\""} ],
+ "summary": "1-2 Vietnamese sentences: overall feedback and the single most important thing to fix"}
+Be strict but fair: mark ok=false only for errors you can actually hear.` }] });
+}
+const labelIssue = i => ({ tone: 'Sai thanh điệu', initial: 'Sai âm đầu', final: 'Sai vần', missing: 'Bỏ sót chữ' }[i] || 'Cần luyện lại');
+function scoreHtml(it, res, hasNext) {
+  if (res.audio_ok === false) return '<p class="err small" style="margin-top:12px">Gemini không nghe rõ tiếng Trung trong bản ghi. Đọc to, rõ và gần micro hơn rồi thử lại.</p>';
+  const chars = arr(res.chars), score = Math.max(0, Math.min(100, Math.round(+res.score || 0))), bad = chars.filter(c => c.ok === false);
+  const col = score >= 85 ? 'var(--jade)' : score >= 65 ? 'var(--gold)' : 'var(--seal)';
+  logActivity('speak', { score, item: it.hz, lesson: D.current, bad: bad.map(c => c.hz) });
+  bad.forEach(c => addCard({ f: c.hz, py: c.target_py, vi: (c.tip || labelIssue(c.issue)) + (c.heard_py ? ' (bạn đọc: ' + c.heard_py + ')' : ''), kind: 'e', sub: 'pron', ctx: it.hz }));
+  return `<div class="score"><b style="color:${col}">${score}</b><span>/ 100 điểm</span></div>
+    <div class="chars">${chars.map(c => `<div class="ch${c.ok === false ? ' bad' : ''}"><span class="h">${esc(c.hz)}</span><small class="c${toneOf(c.target_py)}">${esc(c.target_py)}</small>${c.ok === false ? `<small class="heard">${c.heard_py ? 'bạn: ' + esc(c.heard_py) : 'bỏ sót'}</small>` : ''}</div>`).join('')}</div>
+    ${bad.map(c => `<div class="issue"><b class="hz">${esc(c.hz)}</b> ${esc(c.target_py)}: ${esc(c.tip || labelIssue(c.issue))}</div>`).join('') || '<div class="goodbox">Không phát hiện lỗi rõ ràng. Rất tốt!</div>'}
+    ${res.summary ? `<p class="small">${esc(res.summary)}</p>` : ''}${res.heard_text ? `<p class="small muted">Gemini nghe được: <span class="hz">${esc(res.heard_text)}</span></p>` : ''}
+    <div class="btnrow"><button class="btn sm" data-a="mine">▶ Giọng bạn</button><button class="btn sm" data-a="slow">▶ Mẫu chậm</button>${hasNext ? '<button class="btn sm pri" data-a="next">Câu tiếp ›</button>' : ''}</div>`;
+}
+
+/* ---- step / tool: exercises ---- */
+function validEx(x) {
+  if (!x || typeof x !== 'object') return false;
+  if (x.type === 'mc') return x.q && Array.isArray(x.options) && x.options.length >= 2 && Number.isInteger(+x.answer) && +x.answer >= 0 && +x.answer < x.options.length;
+  if (x.type === 'order') return Array.isArray(x.words) && x.words.length >= 2 && typeof x.answer === 'string';
+  return false;
+}
+function shuffle(a) { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function mountExStep(box, l) {
+  const n = arr(l.exercises).length;
+  box.innerHTML = `<div class="card"><b>Bài tập</b><p class="small muted">${n ? n + ' câu có sẵn trong bài.' : 'Bài này chưa có bài tập.'} AI có thể soạn thêm, tập trung vào lỗi bạn hay mắc.</p>
+    <div class="btnrow" style="flex-direction:column">${n ? '<button class="btn pri" data-a="book">Làm bài tập của bài</button>' : ''}<button class="btn${n ? '' : ' pri'}" data-a="ai">AI soạn thêm 10 câu</button></div><div class="msg2"></div></div>`;
+  box.onclick = async e => {
+    const a = e.target.closest('[data-a]'); if (!a) return;
+    if (a.dataset.a === 'book') return runExercises(box, shuffle(l.exercises).slice(0, 12), () => mountExStep(box, l));
+    box.querySelector('.msg2').innerHTML = spinner('AI đang soạn bài tập…');
+    try { runExercises(box, await genExercises(l, false), () => mountExStep(box, l)); } catch (err) { box.querySelector('.msg2').innerHTML = `<p class="err small">${esc(err.message)}</p>`; }
+  };
+}
+async function genExercises(l, fromMistakes) {
+  if (!apiKey()) { openSettingsForKey(); throw new Error('Chưa có API key.'); }
+  const mistakes = D.cards.filter(c => c.kind === 'e').slice(-25).map(c => (c.fix ? c.f + ' → ' + c.fix : c.f) + ': ' + c.vi);
+  if (fromMistakes && !mistakes.length) throw new Error('Chưa có lỗi sai nào được ghi lại. Học và luyện nói trước nhé.');
+  const r = await gemini({ temperature: 0.8,
+    system: 'You write auto-graded Chinese exercises for Vietnamese learners. Instructions in Vietnamese, content in Chinese. Output JSON only.',
+    parts: [{ text:
+`Learner level: HSK ${P.level}.${l ? ' Lesson: "' + l.title + '". Vocabulary: ' + arr(l.vocab).map(v => v.hz + '(' + v.vi + ')').join(', ').slice(0, 2500) + '. Grammar: ' + arr(l.grammar).map(g => g.pattern).join('; ').slice(0, 800) + '.' : ''}
+${fromMistakes ? 'Focus on these past mistakes of the learner:\n' + mistakes.join('\n') : ''}
+Create 10 varied exercises as {"items":[...]} mixing:
+- {"type":"mc","q":"...","options":["","","",""],"answer":index,"explain_vi":"..."}: meaning ↔ characters, correct pinyin/tone, fill in the blank (___), measure word or grammar form;
+- {"type":"order","words":["shuffled","words"],"answer":"correct sentence without punctuation","vi":"Vietnamese meaning"} (3 of these).
+Plausible distractors, exactly one correct option.` }] });
+  const items = arr(r.items).filter(validEx); if (!items.length) throw new Error('AI chưa tạo được bài tập hợp lệ. Thử lại.'); return items;
+}
+const normS = s => hanOnly(s) || String(s).replace(/\s|[，。！？,.!?]/g, '');
+function fmtQ(s) { return esc(s).replace(/([\p{Script=Han}，。？！、]+)/gu, '<span class="hz">$1</span>'); }
+function runExercises(box, items, onBack) {
+  const ex = { items: items.map(x => ({ ...x, _done: false, _pick: [] })), i: 0, right: 0, wrong: 0 };
+  function renderQ() {
+    const q = ex.items[ex.i];
+    if (!q) { const n = Math.max(1, ex.i), score = Math.round(100 * ex.right / n); logActivity('ex', { score, lesson: D.current, n });
+      box.innerHTML = `<div class="card" style="text-align:center"><div style="font-size:46px;font-weight:700;color:${score >= 80 ? 'var(--jade)' : score >= 50 ? 'var(--gold)' : 'var(--seal)'}">${score}</div><p>Đúng ${ex.right}/${n} câu.${ex.wrong ? ' Câu sai đã vào Ôn tập.' : ''}</p><button class="btn full" data-a="back">Làm lại hoặc soạn bài khác</button></div>`;
+      box.onclick = e => { if (e.target.closest('[data-a="back"]')) onBack(); }; return; }
+    let body = '';
+    if (q.type === 'mc') body = `<div class="qtext">${fmtQ(q.q)}</div><div class="opts">${q.options.map((o, k) => `<button class="opt" data-k="${k}">${fmtQ(o)}</button>`).join('')}</div>`;
+    else { q._bank = q._bank || shuffle(q.words.map((w, k) => ({ w, k })));
+      body = `<div class="qtext">Sắp xếp thành câu đúng${q.vi ? ': <i>' + esc(q.vi) + '</i>' : ''}</div><div class="ordline"></div><div class="wbank"></div><button class="btn pri full" data-a="check">Kiểm tra</button>`; }
+    box.innerHTML = `<div class="prog"><i style="width:${100 * ex.i / ex.items.length}%"></i></div><div class="card"><div class="qnum">Câu ${ex.i + 1}/${ex.items.length}</div>${body}<div class="exp"></div></div>`;
+    if (q.type === 'order') drawOrder(q);
+  }
+  function drawOrder(q) {
+    box.querySelector('.ordline').innerHTML = q._pick.map((p, n) => `<button class="wchip" data-n="${n}">${esc(p.w)}</button>`).join('') || '<span class="small muted" style="padding:8px">Chạm các từ bên dưới theo thứ tự</span>';
+    box.querySelector('.wbank').innerHTML = q._bank.filter(b => !q._pick.includes(b)).map(b => `<button class="wchip" data-w="${b.k}">${esc(b.w)}</button>`).join('');
+  }
+  function answered(ok, q, correct, explain) {
+    if (ok) { ex.right++; say(hanOnly(q.type === 'order' ? q.answer : correct) || ''); }
+    else { ex.wrong++; addCard({ f: q.type === 'order' ? q.answer : (String(q.q).includes('___') ? String(q.q).replace('___', correct) : String(q.q).slice(0, 60)), py: '', vi: (explain || '') + (q.type === 'mc' ? ' Đáp án: ' + correct : ''), kind: 'e', sub: 'ex' }); }
+    box.querySelector('.exp').innerHTML = `<div class="${ok ? 'goodbox' : 'issue'}">${ok ? 'Đúng.' : 'Chưa đúng.'} ${esc(explain || '')}</div><button class="btn pri full" data-a="nextq">${ex.i + 1 < ex.items.length ? 'Câu tiếp' : 'Xem kết quả'}</button>`;
+  }
+  box.onclick = e => {
+    const q = ex.items[ex.i]; if (!q) return;
+    const o = e.target.closest('.opt');
+    if (o && !q._done) { q._done = true; const k = +o.dataset.k, ok = k === +q.answer; o.classList.add(ok ? 'right' : 'wrong'); box.querySelectorAll('.opt')[+q.answer].classList.add('right'); answered(ok, q, q.options[+q.answer], q.explain_vi); }
+    const w = e.target.closest('[data-w]'); if (w && !q._done) { q._pick.push(q._bank.find(x => x.k === +w.dataset.w)); drawOrder(q); }
+    const n = e.target.closest('[data-n]'); if (n && !q._done) { q._pick.splice(+n.dataset.n, 1); drawOrder(q); }
+    const a = e.target.closest('[data-a]'); if (!a) return;
+    if (a.dataset.a === 'check' && !q._done) { if (q._pick.length < q.words.length) { toast('Dùng hết các từ trước khi kiểm tra'); return; } q._done = true; const ok = normS(q._pick.map(p => p.w).join('')) === normS(q.answer); answered(ok, q, q.answer, ok ? '' : 'Câu đúng: ' + q.answer); }
+    if (a.dataset.a === 'nextq') { ex.i++; renderQ(); }
+  };
+  renderQ();
+}
+
+/* =============== PRACTICE =============== */
+const STARTER = [
+  { hz: '你好！', py: 'nǐ hǎo', vi: 'Xin chào!' }, { hz: '谢谢你。', py: 'xiè xie nǐ', vi: 'Cảm ơn bạn.' },
+  { hz: '我是越南人。', py: 'wǒ shì yuè nán rén', vi: 'Tôi là người Việt Nam.' }, { hz: '你叫什么名字？', py: 'nǐ jiào shén me míng zi', vi: 'Bạn tên là gì?' },
+  { hz: '我想喝一杯茶。', py: 'wǒ xiǎng hē yì bēi chá', vi: 'Tôi muốn uống một ly trà.' }, { hz: '这个多少钱？', py: 'zhè ge duō shao qián', vi: 'Cái này bao nhiêu tiền?' }
+];
+function practiceItems() { const l = currentLesson(); return [...arr(D.custom), ...(l ? speakItems(l) : [])].concat(l || D.custom.length ? [] : STARTER); }
+function renderPractice() {
+  $('#fab').hidden = false;
+  const l = currentLesson();
+  $('#v-practice').innerHTML = `<h1>Luyện tập</h1><p class="sub">${l ? 'Đang dùng câu của bài: <b>' + esc(l.title) + '</b>' : 'Chưa chọn bài, đang dùng câu cơ bản.'} Câu bạn tự nhập luôn có ở đầu danh sách.</p>
+    <div class="tiles">
+      <button class="tile" data-p="read"><span class="g">说</span><b>Đọc theo câu</b><small>Ghi âm, AI chấm từng chữ</small></button>
+      <button class="tile" data-p="talk"><span class="g">话</span><b>Hội thoại</b><small>Nói chuyện với AI theo tình huống</small></button>
+      <button class="tile" data-p="type"><span class="g">打</span><b>Gõ trên điện thoại</b><small>Gõ pinyin, app chấm chữ đúng sai</small></button>
+      <button class="tile" data-p="write"><span class="g">写</span><b>Viết chữ</b><small>Thứ tự nét, viết bằng ngón tay</small></button>
+      <button class="tile" data-p="mist"><span class="g">错</span><b>Bài tập lỗi sai</b><small>AI soạn từ lỗi bạn hay mắc</small></button>
+      <button class="tile" data-p="custom"><span class="g">✎</span><b>Tự nhập câu</b><small>Câu bạn muốn nói, tiếng Trung hoặc Việt</small></button>
+    </div>`;
+  $('#v-practice').onclick = e => { const t = e.target.closest('[data-p]'); if (t) openPractice(t.dataset.p); };
+}
+function openPractice(kind, items) {
+  if (kind === 'custom') { $('#cText').value = ''; $('#cStatus').innerHTML = ''; openModal('custom'); return; }
+  $('#fab').hidden = true;
+  const v = $('#v-practice'), names = { read: 'Đọc theo câu', talk: 'Hội thoại', type: 'Gõ trên điện thoại', write: 'Viết chữ', mist: 'Bài tập lỗi sai' };
+  v.innerHTML = `<div class="flowhead"><button class="icon" data-back aria-label="Quay lại">‹</button><h2>${names[kind]}</h2></div><div id="pBody"></div>`;
+  v.onclick = e => { if (e.target.closest('[data-back]')) { if (Rec.recording) Rec.cancel(); talk = null; renderPractice(); } };
+  const body = $('#pBody'), its = items || practiceItems();
+  if (kind === 'read') mountReadAlong(body, its);
+  if (kind === 'type') mountTyping(body, its.filter(s => hanCount(s.hz) >= 1 && s.vi));
+  if (kind === 'write') { const l = currentLesson(); mountWriter(body, l ? lessonChars(l) : [...new Set(its.flatMap(s => [...s.hz].filter(isHan)))].slice(0, 10)); }
+  if (kind === 'talk') mountTalkSetup(body);
+  if (kind === 'mist') { body.innerHTML = spinner('AI đang soạn bài từ lỗi sai của bạn…'); genExercises(currentLesson(), true).then(it => runExercises(body, it, () => openPractice('mist'))).catch(err => body.innerHTML = `<div class="empty">${esc(err.message)}</div>`); }
+}
+$('#cGo').onclick = async () => {
+  const t = $('#cText').value.trim(); if (!t) return;
+  $('#cStatus').innerHTML = spinner(hanCount(t) ? 'Đang lấy pinyin và nghĩa…' : 'Đang dịch sang tiếng Trung…');
+  try {
+    const r = await gemini({ temperature: 0, parts: [{ text: `The learner (HSK ${P.level}) gave this text: "${t}". If it is Chinese, keep it (fix obvious typos). If it is Vietnamese, translate it into natural spoken Mandarin a learner at HSK ${P.level}-${P.level + 1} can say. Return JSON {"hz":"","py":"","vi":"Vietnamese meaning"}. ${PY_RULE}` }] });
+    D.custom = [{ hz: r.hz, py: r.py || '', vi: r.vi || '' }, ...arr(D.custom)].filter(x => x.hz).slice(0, 30); saveD();
+    closeModal('custom'); if (curView !== 'practice') go('practice'); openPractice('read');
+  } catch (e) { $('#cStatus').innerHTML = '<p class="err small">' + esc(e.message) + '</p>'; }
+};
+
+/* ---- role-play conversation ---- */
+const SCENES = ['Chào hỏi, làm quen', 'Gọi đồ uống ở quán trà', 'Mua dược liệu ở chợ', 'Mặc cả giá', 'Hỏi đường', 'Hẹn gặp đối tác', 'Nói về gia đình'];
+let scene = null, talk = null;
+function mountTalkSetup(box) {
+  const l = currentLesson(); const list = (l ? ['Theo bài: ' + l.title] : []).concat(SCENES);
+  if (!scene || !list.includes(scene)) scene = list[0];
+  box.innerHTML = `<p class="sub">Chọn tình huống. AI đóng vai, nghe bạn nói, sửa lỗi, rồi trả lời. Bí thì đọc phần gợi ý.</p>
+    <div class="chips wrap">${list.map(s => `<button class="chip${s === scene ? ' on' : ''}" data-s="${esc(s)}">${esc(s)}</button>`).join('')}</div>
+    <button class="btn pri full" data-a="start">Bắt đầu hội thoại</button>`;
+  box.onclick = e => { const c = e.target.closest('[data-s]'); if (c) { scene = c.dataset.s; mountTalkSetup(box); } if (e.target.closest('[data-a="start"]')) startTalk(box); };
+}
+function talkSystem() {
+  const l = currentLesson(); const useLesson = scene.startsWith('Theo bài') && l;
+  return `You are a patient native Mandarin speaker role-playing a conversation with a Vietnamese learner at HSK ${P.level}. Scenario: ${useLesson ? 'practise the topic of lesson "' + l.title + '", using these words where natural: ' + arr(l.vocab).slice(0, 40).map(v => v.hz).join('、') : scene}.
+Speak only at HSK ${P.level} level, 1-2 short sentences per turn, and keep the conversation going with a question. All explanations in Vietnamese, brief and friendly. ${PY_RULE}`;
+}
+const TALK_FORMAT = `Return JSON:
+{"heard_text":"Chinese characters the learner actually said (from the audio)","heard_py":"",
+ "correction":{"has_error":true/false,"better_hz":"natural correct version","better_py":"","explain_vi":"short Vietnamese explanation"},
+ "pron_note_vi":"one short Vietnamese note on the most noticeable pronunciation issue, naming the character (empty if fine)",
+ "pron_chars":["mispronounced characters"],
+ "reply_hz":"your next line","reply_py":"","reply_vi":"Vietnamese translation",
+ "hint_hz":"a simple sentence the learner could say next","hint_py":"","hint_vi":""}
+If the audio is silent or unclear, set heard_text to "" and reply_hz to a gentle request to repeat.`;
+async function startTalk(box) {
+  if (!apiKey()) { openSettingsForKey(); return; }
+  talk = { history: [], turns: 0, errs: 0 };
+  box.innerHTML = `<div class="row" style="margin-bottom:10px;align-items:center"><b>${esc(scene)}</b><button class="btn sm" data-a="end">Kết thúc</button></div>
+    <div class="thread">${spinner('AI đang vào vai…')}</div>
+    <div class="micbar"><button class="mic" data-a="mic" aria-label="Bấm để nói" disabled><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><span class="miclabel">Bấm để nói, bấm lần nữa để gửi</span></div>`;
+  const th = box.querySelector('.thread'), mic = box.querySelector('.mic'), lab = box.querySelector('.miclabel');
+  const bubble = (r, extra) => { const hz = r.reply_hz || ''; th.insertAdjacentHTML('beforeend', `<div class="msg"><div class="row"><div>${ruby(hz, r.reply_py)}</div><button class="play" data-say="${esc(hz)}" aria-label="Nghe">${playIcon}</button></div><div class="vi">${esc(r.reply_vi)}</div>${extra}${r.hint_hz ? `<div class="hint">Gợi ý nếu bí: <span class="hz" style="font-size:17px">${esc(r.hint_hz)}</span> ${colorPy(r.hint_py)}${r.hint_vi ? ' – ' + esc(r.hint_vi) : ''}</div>` : ''}</div>`); say(hz); window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); };
+  try {
+    const r = await gemini({ system: talkSystem(), temperature: 0.7, parts: [{ text: 'Start the role-play with your first line. Return JSON {"reply_hz":"","reply_py":"","reply_vi":"","hint_hz":"","hint_py":"","hint_vi":""}' }] });
+    th.innerHTML = ''; talk.history.push({ role: 'user', parts: [{ text: 'Bắt đầu hội thoại.' }] }, { role: 'model', parts: [{ text: r.reply_hz }] }); bubble(r, ''); mic.disabled = false;
+  } catch (e) { th.innerHTML = `<p class="err small">${esc(e.message)}</p>`; }
+  box.onclick = async e => {
+    const a = e.target.closest('[data-a]'); if (!a || !talk) return;
+    if (a.dataset.a === 'end') { if (Rec.recording) Rec.cancel(); if (talk.turns) logActivity('talk', { turns: talk.turns, lesson: D.current, score: Math.round(100 * (talk.turns - talk.errs) / talk.turns) }); talk = null; mountTalkSetup(box); return; }
+    if (a.dataset.a !== 'mic') return;
+    if (!Rec.recording) { try { speechSynthesis && speechSynthesis.cancel(); Rec.autoStop = () => mic.click(); await Rec.start(ms => lab.textContent = 'Đang nghe ' + (ms / 1000).toFixed(0) + 's. Bấm lần nữa để gửi'); mic.classList.add('rec'); } catch (err) { toast(err.message, 5000); } return; }
+    mic.classList.remove('rec'); mic.disabled = true; lab.textContent = 'Đang xử lý…';
+    const rec = await Rec.stop();
+    try {
+      if (!rec || rec.ms < 600) throw new Error('Bản ghi quá ngắn. Bấm một lần, nói hết câu, rồi bấm lần nữa để gửi.');
+      const audio = await toWavBase64(rec.blob); if (audio.peak < 0.01) throw new Error('Không nghe thấy tiếng. Kiểm tra micro.');
+      th.insertAdjacentHTML('beforeend', '<div class="msg me pending">' + spinner('Đang nghe…') + '</div>'); window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      const r = await gemini({ system: talkSystem(), history: talk.history, temperature: 0.6, parts: [{ inline_data: { mime_type: audio.mime, data: audio.data } }, { text: "This is the learner's spoken reply. " + TALK_FORMAT }] });
+      const me = th.querySelector('.pending'); me.classList.remove('pending');
+      me.innerHTML = r.heard_text ? ruby(r.heard_text, r.heard_py) : '<span class="muted small">Không nghe rõ</span>';
+      const au = new Audio(URL.createObjectURL(rec.blob)); me.insertAdjacentHTML('beforeend', `<div style="text-align:right"><button class="play" style="display:inline-grid" aria-label="Nghe lại giọng bạn">${playIcon}</button></div>`); me.querySelector('.play').onclick = ev => { ev.stopPropagation(); au.play(); };
+      talk.history.push({ role: 'user', parts: [{ text: r.heard_text || '(không nghe rõ)' }] }, { role: 'model', parts: [{ text: r.reply_hz || '' }] }); if (talk.history.length > 24) talk.history = talk.history.slice(-24);
+      const c = r.correction || {}; let extra = '';
+      if (r.heard_text) { extra = c.has_error ? `<div class="fix">Nên nói: <b class="hz" style="color:var(--jade);font-size:17px">${esc(c.better_hz)}</b> ${colorPy(c.better_py)}<br>${esc(c.explain_vi)}</div>` : '<div class="fix good">Câu bạn nói đúng ngữ pháp.</div>'; if (r.pron_note_vi) extra += `<div class="tip">Phát âm: ${esc(r.pron_note_vi)}</div>`; }
+      bubble(r, extra); talk.turns++; if (c.has_error) talk.errs++;
+      if (c.has_error && r.heard_text) addCard({ f: r.heard_text, fix: c.better_hz, py: c.better_py, vi: c.explain_vi, kind: 'e', sub: 'grammar' });
+      arr(r.pron_chars).filter(x => hanCount(x)).slice(0, 3).forEach(ch => addCard({ f: ch, py: '', vi: r.pron_note_vi || 'Phát âm chưa chuẩn trong hội thoại', kind: 'e', sub: 'pron' }));
+    } catch (err) { const pm = th.querySelector('.pending'); if (pm) pm.remove(); toast(err.message, 5000); }
+    mic.disabled = false; lab.textContent = 'Bấm để nói, bấm lần nữa để gửi';
+  };
+}
+
+/* =============== REVIEW =============== */
+function addCard(c) {
+  const key = (c.f || '') + '|' + (c.fix || '');
+  const ex0 = D.cards.find(x => x.key === key);
+  if (ex0) { if (c.kind === 'e') { ex0.due = Date.now(); ex0.lapses = (ex0.lapses || 0) + 1; if (c.vi) ex0.vi = c.vi; if (c.py && !ex0.py) ex0.py = c.py; saveD(); } return false; }
+  D.cards.push({ ...c, key, id: uid(), due: Date.now(), ivl: 0, ease: 2.3, reps: 0, lapses: c.kind === 'e' ? 1 : 0, added: Date.now() }); saveD(); return true;
+}
+const dueCards = () => { if (!D) return []; const now = Date.now(); return D.cards.filter(c => c.due <= now).sort((a, b) => (a.kind === 'e' ? 0 : 1) - (b.kind === 'e' ? 0 : 1) || b.lapses - a.lapses || a.due - b.due); };
+function nextIvl(c, g) { if (g === 0) return 10 * 60e3; const b = c.ivl || 0; if (g === 1) return Math.max(DAY, b * 1.2); if (g === 2) return b ? b * c.ease : DAY * 2; return b ? b * c.ease * 1.4 : DAY * 4; }
+const fmtIvl = ms => ms < DAY ? Math.round(ms / 60e3) + ' phút' : Math.round(ms / DAY) + ' ngày';
+let revCard = null;
+function renderReview() {
+  const due = dueCards(); revCard = due[0] || null; const v = $('#v-rev');
+  const subName = { pron: 'Lỗi phát âm', grammar: 'Lỗi ngữ pháp', ex: 'Lỗi bài tập', type: 'Lỗi gõ chữ' };
+  let card;
+  if (!revCard) card = `<div class="card flash" style="cursor:default"><div class="big hz" style="font-size:48px;color:var(--jade)">✓</div><p class="muted small">Không còn thẻ cần ôn lúc này.<br>Thẻ mới đến từ từ mới của bài học và từ lỗi khi luyện.</p></div>`;
+  else { const c = revCard;
+    card = `<div class="card flash" id="flash" tabindex="0">${c.kind === 'e' ? `<span class="tag e">${subName[c.sub] || 'Lỗi đã mắc'}${c.lapses > 1 ? ', sai ' + c.lapses + ' lần' : ''}</span><div class="errt">${c.fix ? `<s style="color:var(--seal)">${esc(c.f)}</s>` : esc(c.f)}</div>${c.sub === 'pron' ? '<div class="small muted" style="margin-top:6px">Đọc to rồi lật thẻ</div>' : c.sub === 'type' ? '<div class="small muted" style="margin-top:6px">Gõ thử chữ này trên bàn phím rồi lật thẻ</div>' : ''}
+      <div class="back">${c.fix ? `<div class="errt" style="color:var(--jade)">${esc(c.fix)}</div>` : ''}<div>${colorPy(c.py)}</div><div class="small" style="margin-top:6px">${esc(c.vi)}</div>${c.ctx ? `<div class="small muted">Trong câu: <span class="hz">${esc(c.ctx)}</span></div>` : ''}</div>`
+      : `<span class="tag n">Từ vựng</span><div class="front">${esc(c.f)}</div><div class="back"><div style="font-size:18px;font-weight:600">${colorPy(c.py)}</div><div class="muted">${esc(c.vi)}</div></div>`}<div class="small muted tapnote" style="margin-top:12px">Chạm để lật thẻ</div></div>
+      <div class="grade" hidden><button data-g="0">Quên<small>10 phút</small></button><button data-g="1">Khó<small>${fmtIvl(nextIvl(c, 1))}</small></button><button data-g="2">Nhớ<small>${fmtIvl(nextIvl(c, 2))}</small></button><button data-g="3">Dễ<small>${fmtIvl(nextIvl(c, 3))}</small></button></div>
+      ${hanCount(c.fix || c.f) <= 4 ? `<div class="btnrow" style="margin-top:10px"><button class="btn sm" data-w="1">✎ Viết chữ này</button></div>` : ''}`; }
+  v.innerHTML = `<h1>Ôn tập</h1><p class="sub">${due.length ? `Còn ${due.length} thẻ. Lỗi sai được đưa lên trước.` : `Tổng ${D.cards.length} thẻ của ${esc(P.name)}.`}</p>${card}`;
+  const f = $('#flash'); if (f) { f.onclick = () => { f.classList.add('open'); v.querySelector('.grade').hidden = false; say(hanOnly(revCard.fix || revCard.f)); }; f.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); f.click(); } }; }
+  v.onclick = e => {
+    if (e.target.closest('[data-w]') && revCard) return openWriter(hanOnly(revCard.fix || revCard.f));
+    const b = e.target.closest('[data-g]'); if (!b || !revCard) return; const g = +b.dataset.g, c = revCard;
+    const iv = nextIvl(c, g); c.ivl = g === 0 ? 0 : iv; c.due = Date.now() + iv; c.reps++; c.ease = Math.max(1.3, Math.min(3, c.ease + [-0.2, -0.1, 0, 0.1][g])); if (g === 0) c.lapses++;
+    logActivity('rev', { g }); const d = dueCards().length; $('#revBadge').hidden = !d; $('#revBadge').textContent = d; renderReview();
+  };
+}
+
+/* =============== ME: progress + settings =============== */
+function renderMe() {
+  const h = D.history, now = Date.now();
+  const sp = h.filter(x => x.type === 'speak'), sp7 = sp.filter(x => x.at > now - 7 * DAY), exs = h.filter(x => x.type === 'ex');
+  const avg = a => a.length ? Math.round(a.reduce((s, x) => s + x.score, 0) / a.length) : '–';
+  const words = D.cards.filter(c => c.kind === 'n'), mastered = words.filter(c => c.ivl >= 7 * DAY).length, errs = D.cards.filter(c => c.kind === 'e').length;
+  const lessonsDone = Object.values(D.lp).filter(x => x.done).length;
+  const counts = []; for (let d = 6; d >= 0; d--) { const k = dayKey(now - d * DAY); counts.push({ n: h.filter(x => dayKey(x.at) === k).length, lab: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][new Date(now - d * DAY).getDay()] }); }
+  const mx = Math.max(1, ...counts.map(c => c.n)), weak = weakChars(12);
+  $('#v-me').innerHTML = `<div class="hello"><div class="ring" style="display:grid;place-items:center;font-size:44px;background:var(--jade-soft);border-radius:50%">${esc(P.emoji)}</div><div><h1>${esc(P.name)}</h1><div class="small muted">HSK ${P.level} · ${arr(P.goals).map(g => (GOALS.find(x => x[0] === g) || [])[1]).filter(Boolean).join(', ')}</div></div></div>
+    <div class="stats">
+      <div class="stat"><b>${streakDays()}</b><span>ngày liên tiếp</span></div><div class="stat"><b>${lessonsDone}</b><span>bài đã xong</span></div><div class="stat"><b>${avg(sp7)}</b><span>điểm nói 7 ngày</span></div>
+      <div class="stat"><b>${words.length}</b><span>từ đang học</span></div><div class="stat"><b>${mastered}</b><span>từ nhớ chắc</span></div><div class="stat"><b>${errs}</b><span>lỗi đang ôn</span></div>
+      <div class="stat"><b>${sp.length}</b><span>câu đã nói</span></div><div class="stat"><b>${h.filter(x => x.type === 'type' && x.ok).length}</b><span>câu gõ đúng</span></div><div class="stat"><b>${avg(exs)}</b><span>điểm bài tập</span></div>
+    </div>
+    <div class="card"><b>Hoạt động 7 ngày</b><div class="bars">${counts.map(c => `<div><span>${c.n || ''}</span><i style="height:${Math.round(85 * c.n / mx)}%"></i>${c.lab}</div>`).join('')}</div></div>
+    <div class="card"><b>Chữ hay đọc sai</b><p class="small muted" style="margin:4px 0 8px">Chạm để nghe. Mục “Sửa chữ hay đọc sai” ở Hôm nay sẽ cho luyện lại.</p>${weak.length ? `<div class="weak">${weak.map(c => `<span data-say="${esc(c)}">${esc(c)}</span>`).join('')}</div>` : '<p class="small muted">Chưa có dữ liệu.</p>'}</div>
+    <div class="menu">
+      <button data-m="profile">✎ <span>Sửa hồ sơ, trình độ, mục tiêu</span>›</button>
+      <button data-m="kb">⌨ <span>Cách gõ tiếng Trung trên điện thoại</span>›</button>
+      <button data-m="settings">⚙︎ <span>Cài đặt API key, sao lưu dữ liệu</span>›</button>
+      <button data-m="switch">⇄ <span>Đổi người học</span>›</button>
+    </div>`;
+  $('#v-me').onclick = e => { const m = e.target.closest('[data-m]'); if (!m) return; const k = m.dataset.m;
+    if (k === 'profile') openProfileForm(P); if (k === 'kb') openModal('kb'); if (k === 'settings') { fillSettings(); openModal('settings'); } if (k === 'switch') switchProfile(); };
+}
+
+/* =============== PDF import & chat paste =============== */
+function openImport() { $('#iStatus').innerHTML = ''; $('#iLevel').value = Math.min(4, P.level); openModal('import'); }
+function openPaste() { $('#pStatus').innerHTML = ''; openModal('paste'); setTimeout(() => $('#pText').focus(), 60); }
+let pdfBytes = null, pdfPages = 0;
+$('#iFile').onchange = async e => {
+  const f = e.target.files[0]; pdfBytes = null; $('#iInfo').textContent = ''; if (!f) return;
+  $('#iInfo').innerHTML = spinner('Đang mở file…');
+  try { await loadScript('https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js'); pdfBytes = await f.arrayBuffer();
+    const doc = await PDFLib.PDFDocument.load(pdfBytes, { ignoreEncryption: true }); pdfPages = doc.getPageCount();
+    $('#iInfo').textContent = `${f.name}: ${pdfPages} trang, ${(f.size / 1048576).toFixed(1)} MB.`; $('#iFrom').value = 1; $('#iTo').value = Math.min(pdfPages, 8);
+  } catch (err) { $('#iInfo').innerHTML = '<span class="err">Không đọc được file PDF này (' + esc(err.message) + ').</span>'; pdfBytes = null; }
+};
+$('#iGo').onclick = async () => {
+  if (!pdfBytes) { toast('Chọn file PDF trước'); return; }
+  const from = Math.max(1, +$('#iFrom').value || 1), to = Math.min(pdfPages, +$('#iTo').value || from);
+  if (to < from) { toast('Trang kết thúc phải lớn hơn trang bắt đầu'); return; }
+  if (to - from + 1 > 25) { toast('Mỗi lần tối đa 25 trang. Chia nhỏ theo từng bài nhé.'); return; }
+  const btn = $('#iGo'); btn.disabled = true; const st = $('#iStatus');
+  try {
+    st.innerHTML = spinner('Đang cắt trang ' + from + '–' + to + '…');
+    const src = await PDFLib.PDFDocument.load(pdfBytes, { ignoreEncryption: true }); const out = await PDFLib.PDFDocument.create();
+    (await out.copyPages(src, Array.from({ length: to - from + 1 }, (_, i) => from - 1 + i))).forEach(p => out.addPage(p));
+    const bytes = await out.save();
+    if (bytes.length > 14 * 1048576) throw new Error('Phần trang đã chọn quá lớn (' + (bytes.length / 1048576).toFixed(1) + ' MB). Chọn ít trang hơn.');
+    st.innerHTML = spinner('Gemini đang đọc bài, có thể mất 20–60 giây…');
+    const lv = +$('#iLevel').value;
+    const res = await gemini({ temperature: 0.2, system: 'You extract structured lesson data from Chinese textbook pages for Vietnamese learners. Output JSON only.',
+      parts: [{ inline_data: { mime_type: 'application/pdf', data: b64(bytes) } }, { text:
+`These pages come from an HSK ${lv} Chinese textbook or workbook. Extract the lesson as JSON:
+{"title":"short Vietnamese lesson title with the Chinese title if present","intro_vi":"1 sentence: what this lesson teaches",
+ "vocab":[{"hz","py","vi"}],"grammar":[{"pattern","vi","example_hz","example_py","example_vi"}],
+ "sentences":[{"who":"speaker label if any","hz","py","vi"}],
+ "exercises":[{"type":"mc","q","options":[],"answer":0,"explain_vi"} or {"type":"order","words":[],"answer":"","vi":""}]}
+vocab = every new word on these pages. sentences = dialogue/text lines in order (max 30). exercises = the book's exercises that can be auto-graded (choose, fill in the blank with options as type "mc" using ___, arrange words); skip audio/picture/free-writing ones; [] if none. Natural Vietnamese meanings. Never invent content not on the pages. ${PY_RULE}` }] });
+    const l = { id: uid(), kind: 'book', title: ($('#iName').value.trim() || res.title || 'Bài mới').slice(0, 80), level: lv, source: 'trang ' + from + '–' + to, intro_vi: res.intro_vi || '',
+      vocab: arr(res.vocab).filter(v => v.hz), grammar: arr(res.grammar), sentences: arr(res.sentences).filter(s => s.hz), exercises: arr(res.exercises).filter(validEx), createdAt: Date.now() };
+    if (!l.vocab.length && !l.sentences.length && !l.exercises.length) throw new Error('Không tìm thấy nội dung bài học trong các trang này. Kiểm tra lại số trang.');
+    lessons.push(l); await Store.set('lessons', lessons);
+    st.innerHTML = `<div class="goodbox" style="margin-top:12px">Đã tạo “${esc(l.title)}”: ${l.vocab.length} từ, ${l.grammar.length} ngữ pháp, ${l.sentences.length} câu, ${l.exercises.length} bài tập.</div>`;
+    $('#iName').value = ''; $('#iFrom').value = to + 1; $('#iTo').value = Math.min(pdfPages, to + (to - from + 1));
+    if (curView === 'path') renderPath();
+  } catch (err) { st.innerHTML = '<p class="err small">' + esc(err.message) + '</p>'; }
+  btn.disabled = false;
+};
+$('#pGo').onclick = async () => {
+  const raw = $('#pText').value.trim(), mt = $('#pMT').value.trim();
+  if (hanCount(raw) < 2) { toast('Dán đoạn có chữ Hán vào ô trên'); return; }
+  if (raw.length > 6000) { toast('Đoạn quá dài. Mỗi lần dán tối đa khoảng 40 câu.'); return; }
+  if (!apiKey()) { openSettingsForKey(); return; }
+  const btn = $('#pGo'); btn.disabled = true; $('#pStatus').innerHTML = spinner('Gemini đang phân tích, khoảng 15–40 giây…');
+  try {
+    const res = await gemini({ temperature: 0.2, system: 'You are a Mandarin teacher for Vietnamese adults. You turn real chat messages into a precise mini-lesson. Explanations in Vietnamese. Output JSON only.',
+      parts: [{ text:
+`Below is text the learner (level HSK ${P.level}) copied from real WeChat chats with Chinese people.
+Ignore names, timestamps, emoji codes, "[图片]"-style placeholders and any Vietnamese/English lines; keep only the Chinese messages, in order, de-duplicated.
+${mt ? "The learner also pasted WeChat's machine translation; point out where it is wrong or misleading:\n" + mt + '\n' : ''}
+Return JSON:
+{"title":"short Vietnamese title describing the topic","summary_vi":"2-3 sentences: what the conversation is about and its tone",
+ "sentences":[{"hz":"original message","py":"","vi":"accurate natural Vietnamese translation","words":[{"hz","py","vi":"meaning in this context"}],"note_vi":"1-3 sentences on structure, grammar, slang/internet expressions, implied meaning","machine_note_vi":"only if the machine translation of this sentence is wrong, else \\"\\""}],
+ "vocab":[8-25 most useful words {"hz","py","vi"}, prioritising those above HSK ${P.level}],
+ "grammar":[2-5 key patterns {"pattern","vi","example_hz","example_py","example_vi"}],
+ "replies":[3-5 natural replies the learner could send next {"hz","py","vi"}],
+ "exercises":[8 auto-graded items: {"type":"mc","q","options":[],"answer":0,"explain_vi"} or {"type":"order","words":[],"answer":"","vi":""}]}
+${PY_RULE}
+Chat text:
+${raw}` }] });
+    const l = { id: uid(), kind: 'chat', title: (res.title || 'Đoạn chat').slice(0, 80), level: P.level, source: 'WeChat ' + new Date().toLocaleDateString('vi-VN'), summary_vi: res.summary_vi || '',
+      vocab: arr(res.vocab).filter(v => v.hz), grammar: arr(res.grammar), sentences: arr(res.sentences).filter(s => s.hz), replies: arr(res.replies).filter(s => s.hz), exercises: arr(res.exercises).filter(validEx), createdAt: Date.now() };
+    if (!l.sentences.length) throw new Error('Không tìm thấy câu tiếng Trung nào để phân tích.');
+    lessons.push(l); await Store.set('lessons', lessons);
+    $('#pText').value = ''; $('#pMT').value = ''; closeModal('paste'); pathTab = 'chat'; openLesson(l.id); flow.step = 1; renderFlow();
+    toast(`Đã phân tích ${l.sentences.length} câu`);
+  } catch (e) { $('#pStatus').innerHTML = '<p class="err small">' + esc(e.message) + '</p>'; }
+  btn.disabled = false;
+};
+
+/* =============== TUTOR CHAT =============== */
+const QUICK = ['Giải thích lại ngữ pháp bài này', 'Câu này nói thế nào tự nhiên hơn?', 'Mẹo phân biệt zh, z, j', 'Cho tôi 5 câu luyện thanh 3'];
+$('#fab').onclick = () => { openModal('chat'); renderChat(); };
+function mdLite(s) { return esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/([\p{Script=Han}，。？！、]+)/gu, '<span class="hz">$1</span>'); }
+function renderChat() {
+  const log = $('#chatLog');
+  log.innerHTML = (D.chat.length ? '' : `<div class="cm">Chào ${esc(P.name)}! Hỏi thầy bằng tiếng Việt: nghĩa từ, ngữ pháp, vì sao câu sai, cách phát âm, cách viết… Thầy biết bài bạn đang học và lỗi bạn hay mắc.</div>`)
+    + D.chat.map(m => `<div class="cm${m.role === 'user' ? ' me' : ''}">${mdLite(m.text)}</div>`).join('');
+  $('#chatQuick').innerHTML = QUICK.map(q => `<button>${esc(q)}</button>`).join('');
+  log.scrollTop = log.scrollHeight;
+}
+$('#chatQuick').onclick = e => { const b = e.target.closest('button'); if (b) sendChat(b.textContent); };
+function tutorSystem() {
+  const l = currentLesson(); const weak = D.cards.filter(c => c.kind === 'e').slice(-10).map(c => c.f + (c.fix ? '→' + c.fix : '')).join('; ');
+  return `Bạn là thầy dạy tiếng Trung người Việt, giỏi và kiên nhẫn, đang trò chuyện với học viên tên ${P.name}, trình độ HSK ${P.level}.
+${l ? 'Bài đang học: "' + l.title + '". Từ mới: ' + arr(l.vocab).slice(0, 40).map(v => v.hz).join('、') + '. Ngữ pháp: ' + arr(l.grammar).map(g => g.pattern).join('; ') + '.' : ''}
+${weak ? 'Lỗi gần đây của học viên: ' + weak + '.' : ''}
+Luôn trả lời bằng tiếng Việt, ngắn gọn, dễ hiểu, ví dụ hợp trình độ. Mỗi ví dụ tiếng Trung viết: chữ Hán, pinyin có dấu, nghĩa tiếng Việt trên cùng một dòng. Có thể dùng **in đậm**, không dùng bảng hay tiêu đề. Nếu học viên viết hoặc nói tiếng Trung, sửa lỗi nhẹ nhàng. Khi được hỏi cách viết chữ, mô tả bộ thủ và thứ tự nét chính.`;
+}
+async function sendChat(text, audio) {
+  if (!apiKey()) { openSettingsForKey(); return; }
+  D.chat.push({ role: 'user', text: text || '🎤 (câu hỏi bằng giọng nói)' }); renderChat();
+  $('#chatLog').insertAdjacentHTML('beforeend', '<div class="cm">' + spinner('Thầy đang trả lời…') + '</div>'); $('#chatLog').scrollTop = 1e9;
+  const history = [];
+  D.chat.slice(-17, -1).filter(m => !m.text.startsWith('⚠')).forEach(m => { const role = m.role === 'user' ? 'user' : 'model';
+    if (history.length && history[history.length - 1].role === role) history[history.length - 1].parts[0].text += '\n' + m.text; else history.push({ role, parts: [{ text: m.text }] }); });
+  while (history.length && history[0].role !== 'user') history.shift();
+  if (history.length && history[history.length - 1].role === 'user') history.pop();
+  const parts = audio ? [{ inline_data: { mime_type: audio.mime, data: audio.data } }, { text: 'Học viên hỏi bằng giọng nói (tiếng Việt hoặc tiếng Trung). Đầu câu trả lời, ghi lại ngắn gọn câu hỏi bạn nghe được trong ngoặc, rồi trả lời.' }] : [{ text }];
+  try { const r = await gemini({ system: tutorSystem(), history, parts, json: false, temperature: 0.5 }); D.chat.push({ role: 'model', text: r.trim() }); if (D.chat.length > 60) D.chat = D.chat.slice(-60); saveD(); logActivity('chat'); }
+  catch (e) { D.chat.push({ role: 'model', text: '⚠ ' + e.message }); }
+  renderChat();
+}
+$('#chatSend').onclick = () => { const t = $('#chatIn').value.trim(); if (!t) return; $('#chatIn').value = ''; sendChat(t); };
+$('#chatIn').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('#chatSend').click(); } };
+$('#chatMic').onclick = async () => {
+  const b = $('#chatMic');
+  if (!Rec.recording) { try { Rec.autoStop = () => b.click(); await Rec.start(ms => $('#chatIn').placeholder = 'Đang nghe ' + (ms / 1000).toFixed(0) + 's… bấm 🎤 lần nữa để gửi'); b.style.background = 'var(--seal)'; } catch (e) { toast(e.message, 5000); } return; }
+  b.style.background = 'var(--paper)'; $('#chatIn').placeholder = 'Hỏi bằng tiếng Việt, ví dụ: 了 dùng khi nào?';
+  const rec = await Rec.stop(); if (!rec || rec.ms < 600) { toast('Bản ghi quá ngắn'); return; }
+  sendChat('', await toWavBase64(rec.blob));
+};
+$('#chClear').onclick = () => { if (confirm('Xóa cuộc trò chuyện với thầy?')) { D.chat = []; saveD(); renderChat(); } };
+
+boot();
+
+</script>
+</body>
+</html>
