@@ -329,8 +329,8 @@ nav .badge{position:absolute;top:4px;left:calc(50% + 8px);background:var(--seal)
   <label class="f" for="xfApp">APPID</label><input id="xfApp" autocomplete="off">
   <label class="f" for="xfKey">APIKey</label><input id="xfKey" type="password" autocomplete="off">
   <label class="f" for="xfSec">APISecret</label><input id="xfSec" type="password" autocomplete="off">
-  <label class="f" for="xfVcn">Mã giọng đọc iFLYTEK (vcn)</label><input id="xfVcn" placeholder="xiaoyan">
-  <div class="btnrow" style="margin-top:10px"><button class="btn" id="xfTest">Thử kết nối iFLYTEK</button></div>
+  <label class="f" for="xfVcn">Mã giọng đọc iFLYTEK (vcn)</label><input id="xfVcn" placeholder="x_xiaoyan">
+  <div class="btnrow" style="margin-top:10px"><button class="btn" id="xfTest">Thử kết nối iFLYTEK</button><button class="btn pri" id="xfSave">Lưu</button></div>
   <p class="small" id="xfMsg"></p>
   <h3>Sao lưu dữ liệu</h3>
   <p class="small muted">Dữ liệu chỉ nằm trên máy này. Xuất file để cất giữ hoặc chuyển sang máy khác (gồm bài học và tiến độ của mọi người, không gồm API key). Cũng dùng “Nhập file” để nạp giáo trình Claude soạn sẵn.</p>
@@ -828,7 +828,7 @@ function parseIse(xml, it) {
     summary: (parts.length ? 'Điểm thành phần: ' + parts.join(', ') + '. ' : '') + (bad ? `Có ${bad} chữ cần sửa, xem gợi ý bên dưới.` : 'Không phát hiện lỗi.'), heard_text: '', engine: 'iFLYTEK' };
 }
 async function xfTts(text) {
-  const vcn = (settings.xfVcn || '').trim() || 'xiaoyan', key = 'xf:' + vcn + ':' + text;
+  const vcn = (settings.xfVcn || '').trim() || 'x_xiaoyan', key = 'xf:' + vcn + ':' + text;
   if (ttsMem[key]) return ttsMem[key];
   const cached = await Store.get(key);
   const toUrl = b => URL.createObjectURL(new Blob([Uint8Array.from(atob(b), c => c.charCodeAt(0))], { type: 'audio/mpeg' }));
@@ -1043,6 +1043,14 @@ $('#whoBtn').onclick = switchProfile;
 /* =============== settings & backup =============== */
 function fillSettings() { $('#xfApp').value = settings.xfAppId || ''; $('#xfKey').value = settings.xfKey || ''; $('#xfSec').value = settings.xfSecret || ''; $('#xfVcn').value = settings.xfVcn || ''; $('#sTts').value = settings.ttsModel || ''; $('#sKey').value = settings.apiKey || ''; $('#sModel').value = settings.model || ''; $('#sAudio').value = settings.audioModel || ''; $('#sMsg').textContent = ''; $('#sUse').textContent = 'Hôm nay máy này đã gọi Gemini ' + usedToday() + ' lượt.'; }
 function openSettingsForKey() { fillSettings(); openModal('settings'); $('#sMsg').textContent = 'Lấy key miễn phí tại aistudio.google.com → Get API key, rồi dán vào ô trên.'; }
+// every settings field saves itself as soon as it changes, so nothing is lost if the person forgets to press Lưu
+['sKey', 'sModel', 'sAudio', 'sTts', 'xfApp', 'xfKey', 'xfSec', 'xfVcn'].forEach(id => { const el = $('#' + id); if (el) el.addEventListener('change', () => saveSettingsQuiet()); });
+async function saveSettingsQuiet() {
+  settings.apiKey = $('#sKey').value.trim(); settings.model = $('#sModel').value.trim(); settings.audioModel = $('#sAudio').value.trim(); settings.ttsModel = $('#sTts').value.trim();
+  settings.xfAppId = $('#xfApp').value.trim(); settings.xfKey = $('#xfKey').value.trim(); settings.xfSecret = $('#xfSec').value.trim(); settings.xfVcn = $('#xfVcn').value.trim();
+  await Store.set('settings', settings);
+}
+$('#xfSave').onclick = async () => { await saveSettingsQuiet(); $('#xfMsg').innerHTML = '<span style="color:var(--jade)">Đã lưu key iFLYTEK' + (XF.ok() ? '. Phần chấm phát âm sẽ dùng iFLYTEK.' : ', nhưng còn thiếu ô nào đó (cần đủ APPID, APIKey, APISecret).') + '</span>'; };
 $('#sSave').onclick = async () => { settings.apiKey = $('#sKey').value.trim(); settings.model = $('#sModel').value.trim(); settings.audioModel = $('#sAudio').value.trim(); settings.ttsModel = $('#sTts').value.trim(); settings.xfAppId = $('#xfApp').value.trim(); settings.xfKey = $('#xfKey').value.trim(); settings.xfSecret = $('#xfSec').value.trim(); settings.xfVcn = $('#xfVcn').value.trim(); await Store.set('settings', settings); closeModal('settings'); toast('Đã lưu cài đặt'); };
 $('#xfTest').onclick = async () => {
   const old = { ...settings }; Object.assign(settings, { xfAppId: $('#xfApp').value.trim(), xfKey: $('#xfKey').value.trim(), xfSecret: $('#xfSec').value.trim(), xfVcn: $('#xfVcn').value.trim() });
