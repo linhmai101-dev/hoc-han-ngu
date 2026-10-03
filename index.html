@@ -441,6 +441,7 @@ nav .badge{position:absolute;top:4px;left:calc(50% + 8px);background:var(--seal)
   <div class="chatlog" id="chatLog"></div>
   <div class="quick" id="chatQuick"></div>
   <div class="chatvoice">
+    <div class="seg" id="chatLangSeg" style="width:100%;max-width:320px"><button data-l="vi" class="on">Hỏi bằng tiếng Việt</button><button data-l="zh">Hỏi bằng tiếng Trung</button></div>
     <button class="btn sm" id="chatStop" hidden>■ Dừng đọc</button>
     <button class="mic" id="chatMic" aria-label="Bấm để hỏi thầy"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
     <span class="small muted" id="chatHint">Bấm để hỏi thầy, bấm lần nữa để gửi</span>
@@ -939,6 +940,37 @@ const Live = {
   }
 };
 
+/* iFLYTEK short-form ASR: Mandarin speech → Chinese characters (fast, uses the iFLYTEK quota, not Gemini's) */
+async function xfIat(blob) {
+  const pcm = await toPcm16(blob);
+  const url = await XF.authUrl('iat-api-sg.xf-yun.com', '/v2/iat'); let text = '';
+  await XF.session(url, async ws => {
+    const F = 6400; let first = true;
+    for (let i = 0; i < pcm.length; i += F) {
+      const frame = { data: { status: first ? 0 : 1, format: 'audio/L16;rate=16000', encoding: 'raw', audio: b64(pcm.subarray(i, i + F)) } };
+      if (first) { frame.common = { app_id: settings.xfAppId.trim() }; frame.business = { language: 'zh_cn', domain: 'iat', accent: 'mandarin', ptt: 1, vad_eos: 5000 }; first = false; }
+      ws.send(JSON.stringify(frame)); await wait(15);
+    }
+    ws.send(JSON.stringify({ data: { status: 2, format: 'audio/L16;rate=16000', encoding: 'raw', audio: '' } }));
+  }, m => {
+    const r = m.data && m.data.result; if (r && r.ws) text += r.ws.map(w => (w.cw && w.cw[0] && w.cw[0].w) || '').join('');
+    return (m.data && m.data.status === 2) ? true : undefined;
+  });
+  return text.trim();
+}
+// Safari's built-in dictation (used for Vietnamese questions to the tutor); null when unavailable
+function dictate(lang, onInterim) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR) return null;
+  const r = new SR(); r.lang = lang; r.interimResults = true; r.continuous = true; let final = '', interim = '';
+  const done = new Promise((res, rej) => {
+    r.onresult = e => { interim = ''; for (let i = e.resultIndex; i < e.results.length; i++) { if (e.results[i].isFinal) final += e.results[i][0].transcript; else interim += e.results[i][0].transcript; } onInterim && onInterim(final + interim); };
+    r.onerror = e => rej(new Error(e.error === 'not-allowed' ? 'Chưa cho phép nhận dạng giọng nói.' : 'Nhận dạng giọng nói lỗi: ' + e.error));
+    r.onend = () => res((final + interim).trim());
+  });
+  try { r.start(); } catch (e) { return null; }
+  return { stop: () => r.stop(), done };
+}
+
 /* =============== state =============== */
 let settings = { apiKey: '', model: '' };
 let profiles = [];
@@ -1052,7 +1084,7 @@ async function loadCurricula() {
     if (changed) await Store.set('lessons', lessons);
   } catch (e) {}
 }
-const lvLabel = lv => lv === 0 ? 'Nhập môn phát âm' : 'HSK ' + lv;
+const lvLabel = lv => lv === 0 ? 'Nhập môn phát âm' : lv === 0.5 ? 'Bộ thủ cơ bản' : 'HSK ' + lv;
 const bookSort = (a, b) => ((a.level ?? 9) - (b.level ?? 9)) || ((a.order || 0) - (b.order || 0)) || (a.createdAt - b.createdAt);
 
 /* =============== boot, profiles =============== */
@@ -1277,10 +1309,10 @@ function renderPath() {
   } else if (pathTab === 'book') {
     const bl = lessons.filter(l => l.kind !== 'chat' && !l.unitKey).sort(bookSort);
     const nCur = bl.filter(l => l.curriculum).length;
-    html += seg + (nCur ? `<p class="sub">Nhập môn phát âm pinyin và giáo trình chuẩn HSK 1–4 soạn sẵn (${nCur} bài). Học không tốn lượt AI, chỉ phần chấm phát âm và hội thoại mới dùng Gemini.</p>`
+    html += seg + (nCur ? `<p class="sub">Phát âm pinyin đầy đủ, bộ thủ cơ bản và giáo trình chuẩn HSK 1–4 soạn sẵn (${nCur} bài). Nên học hết phần phát âm trước. Học không tốn lượt AI, chỉ phần chấm phát âm và hội thoại mới dùng Gemini.</p>`
       : `<div class="infobox">Chưa nạp được giáo trình soạn sẵn. Kiểm tra trên GitHub đã có thư mục <b>giao-trinh</b> nằm cạnh index.html chưa, rồi mở lại app.</div>`);
     const openLv = nu && nu.kind === 'book' ? nu.lv : P.level;
-    html += bl.length ? [0, 1, 2, 3, 4, 5, 6].map(lv => { const g = bl.filter(l => (l.level ?? 0) === lv); if (!g.length) return ''; const dn = g.filter(l => D.lp[l.id] && D.lp[l.id].done).length;
+    html += bl.length ? [0, 0.5, 1, 2, 3, 4, 5, 6].map(lv => { const g = bl.filter(l => (l.level ?? 0) === lv); if (!g.length) return ''; const dn = g.filter(l => D.lp[l.id] && D.lp[l.id].done).length;
       return `<details class="lv"${lv === openLv ? ' open' : ''}><summary>${lvLabel(lv)} <span class="muted small" style="font-weight:400;margin-left:auto;margin-right:8px">${dn}/${g.length} bài</span></summary>` + g.map(l => row(l.id, l.title, `${l.curriculum ? (l.source || '').replace('Giáo trình chuẩn ', '') + ' · ' : ''}${arr(l.vocab).length} từ · ${arr(l.exercises).length} bài tập`)).join('') + '</details>'; }).join('')
       : `<div class="empty">Chưa có bài nào.<br>Nhập trang PDF của từng bài, hoặc nhập file giáo trình Claude soạn sẵn trong Tôi → Cài đặt → Nhập file.</div>`;
     html += `<button class="btn full" id="lImport" style="margin-top:12px">＋ Nhập thêm bài từ PDF</button>`;
@@ -1395,7 +1427,8 @@ const typeItems = l => [...arr(l.sentences), ...arr(l.replies)].filter(s => hanC
 const speakItems = l => { const s = [...arr(l.sentences), ...arr(l.replies)]; return s.length ? s.slice(0, 12) : arr(l.vocab); };
 
 /* ---- step: vocabulary ---- */
-const isPinyin = l => l.curriculum === 'pinyin';
+const isPinyin = l => l.curriculum === 'pinyin' || l.curriculum === 'botho';  // theory-first lessons
+const isRadical = l => l.curriculum === 'botho';
 function toneChart() {
   const W = 300, H = 150, y = v => 130 - (v - 1) * 28, X = (i, f) => 40 + i * 66 + f * 44;
   const tones = [[1, [5, 5], 'mā'], [2, [3, 5], 'má'], [3, [2, 1, 4], 'mǎ'], [4, [5, 1], 'mà']];
@@ -1405,11 +1438,11 @@ function toneChart() {
   return `<div class="card"><b>Đường đi của 4 thanh</b><p class="small muted" style="margin:4px 0 6px">Độ cao giọng từ 1 (thấp nhất) đến 5 (cao nhất).</p><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" role="img" aria-label="Biểu đồ 4 thanh điệu">${s}</svg><div class="btnrow" style="margin-top:6px"><button class="btn sm" data-say="妈，麻，马，骂" data-rate="0.6">▶ Nghe mā má mǎ mà</button></div></div>`;
 }
 function theoryCard(l) {
-  return `<div class="card"><b>Cách phát âm</b><p class="small muted" style="margin:4px 0 0">Bấm ▶ để nghe mẫu, đọc theo nhiều lần.</p>${arr(l.grammar).map(g => `<div class="gram"><b style="font-size:16px">${esc(g.pattern)}</b><div class="small" style="margin:4px 0">${esc(g.vi)}</div>${g.example_hz ? `<div class="row"><div><span class="hz" style="font-size:22px">${esc(g.example_hz)}</span> <span style="font-size:17px">${colorPy(g.example_py)}</span> <span class="small muted">${esc(g.example_vi)}</span></div><div class="acts"><button class="play" data-say="${esc(g.example_hz.replace(/\s*\/\s*/g, '，'))}">${playIcon}</button><button class="play" data-say="${esc(g.example_hz.replace(/\s*\/\s*/g, '，'))}" data-rate="0.5" aria-label="Nghe chậm">🐢</button></div></div>` : ''}</div>`).join('')}</div>`;
+  return `<div class="card"><b>${isRadical(l) ? 'Bộ thủ trong bài' : 'Cách phát âm'}</b><p class="small muted" style="margin:4px 0 0">${isRadical(l) ? 'Mỗi bộ: dạng viết, pinyin, tên Hán-Việt, ý nghĩa và chữ ví dụ. Bấm ▶ để nghe các chữ ví dụ.' : 'Bấm ▶ để nghe mẫu, đọc theo nhiều lần.'}</p>${arr(l.grammar).map(g => `<div class="gram"><b style="font-size:16px">${esc(g.pattern)}</b><div class="small" style="margin:4px 0">${esc(g.vi)}</div>${g.example_hz ? `<div class="row"><div><span class="hz" style="font-size:22px">${esc(g.example_hz)}</span> <span style="font-size:17px">${colorPy(g.example_py)}</span> <span class="small muted">${esc(g.example_vi)}</span></div><div class="acts"><button class="play" data-say="${esc(g.example_hz.replace(/\s*\/\s*/g, '，'))}">${playIcon}</button><button class="play" data-say="${esc(g.example_hz.replace(/\s*\/\s*/g, '，'))}" data-rate="0.5" aria-label="Nghe chậm">🐢</button></div></div>` : ''}</div>`).join('')}</div>`;
 }
 function mountVocab(box, l) {
   box.innerHTML = `${l.intro_vi ? `<div class="goodbox">${esc(l.intro_vi)}</div>` : ''}${l.summary_vi ? `<div class="goodbox">${esc(l.summary_vi)}</div>` : ''}${isPinyin(l) && l.order === 1 ? toneChart() : ''}${isPinyin(l) ? theoryCard(l) : ''}
-    <div class="card"><div class="row" style="align-items:center;margin-bottom:4px"><b>${isPinyin(l) ? 'Âm mẫu' : 'Từ mới'} (${arr(l.vocab).length})</b><button class="btn sm" data-all>▶ Nghe tất cả</button></div>
+    <div class="card"><div class="row" style="align-items:center;margin-bottom:4px"><b>${isRadical(l) ? 'Chữ ví dụ' : isPinyin(l) ? 'Từ ví dụ cho từng âm' : 'Từ mới'} (${arr(l.vocab).length})</b><button class="btn sm" data-all>▶ Nghe tất cả</button></div>
     <p class="small muted" style="margin:0 0 6px">Nghe từng từ, đọc theo. Bấm ✎ để xem cách viết.</p>
     ${arr(l.vocab).map((v, i) => `<div class="vrow"><div class="h">${esc(v.hz)}</div><div class="m">${colorPy(v.py)}<br><span class="muted">${esc(v.vi)}</span></div><div class="acts"><button class="play" data-say="${esc(v.hz)}" aria-label="Nghe">${playIcon}</button><button class="play" data-w="${i}" aria-label="Viết">✎</button></div></div>`).join('') || '<p class="muted small">Bài này không có từ mới.</p>'}</div>`;
   box.onclick = async e => {
@@ -1754,11 +1787,14 @@ async function fixHanzi(r) {
   } catch (e) {}
   return r;
 }
+let talkLang = 'zh', chatLang = 'vi';
 async function startTalk(box) {
+  loadScript('https://cdn.jsdelivr.net/npm/pinyin-pro@3/dist/index.js').catch(() => {});
   if (!apiKey()) { openSettingsForKey(); return; }
   talk = { history: [], turns: 0, errs: 0 };
   box.innerHTML = `<div class="row" style="margin-bottom:10px;align-items:center"><b>${esc(scene)}</b><button class="btn sm" data-a="end">Kết thúc</button></div>
     <div class="thread">${spinner('AI đang vào vai…')}</div>
+    <div class="seg" id="talkLang" style="max-width:340px;margin:12px auto 0"><button data-l="zh" class="${talkLang === 'zh' ? 'on' : ''}">Tôi nói tiếng Trung</button><button data-l="vi" class="${talkLang === 'vi' ? 'on' : ''}">Tôi nói tiếng Việt</button></div>
     <div class="micbar"><button class="mic" data-a="mic" aria-label="Bấm để nói" disabled><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><span class="miclabel">Bấm để nói, bấm lần nữa để gửi</span></div>`;
   const th = box.querySelector('.thread'), mic = box.querySelector('.mic'), lab = box.querySelector('.miclabel');
   const bubble = (r, extra) => { const hz = r.reply_hz || ''; th.insertAdjacentHTML('beforeend', `<div class="msg"><div class="row"><div>${ruby(hz, r.reply_py)}</div><button class="play" data-say="${esc(hz)}" aria-label="Nghe">${playIcon}</button></div><div class="vi">${esc(r.reply_vi)}</div>${extra}${r.hint_hz ? `<div class="hint">Gợi ý nếu bí: <span class="hz" style="font-size:17px">${esc(r.hint_hz)}</span> ${colorPy(r.hint_py)}${r.hint_vi ? ' – ' + esc(r.hint_vi) : ''}</div>` : ''}</div>`); say(hz); window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); };
@@ -1768,6 +1804,7 @@ async function startTalk(box) {
     th.innerHTML = ''; talk.history.push({ role: 'user', parts: [{ text: 'Bắt đầu hội thoại.' }] }, { role: 'model', parts: [{ text: r.reply_hz }] }); bubble(r, ''); mic.disabled = false;
   } catch (e) { th.innerHTML = `<p class="err small">${esc(e.message)}</p>`; }
   box.onclick = async e => {
+    const lb = e.target.closest('#talkLang [data-l]'); if (lb) { talkLang = lb.dataset.l; box.querySelectorAll('#talkLang button').forEach(b => b.classList.toggle('on', b === lb)); return; }
     const a = e.target.closest('[data-a]'); if (!a || !talk) return;
     if (a.dataset.a === 'end') { if (Rec.recording) Rec.cancel(); if (talk.turns) logActivity('talk', { turns: talk.turns, lesson: D.current, score: Math.round(100 * (talk.turns - talk.errs) / talk.turns) }); talk = null; mountTalkSetup(box); return; }
     if (a.dataset.a !== 'mic') return;
@@ -1778,7 +1815,19 @@ async function startTalk(box) {
       if (!rec || rec.ms < 600) throw new Error('Bản ghi quá ngắn. Bấm một lần, nói hết câu, rồi bấm lần nữa để gửi.');
       const audio = await toWavBase64(rec.blob); if (audio.peak < 0.01) throw new Error('Không nghe thấy tiếng. Kiểm tra micro.');
       th.insertAdjacentHTML('beforeend', '<div class="msg me pending">' + spinner('Đang nghe…') + '</div>'); window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-      const r = await gemini({ system: talkSystem(), history: talk.history, temperature: 0.6, parts: [{ inline_data: { mime_type: audio.mime, data: audio.data } }, { text: "This is the learner's spoken reply. " + TALK_FORMAT }] });
+      let r;
+      if (talkLang === 'zh' && XF.ok()) {
+        // iFLYTEK hears (fast, standard Mandarin model) and checks pronunciation; Gemini only reads text
+        let said = ''; try { said = await xfIat(rec.blob); } catch (e) { toast(e.message, 3500); }
+        if (said && hanCount(said)) {
+          const pron = iseScore({ hz: said }, rec.blob).catch(() => null);
+          r = await gemini({ system: talkSystem(), history: talk.history, temperature: 0.6, parts: [{ text: `Học viên vừa nói (máy nhận dạng giọng nói chuyển thành chữ, có thể sai vài chữ đồng âm): «${said}». Leave pron_note_vi empty. ` + TALK_FORMAT }] });
+          r.heard_text = said; if (!r.heard_py && window.pinyinPro) r.heard_py = pinyinPro.pinyin(hanOnly(said));
+          const ps = await pron; const bad = ps && arr(ps.chars).filter(c => !c.ok).slice(0, 2);
+          if (bad && bad.length) r.pron_note_vi = bad.map(c => `${c.hz} (${c.target_py}): ${c.tip}`).join(' ');
+        }
+      }
+      if (!r) r = await gemini({ system: talkSystem(), history: talk.history, temperature: 0.6, parts: [{ inline_data: { mime_type: audio.mime, data: audio.data } }, { text: "This is the learner's spoken reply (Vietnamese, Chinese, or a mix; if Vietnamese, put what they meant in Chinese into correction.better_hz and set has_error true so they learn the Chinese sentence). " + TALK_FORMAT }] });
       await fixHanzi(r);
       const me = th.querySelector('.pending'); me.classList.remove('pending');
       me.innerHTML = r.heard_text ? ruby(r.heard_text, r.heard_py) : '<span class="muted small">Không nghe rõ</span>';
@@ -2093,18 +2142,31 @@ $('#chatStop').onclick = () => stopChatSpeech();
 $('#m-chat').addEventListener('click', e => { if (e.target.closest('[data-close]') || e.target.id === 'm-chat') { stopChatSpeech(); if (Rec.recording) { Rec.cancel(); $('#chatMic').classList.remove('rec'); } } });
 $('#chatSend').onclick = () => { const t = $('#chatIn').value.trim(); if (!t) return; $('#chatIn').value = ''; sendChat(t); };
 $('#chatIn').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('#chatSend').click(); } };
+let chatDict = null;
+$('#chatLangSeg').onclick = e => { const b = e.target.closest('[data-l]'); if (!b) return; chatLang = b.dataset.l; $('#chatLangSeg').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); };
 $('#chatMic').onclick = async () => {
-  const b = $('#chatMic'), hint = $('#chatHint');
+  const b = $('#chatMic'), hint = $('#chatHint'), idle = 'Bấm để hỏi thầy, bấm lần nữa để gửi';
+  if (chatDict) { b.classList.remove('rec'); hint.textContent = 'Đang xử lý…'; chatDict.stop(); return; }
   if (!Rec.recording) {
     if (!apiKey()) { openSettingsForKey(); return; }
     stopChatSpeech();
+    if (chatLang === 'vi') {
+      const d = dictate('vi-VN', txt => hint.textContent = txt || 'Đang nghe…');
+      if (d) {
+        chatDict = d; b.classList.add('rec'); hint.textContent = 'Đang nghe… nói xong bấm lần nữa';
+        try { const txt = await d.done; chatDict = null; b.classList.remove('rec'); hint.textContent = idle; if (txt) sendChat(txt); else toast('Chưa nghe được câu hỏi, thử lại nhé.'); }
+        catch (e) { chatDict = null; b.classList.remove('rec'); hint.textContent = idle; toast(e.message + ' Chuyển sang ghi âm.', 3500); }
+        return;
+      }
+    }
     try { Rec.autoStop = () => b.click(); await Rec.start(ms => hint.textContent = 'Đang nghe ' + (ms / 1000).toFixed(0) + ' giây… bấm lần nữa để gửi'); b.classList.add('rec'); }
     catch (e) { toast(e.message, 5000); }
     return;
   }
-  b.classList.remove('rec'); hint.textContent = 'Bấm để hỏi thầy, bấm lần nữa để gửi';
+  b.classList.remove('rec'); hint.textContent = idle;
   const rec = await Rec.stop(); if (!rec || rec.ms < 600) { toast('Bản ghi quá ngắn. Bấm, nói hết câu hỏi, rồi mới bấm lần nữa.'); return; }
   const audio = await toWavBase64(rec.blob); if (audio.peak < 0.01) { toast('Không nghe thấy tiếng. Kiểm tra micro.'); return; }
+  if (chatLang === 'zh' && XF.ok()) { try { const said = await xfIat(rec.blob); if (said && hanCount(said)) return sendChat('🎤 ' + said); } catch (e) {} }
   sendChat('', audio);
 };
 $('#chClear').onclick = () => { if (confirm('Xóa cuộc trò chuyện với thầy?')) { D.chat = []; saveD(); renderChat(); } };
