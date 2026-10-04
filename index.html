@@ -1268,13 +1268,14 @@ function mountCollection(box, c) {
   wireLineMics(box, items);
 }
 async function mountDict(box) {
+  importVoicePack('tu-dien').catch(() => {});
   if (!DICT) { box.innerHTML = spinner('Đang tải từ điển…'); DICT = DLIST && DLIST.dict ? await cachedJson(DLIST.dict) : null; if (!DICT) { box.innerHTML = '<div class="empty">Chưa có file từ điển trên GitHub.</div>'; return; } }
   let lv = 0, q = '', shown = 60;
   const render = () => {
     const f = q.trim().toLowerCase(), fold = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     const list = DICT.words.filter(w => (!lv || w.lv === lv) && (!f || w.hz.includes(f) || fold(w.py).replace(/\s/g, '').includes(fold(f).replace(/\s/g, '')) || fold(w.vi).includes(fold(f)) || fold(w.en).includes(fold(f))));
     const items = list.slice(0, shown);
-    box.querySelector('#dList').innerHTML = `<p class="small muted">${list.length} từ</p>` + items.map((w, i) => `<div class="vrow"><div class="h">${esc(w.hz)}</div><div class="m">${colorPy(w.py)} <span class="tag">HSK ${w.lv}</span><br><span class="muted">${esc(w.vi || w.en)}${w.vi ? '' : ' <i>(EN)</i>'}</span></div><div class="acts"><button class="play" data-say="${esc(w.hz)}">${playIcon}</button><button class="play" data-add="${i}">＋</button></div></div>`).join('') + (list.length > shown ? `<button class="btn full" data-more>Xem thêm</button>` : '');
+    box.querySelector('#dList').innerHTML = `<p class="small muted">${list.length} từ</p>` + items.map((w, i) => `<div class="vrow"><div class="h">${esc(w.hz)}</div><div class="m">${colorPy(w.py)} <span class="tag">HSK ${w.lv}</span><br><span class="muted">${esc(w.vi || w.en)}${w.vi ? '' : ' <i>(EN)</i>'}</span>${w.ex ? `<div class="small" style="margin-top:4px"><span class="hz" style="font-size:16px">${esc(w.ex.hz)}</span> <button class="btn sm ghost" data-say="${esc(w.ex.hz)}" style="padding:2px 8px">▶</button><br>${colorPy(w.ex.py)}<br><span class="muted">${esc(w.ex.vi)}</span></div>` : ''}</div><div class="acts"><button class="play" data-say="${esc(w.hz)}">${playIcon}</button><button class="play" data-add="${i}">＋</button></div></div>`).join('') + (list.length > shown ? `<button class="btn full" data-more>Xem thêm</button>` : '');
     box.querySelector('#dList').onclick = e => { const ad = e.target.closest('[data-add]'); if (ad) { const w = items[+ad.dataset.add]; addCard({ f: w.hz, py: w.py, vi: w.vi || w.en, kind: 'n' }) ? toast('Đã thêm vào Ôn tập') : toast('Đã có trong Ôn tập'); } if (e.target.closest('[data-more]')) { shown += 100; render(); } };
   };
   box.innerHTML = `<button class="btn sm ghost" data-back2>‹ Thư viện</button><h2 style="margin:8px 0">Từ điển HSK 1–5</h2>
@@ -1404,6 +1405,7 @@ async function buildVoicePack(offlineOnly) {
   lessons.filter(l => l.curriculum).forEach(l => { lessonTexts(l).forEach(t => addG(l.curriculum, t)); arr(l.vocab).forEach(v => [...v.hz].filter(isHan).forEach(ch => addG(l.curriculum, ch))); });
   LIB.forEach(c => c.sections.forEach(s => arr(s.items).forEach(it => addG('lib-' + c.code, it.hz))));
   try { const ch = await (await fetch('giao-trinh/bang-pinyin.json', { cache: 'no-cache' })).json(); Object.values(ch.syllables || {}).forEach(x => addG('bang-pinyin', x)); } catch (e) {}
+  try { if (!DICT && DLIST && DLIST.dict) DICT = await cachedJson(DLIST.dict); arr(DICT && DICT.words).forEach(w => { addG('tu-dien', w.hz); if (w.ex) addG('tu-dien', w.ex.hz); }); } catch (e) {}
   // what is already on GitHub
   const list = await loadPackList(true); let have = { normal: [], slow: [] };
   try { const r = await fetch('am-thanh/muc-luc.json', { cache: 'no-cache' }); if (r.ok) have = await r.json(); } catch (e) {}
