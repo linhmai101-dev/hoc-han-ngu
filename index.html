@@ -1435,7 +1435,7 @@ async function buildVoicePack(offlineOnly) {
     const zip = new JSZip(), ver = Date.now(), files = [], vers = Object.assign({}, list.ver || {}), sizes = {};
     arr(list.packs).forEach(f => { if (!vers[f]) vers[f] = list.version || 1; });
     let phan = Math.max(0, ...arr(list.packs).map(f => +((String(f).match(/^phan-(\d+)\//) || [])[1] || 0))) + 1, phanSize = 0;
-    const firstPhan = phan, LIM = 5 * 1048576, PHAN = 45 * 1048576;
+    const firstPhan = phan, LIM = 4 * 1048576, PHAN = 18 * 1048576;   // small enough for GitHub's web upload
     const write = (code, part, cur) => {
       const body = JSON.stringify({ code, version: ver, vcn: vcnNow, ...cur }), size = new Blob([body]).size;
       if (phanSize + size > PHAN && phanSize > 0) { phan++; phanSize = 0; }
@@ -1460,7 +1460,7 @@ async function buildVoicePack(offlineOnly) {
     const ok = done - fail - capped, biggest = files.length ? Math.max(...Object.values(sizes)) / 1048576 : 0, folders = [];
     for (let k = firstPhan; k <= phan; k++) folders.push('phan-' + k);
     msg.innerHTML = `<b style="color:var(--jade)">Xong: ${ok}/${total} đoạn${incremental ? ' (phần bổ sung)' : ''}</b>${capped ? ` · <span class="err">${capped} đoạn chưa có (${offlineOnly ? 'chưa tạo trên máy này' : 'đã chạm giới hạn 60%'})</span>` : ''}${fail ? ` · ${fail} lỗi, bấm lại để bổ sung` : ''}.
-      <br>File <b>am-thanh.zip</b> (${(blob.size / 1048576).toFixed(1)} MB) đang tải về thư mục Tải xuống. Giải nén ra sẽ thấy ${folders.length + 1} thư mục <b>buoc-1…, buoc-2…</b> (mỗi thư mục tối đa 45 MB, mỗi file tối đa ${Math.max(biggest, 0.1).toFixed(1)} MB).
+      <br>File <b>am-thanh.zip</b> (${(blob.size / 1048576).toFixed(1)} MB) đang tải về thư mục Tải xuống. Giải nén ra sẽ thấy ${folders.length + 1} thư mục <b>buoc-1…, buoc-2…</b> (mỗi thư mục tối đa 18 MB, mỗi file tối đa ${Math.max(biggest, 0.1).toFixed(1)} MB).
       <br><b>Tải lên GitHub theo thứ tự từng bước:</b> mở thư mục buoc-1 → kéo thư mục <b>am-thanh</b> bên trong vào trang Upload files của repo (ở thư mục gốc) → Commit. Làm tương tự với buoc-2, buoc-3… Bước cuối là mục lục. GitHub tự gộp vào thư mục am-thanh có sẵn. Không tải file .zip lên, không xóa thư mục cũ.`;
     $('#packDl').hidden = false; $('#packDl').onclick = () => saveZip();
     saveZip();
