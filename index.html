@@ -1371,6 +1371,7 @@ function lessonTexts(l) {
   arr(l.sentences).forEach(s => out.push(s.hz)); arr(l.replies).forEach(s => out.push(s.hz));
   arr(l.grammar).forEach(g => g.example_hz && out.push(g.example_hz.replace(/\s*\/\s*/g, '，')));
   arr(l.exercises).forEach(x => x.say && out.push(x.say));
+  arr(l.speak).forEach(x => out.push(x.hz));
   if (l.curriculum === 'pinyin' && l.order === 1) out.push('妈，麻，马，骂');
   notesOf(l).forEach(n => arr(n.ex).filter(e => !e.bad).forEach(e => out.push(e.hz)));
   return out.map(ttsNorm).filter(Boolean);
@@ -1653,6 +1654,28 @@ ${PY_RULE}` }] });
 
 /* =============== LESSON flow =============== */
 let flow = null;
+/* ---- stage tests: part 1 listening + reading, part 2 speaking; pass at 80 ---- */
+function mountTest(key, l) {
+  const box = $('#v-lesson'), st = lp(key), r = st.test || {};
+  const total = (r.p1 != null && r.p2 != null) ? Math.round(r.p1 * 0.7 + r.p2 * 0.3) : null;
+  box.innerHTML = `<div class="flowhead"><button class="icon" data-back aria-label="Quay lại">‹</button><h2>${esc(l.title)}</h2></div>
+    <div class="goodbox">${esc(l.intro_vi || '')}</div>
+    <div class="card"><b>Phần 1 · Nghe và đọc hiểu (${arr(l.exercises).length} câu, 70%)</b><p class="small muted">Nghe chọn nghĩa, nghe giá và giờ, nhận thanh điệu, chọn từ, sắp xếp câu.</p>
+      ${r.p1 != null ? `<p>Kết quả: <b style="color:${scoreCol(r.p1)}">${r.p1}</b> điểm</p>` : ''}<button class="btn pri full" data-t="p1">${r.p1 != null ? 'Làm lại phần 1' : 'Bắt đầu phần 1'}</button></div>
+    <div class="card"><b>Phần 2 · Nói (${arr(l.speak).length} câu, 30%)</b><p class="small muted">Nghe mẫu rồi đọc theo, iFLYTEK chấm từng chữ. Nên đeo tai nghe.</p>
+      ${r.p2 != null ? `<p>Kết quả: <b style="color:${scoreCol(r.p2)}">${r.p2}</b> điểm</p>` : ''}<button class="btn pri full" data-t="p2">${r.p2 != null ? 'Làm lại phần 2' : 'Bắt đầu phần 2'}</button></div>
+    ${total != null ? `<div class="card" style="text-align:center"><div style="font-size:44px;font-weight:700;color:${scoreCol(total)}">${total}</div><p>${total >= 80 ? '🎉 Đạt! Bạn sẵn sàng sang giai đoạn tiếp theo.' : 'Chưa đạt 80. Hãy vào Ôn tập luyện lại các câu sai, rồi làm lại bài kiểm tra.'}</p></div>` : ''}
+    <div id="testBody"></div>`;
+  const save = () => { st.test = r; if (r.p1 != null && r.p2 != null) { st.done = true; st.at = st.at || Date.now(); } saveD(); };
+  box.querySelector('[data-back]').onclick = () => go('path');
+  box.onclick = e => {
+    const b = e.target.closest('[data-t]'); if (!b) return; const body = box.querySelector('#testBody');
+    box.querySelectorAll('.card,.goodbox').forEach(x => x.hidden = true);
+    if (b.dataset.t === 'p1') runExercises(body, arr(l.exercises), () => mountTest(key, l), sc => { r.p1 = sc; save(); });
+    if (b.dataset.t === 'p2') { if (!apiKey() && !XF.ok()) return openSettingsForKey('Phần nói cần key chấm phát âm'); runShadowing(body, arr(l.speak), sc => { r.p2 = sc; save(); }, () => mountTest(key, l)); }
+  };
+}
+
 async function openLesson(key) {
   try { const ll = lessons.find(x => x.id === key); if (ll && ll.curriculum) importVoicePack(ll.curriculum).catch(() => {}); } catch (e) {}
   go('lesson'); const box = $('#v-lesson');
@@ -1667,6 +1690,7 @@ async function openLesson(key) {
     catch (e) { box.querySelector('.card').insertAdjacentHTML('beforeend', `<p class="err small">${esc(e.message)}</p><button class="btn pri full" id="retryGen">Thử lại</button>`); $('#retryGen').onclick = () => openLesson(key); return; }
     if (curView !== 'lesson' || D.current !== key) return;
   }
+  if (l.kind === 'test') return mountTest(key, l);
   const st = lp(key); const first = STEPS.findIndex(s => !st.steps[s[0]]);
   flow = { key, l, step: first < 0 ? 0 : first };
   renderFlow();
@@ -1677,7 +1701,7 @@ function renderFlow() {
     <div class="menu lmenu" hidden><button data-lm="ask">💬 <span>Hỏi thầy về bài này</span>›</button><button data-lm="talk">话 <span>Hội thoại với AI theo bài này</span>›</button><button data-lm="reset">↺ <span>Học lại từ đầu (xóa dấu tích)</span>›</button><button data-lm="${l.kind === 'smart' ? 'regen' : 'del'}">${l.kind === 'smart' ? '✦ <span>Soạn lại bài này bằng AI</span>' : '✕ <span>Xóa bài này cho cả nhà</span>'}›</button></div>
     <div class="stepper">${STEPS.map((s, i) => `<button data-step="${i}" class="${st.steps[s[0]] ? 'ok' : ''}${i === step ? ' cur' : ''}"><span class="d">${st.steps[s[0]] ? '✓' : i + 1}</span>${s[1]}</button>`).join('')}</div>
     <div id="stepBody"></div>
-    <div class="flowfoot">${step > 0 ? '<button class="btn" data-prev style="flex:0 0 auto;min-width:56px">‹</button>' : ''}<button class="btn pri" data-done>${step < 5 ? 'Xong bước này ›' : 'Hoàn thành bài ✓'}</button></div>`;
+    <div class="flowfoot">${step > 0 ? '<button class="btn" data-prev style="flex:0 0 auto;min-width:56px">‹</button>' : ''}<button class="btn pri" data-done>${step < STEPS.length - 1 ? 'Xong bước này ›' : 'Hoàn thành bài ✓'}</button></div>`;
   box.querySelector('[data-back]').onclick = () => go('path');
   box.querySelector('[data-more]').onclick = () => { const m = box.querySelector('.lmenu'); m.hidden = !m.hidden; };
   box.querySelector('.lmenu').onclick = e => { const b = e.target.closest('[data-lm]'); if (b) lessonAction(b.dataset.lm); };
@@ -1978,7 +2002,7 @@ function wireLineMics(box, items) {
   });
 }
 /* ---- continuous shadowing: listen → repeat → auto-score, whole lesson in one go ---- */
-async function runShadowing(box, items) {
+async function runShadowing(box, items, onScore, onBack) {
   let stop = false; const results = [];
   box.innerHTML = `<div class="card" style="text-align:center"><div class="small muted" id="shStep"></div>
     <div class="target big" id="shTarget" style="margin:10px 0"></div><div class="vi-c" id="shVi"></div>
@@ -2001,7 +2025,7 @@ async function runShadowing(box, items) {
     results.push({ it, blob: rec && rec.blob, p: rec && rec.ms > 500 ? gradeRecording(it, rec.blob).catch(err => ({ error: err.message })) : Promise.resolve({ error: 'Không ghi được âm' }) });
     set('shState', '✓'); await wait(300);
   }
-  if (!results.length) { mountSpeakChooser(box, items); return; }
+  if (!results.length) { if (onBack) return onBack(); mountSpeakChooser(box, items); return; }
   box.innerHTML = spinner('Đang tổng hợp điểm…');
   const rows = [];
   for (const r of results) { const res = await r.p; rows.push({ ...r, res }); }
@@ -2012,14 +2036,14 @@ async function runShadowing(box, items) {
     return `<div class="gram"><div class="row"><div>${ruby(r.it.hz, r.it.py)}</div><div class="acts"><b style="color:${scoreCol(score)};font-size:19px">${score}</b><button class="play" data-mine="${k}" aria-label="Giọng bạn">${playIcon}</button></div></div>
       ${bad.map(c => `<div class="small issue" style="margin:4px 0"><b class="hz">${esc(c.hz)}</b> ${esc(c.target_py)}: ${esc(c.tip || labelIssue(c.issue))} <button class="btn sm ghost" data-say="${esc(c.hz)}">▶ mẫu</button></div>`).join('')}</div>`;
   }).join('');
-  const avg = cnt ? Math.round(sum / cnt) : 0;
+  const avg = cnt ? Math.round(sum / cnt) : 0; if (onScore) onScore(avg);
   box.innerHTML = `<div class="card"><div class="score"><b style="color:${scoreCol(avg)}">${avg}</b><span>/ 100 điểm trung bình (${cnt} câu)</span></div>
     <p class="small muted">Chữ đọc sai đã được đưa vào Ôn tập. Bấm ▶ để nghe lại giọng bạn.</p>${html}
-    <div class="btnrow"><button class="btn pri" data-a="shagain">↻ Đọc lại cả lượt</button><button class="btn" data-a="shone">Luyện từng câu</button></div></div>`;
+    <div class="btnrow"><button class="btn pri" data-a="shagain">↻ Đọc lại cả lượt</button><button class="btn" data-a="shone">${onBack ? '‹ Quay lại' : 'Luyện từng câu'}</button></div></div>`;
   box.onclick = e => {
     const m = e.target.closest('[data-mine]'); if (m) { const b = rows[+m.dataset.mine].blob; if (b) new Audio(URL.createObjectURL(b)).play(); }
-    if (e.target.closest('[data-a="shagain"]')) runShadowing(box, items);
-    if (e.target.closest('[data-a="shone"]')) mountReadAlong(box, items);
+    if (e.target.closest('[data-a="shagain"]')) runShadowing(box, items, onScore, onBack);
+    if (e.target.closest('[data-a="shone"]')) { if (onBack) return onBack(); mountReadAlong(box, items); }
   };
 }
 function mountSpeakChooser(box, items) {
@@ -2201,12 +2225,12 @@ Plausible distractors, exactly one correct option.` }] });
 }
 const normS = s => hanOnly(s) || String(s).replace(/\s|[，。！？,.!?]/g, '');
 function fmtQ(s) { return esc(s).replace(/([\p{Script=Han}，。？！、]+)/gu, '<span class="hz">$1</span>'); }
-function runExercises(box, items, onBack) {
+function runExercises(box, items, onBack, onFinish) {
   const mix = x => { if (x.type !== 'mc') return x; const order = shuffle(x.options.map((o, k) => k)); return { ...x, options: order.map(k => x.options[k]), answer: order.indexOf(+x.answer) }; };
   const ex = { items: items.map(x => ({ ...mix(x), _done: false, _pick: [] })), i: 0, right: 0, wrong: 0 };
   function renderQ() {
     const q = ex.items[ex.i];
-    if (!q) { const n = Math.max(1, ex.i), score = Math.round(100 * ex.right / n); logActivity('ex', { score, lesson: D.current, n });
+    if (!q) { const n = Math.max(1, ex.i), score = Math.round(100 * ex.right / n); logActivity('ex', { score, lesson: D.current, n }); if (onFinish) onFinish(score);
       box.innerHTML = `<div class="card" style="text-align:center"><div style="font-size:46px;font-weight:700;color:${score >= 80 ? 'var(--jade)' : score >= 50 ? 'var(--gold)' : 'var(--seal)'}">${score}</div><p>Đúng ${ex.right}/${n} câu.${ex.wrong ? ' Câu sai đã vào Ôn tập.' : ''}</p><button class="btn full" data-a="back">Làm lại hoặc soạn bài khác</button></div>`;
       box.onclick = e => { if (e.target.closest('[data-a="back"]')) onBack(); }; return; }
     let body = '';
