@@ -365,8 +365,16 @@ nav .badge{position:absolute;top:4px;left:calc(50% + 8px);background:var(--seal)
   <p class="small muted">Tiến độ học, hồ sơ, key và giọng đọc đã nghe đều lưu ngay trong điện thoại này (bộ nhớ của trình duyệt), không gửi lên GitHub hay máy chủ nào.</p>
   <div class="btnrow"><button class="btn sm" id="sClearVoice">Xóa giọng đọc đã lưu</button></div>
   <h3>Bộ giọng đọc dùng chung cho cả nhà</h3>
-  <p class="small muted">Trên cùng một máy, mọi người đã dùng chung giọng đọc đã lưu. Để các máy khác cũng không phải gọi lại iFLYTEK: một người tạo bộ giọng đọc một lần (nên làm trên máy tính), tải thư mục <b>am-thanh</b> lên GitHub; các máy khác tự lấy về khi mở bài, hoặc bấm "Tải về máy này".</p>
-  <div class="btnrow"><button class="btn sm" id="packBuild">Tạo bộ giọng đọc (1 lần)</button><button class="btn sm pri" id="packGet">Tải về máy này</button></div>
+  <p class="small muted">Làm 3 bước theo thứ tự. Bước ① và ② làm trên <b>máy tính</b> (Chrome hoặc Edge), chỉ cần một người làm.</p>
+  <div class="small" id="packState"></div>
+  <ol class="small" style="padding-left:18px;margin:8px 0">
+    <li><b>Tạo:</b> bấm "① Tạo bộ giọng đọc". Đoạn nào máy đã có thì không tốn lượt. Giữ trang mở đến khi hiện "Xong"; máy sẽ tải về file <b>am-thanh.zip</b> (thư mục Tải xuống).</li>
+    <li><b>Đưa lên GitHub:</b> giải nén am-thanh.zip ra thư mục <b>am-thanh</b>, vào repo trên GitHub → Add file → Upload files → kéo cả thư mục am-thanh vào (cạnh index.html) → Commit.</li>
+    <li><b>Lấy về điện thoại:</b> đợi 1–2 phút, trên mỗi máy bấm "③ Lấy từ GitHub về máy này" (hoặc cứ mở app, máy tự lấy dần).</li>
+  </ol>
+  <div class="btnrow"><button class="btn sm" id="packBuild">① Tạo bộ giọng đọc</button><button class="btn sm" id="packZip" title="Không gọi iFLYTEK">Chỉ đóng gói phần đã có</button><button class="btn sm" id="packDl" hidden>⬇ Tải lại file am-thanh.zip</button></div>
+  <div style="height:8px;background:var(--line);border-radius:5px;overflow:hidden;margin:8px 0"><div id="packBar" style="height:100%;width:0;background:var(--jade)"></div></div>
+  <div class="btnrow"><button class="btn sm pri" id="packGet">③ Lấy từ GitHub về máy này</button></div>
   <p class="small" id="packMsg"></p>
   <h3>Lượt iFLYTEK đã dùng</h3>
   <div class="small" id="xfUse"></div>
@@ -1376,29 +1384,36 @@ function lessonTexts(l) {
   notesOf(l).forEach(n => arr(n.ex).filter(e => !e.bad).forEach(e => out.push(e.hz)));
   return out.map(ttsNorm).filter(Boolean);
 }
-async function buildVoicePack() {
-  if (!XF.ok()) return toast('Cần key iFLYTEK trên máy này để tạo bộ giọng đọc');
-  const msg = $('#packMsg'), groups = {};
+let packZipUrl = null, packBusy = false;
+const warnLeave = e => { e.preventDefault(); e.returnValue = ''; };
+// offlineOnly = true: only package what this device already saved (never calls iFLYTEK)
+async function buildVoicePack(offlineOnly) {
+  if (packBusy) return;
+  if (!offlineOnly && !XF.ok()) return toast('Cần key iFLYTEK trên máy này để tạo bộ giọng đọc');
+  const msg = $('#packMsg'), bar = $('#packBar'), groups = {};
   const addG = (code, t) => { t = ttsNorm(t); if (t) (groups[code] = groups[code] || new Set()).add(t); };
   lessons.filter(l => l.curriculum).forEach(l => { lessonTexts(l).forEach(t => addG(l.curriculum, t)); arr(l.vocab).forEach(v => [...v.hz].filter(isHan).forEach(ch => addG(l.curriculum, ch))); });
   LIB.forEach(c => c.sections.forEach(s => arr(s.items).forEach(it => addG('lib-' + c.code, it.hz))));
   try { const ch = await (await fetch('giao-trinh/bang-pinyin.json', { cache: 'no-cache' })).json(); Object.values(ch.syllables || {}).forEach(x => addG('bang-pinyin', x)); } catch (e) {}
   const jobs = Object.entries(groups).flatMap(([code, set]) => [...set].flatMap(t => [{ code, t }, { code, t, slow: true }]));
-  if (!confirm(`Tạo bộ giọng đọc: ${jobs.length / 2} từ, câu, chữ đơn và âm tiết (mỗi mục có bản thường và bản đọc chậm), tổng ${jobs.length} lượt iFLYTEK. Mục nào máy này đã có thì không tốn lượt. Nên làm trên máy tính, giữ màn hình mở (khoảng 30–60 phút). Làm dở có thể bấm lại để chạy tiếp. Tiếp tục?`)) return;
-  const audio = {}, slowA = {}; let done = 0, fail = 0, stop = false, capped = 0; const total = jobs.length;
-  const usedStart = await xfUsed('tts'); msg.textContent = `Đã dùng ${usedStart} / giới hạn ${XF_BUDGET.tts} lượt giọng đọc…`;
-  $('#packBuild').disabled = true;
+  const total = jobs.length, saved = (await Store.count('xf:')) ;
+  if (!offlineOnly && !confirm(`Tổng cộng ${total} đoạn giọng đọc (bản thường và bản chậm). Máy này đã có sẵn khoảng ${saved} đoạn, những đoạn đó KHÔNG tốn lượt.\n\nGiữ trang này mở, không tắt máy hay chuyển ứng dụng đến khi hiện "Xong". Nếu bị ngắt, bấm lại nút này để làm tiếp.\n\nBắt đầu?`)) return;
+  packBusy = true; window.addEventListener('beforeunload', warnLeave);
+  let wake = null; try { wake = await navigator.wakeLock.request('screen'); } catch (e) {}
+  $('#packBuild').disabled = $('#packZip').disabled = true;
+  const audio = {}, slowA = {}; let done = 0, fail = 0, stop = false, capped = 0, net = 0;
+  const show = () => { const p = Math.round(100 * done / total); bar.style.width = p + '%'; msg.textContent = `${offlineOnly ? 'Đang đóng gói' : 'Đang tạo'}: ${done}/${total} (${p}%)${net ? ` · gọi iFLYTEK ${net}` : ''}${fail ? ` · lỗi ${fail}` : ''}${capped ? ` · chưa có ${capped}` : ''}…`; };
   const worker = async () => { while (jobs.length && !stop) { const j = jobs.shift();
-      try { const allow = (await xfUsed('tts')) < XF_BUDGET.tts; const b = await xfAudioB64(j.t, j.slow, allow); if (!b && !allow) { capped++; continue; } if (b) ((j.slow ? slowA : audio)[j.code] = (j.slow ? slowA : audio)[j.code] || {})[j.t] = b; else fail++; }
+      try { const allow = !offlineOnly && (await xfUsed('tts')) < XF_BUDGET.tts; const before = (await Store.get('xf:' + ((settings.xfVcn || '').trim() || 'x_xiaoyan') + (j.slow ? ':s20' : '') + ':' + j.t)) || (await Store.get((j.slow ? 'xfbs:' : 'xfb:') + j.t));
+        const b = before || await xfAudioB64(j.t, j.slow, allow); if (!before && b) net++;
+        if (b) ((j.slow ? slowA : audio)[j.code] = (j.slow ? slowA : audio)[j.code] || {})[j.t] = b; else capped++; }
       catch (e) { fail++; if (/11201|11200|hết lượt/.test(e.message)) { stop = true; toast(e.message, 5000); } }
-      done++; if (done % 10 === 0 || !jobs.length) msg.textContent = `Đã xử lý ${done}/${total}${fail ? `, lỗi ${fail}` : ''}…`; } };
-  await Promise.all([worker(), worker(), worker(), worker()]);
-  msg.textContent = 'Đang đóng gói…';
+      done++; if (done % 10 === 0 || !jobs.length) show(); } };
+  await Promise.all([worker(), worker(), worker(), worker()]); show();
+  msg.textContent = 'Đang đóng gói file am-thanh.zip…';
   try {
     await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
-    const zip = new JSZip(), ver = Date.now(), vcn = (settings.xfVcn || '').trim() || 'x_xiaoyan', codes = Object.keys(groups);
-    // split big packs into parts of about 12 MB so each file uploads easily through the GitHub website (limit 25 MB)
-    const files = [];
+    const zip = new JSZip(), ver = Date.now(), vcn = (settings.xfVcn || '').trim() || 'x_xiaoyan', codes = Object.keys(groups), files = [];
     codes.forEach(code => {
       let part = 0, cur = { audio: {}, slow: {} }, size = 0;
       const flush = () => { const name = part ? `${code}-${part + 1}` : code; zip.file(`am-thanh/${name}.json`, JSON.stringify({ code, version: ver, vcn, ...cur })); files.push(name); part++; cur = { audio: {}, slow: {} }; size = 0; };
@@ -1406,19 +1421,30 @@ async function buildVoicePack() {
       if (size || !part) flush();
     });
     zip.file('am-thanh/danh-sach.json', JSON.stringify({ version: ver, packs: files }));
-    const blob = await zip.generateAsync({ type: 'blob' }), a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'am-thanh.zip'; document.body.appendChild(a); a.click(); a.remove();
-    msg.innerHTML = `${capped ? `<span class="err">Đã chạm giới hạn 60% (${XF_BUDGET.tts} lượt): ${capped} mục chưa tạo.</span><br>` : ''}<span style="color:var(--jade)">Xong ${done - fail}/${total} mục${fail ? `, ${fail} lỗi (bấm lại để bổ sung, mục đã có không tốn lượt)` : ''}. File am-thanh.zip nặng ${(blob.size / 1048576).toFixed(1)} MB. Giải nén rồi tải cả thư mục <b>am-thanh</b> lên GitHub, cạnh index.html.</span>`;
+    const blob = await zip.generateAsync({ type: 'blob' });
+    if (packZipUrl) URL.revokeObjectURL(packZipUrl); packZipUrl = URL.createObjectURL(blob);
+    const ok = done - fail - capped;
+    msg.innerHTML = `<b style="color:var(--jade)">Xong: ${ok}/${total} đoạn</b>${capped ? ` · <span class="err">${capped} đoạn chưa có (${offlineOnly ? 'chưa tạo trên máy này' : 'đã chạm giới hạn 60%'})</span>` : ''}${fail ? ` · ${fail} lỗi, bấm "Tạo" lại để bổ sung` : ''}.<br>File <b>am-thanh.zip</b> (${(blob.size / 1048576).toFixed(1)} MB) đang được tải về thư mục <b>Tải xuống (Downloads)</b>. Nếu không thấy, bấm nút "⬇ Tải lại file" bên dưới. Sau đó làm tiếp bước ③.`;
+    $('#packDl').hidden = false; $('#packDl').onclick = () => saveZip();
+    saveZip();
   } catch (e) { msg.innerHTML = `<span class="err">Không đóng gói được: ${esc(e.message)}</span>`; }
-  $('#packBuild').disabled = false;
+  packBusy = false; window.removeEventListener('beforeunload', warnLeave); try { wake && wake.release(); } catch (e) {}
+  $('#packBuild').disabled = $('#packZip').disabled = false;
+}
+function saveZip() { if (!packZipUrl) return; const a = document.createElement('a'); a.href = packZipUrl; a.download = 'am-thanh.zip'; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
+async function packStatus() {
+  const el = $('#packState'); if (!el) return;
+  let gh = null; try { const r = await fetch('am-thanh/danh-sach.json', { cache: 'no-cache' }); gh = r.ok ? await r.json() : null; } catch (e) {}
+  const local = await Store.count('xf:'), pk = await Store.count('xfb:');
+  el.innerHTML = `<div>① Máy này đã tạo: <b>${local}</b> đoạn giọng đọc.</div><div>② Trên GitHub: ${gh ? `<b style="color:var(--jade)">đã có bộ giọng đọc</b> (${arr(gh.packs).length} file)` : '<b class="err">chưa có thư mục am-thanh</b>'}.</div><div>③ Máy này đã lấy từ bộ dùng chung: <b>${pk}</b> đoạn.</div>`;
 }
 async function importAllPacks() {
   const msg = $('#packMsg'); msg.textContent = 'Đang tải bộ giọng đọc dùng chung…'; packList = null;
   try { const r = await fetch('am-thanh/danh-sach.json', { cache: 'no-cache' }); if (!r.ok) throw 0; packList = await r.json(); }
-  catch (e) { packList = null; msg.textContent = 'Trên GitHub chưa có thư mục am-thanh. Người đầu tiên tạo bộ giọng đọc rồi tải lên trước.'; return; }
+  catch (e) { packList = null; msg.innerHTML = '<span class="err">Trên GitHub chưa có thư mục am-thanh.</span> Nút này dùng để LẤY bộ giọng đọc từ GitHub về máy, nên phải làm bước ② trước: giải nén file am-thanh.zip và tải thư mục am-thanh lên GitHub (cạnh index.html).'; return; }
   const codes = [...new Set(arr(packList.packs).map(f => f.replace(/-\d+$/, '')))]; let n = 0;
   for (const code of codes) { msg.textContent = `Đang tải ${code}…`; n += await importVoicePack(code, true); }
-  msg.innerHTML = `<span style="color:var(--jade)">Đã lưu ${n} đoạn giọng đọc vào máy này. Từ giờ nghe các câu đó không cần mạng, không tốn lượt.</span>`; showStorage();
+  msg.innerHTML = `<span style="color:var(--jade)">Đã lưu ${n} đoạn giọng đọc vào máy này. Từ giờ nghe các câu đó không cần mạng, không tốn lượt.</span>`; showStorage(); packStatus();
 }
 async function showStorage() {
   const el = $('#sStore'); if (!el) return;
@@ -1434,7 +1460,7 @@ async function showUsage() {
   const row = (k, n) => { const used = usedOf[k], pct = Math.round(used / 1000); return `<div>${n}: <b>${used.toLocaleString('vi-VN')}</b> / 100.000 lượt (${pct}%)${k === 'tts' ? ` · giới hạn tạo giọng: ${XF_BUDGET.tts.toLocaleString('vi-VN')}` : ''}<div style="height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin:3px 0 6px"><div style="height:100%;width:${Math.min(100, pct)}%;background:${pct >= 60 ? 'var(--seal)' : 'var(--jade)'}"></div></div></div>`; };
   el.innerHTML = row('tts', 'Giọng đọc') + row('ise', 'Chấm phát âm') + row('iat', 'Nghe giọng nói');
 }
-function fillSettings() { showStorage(); showUsage(); { const c = settings.xfConsole || {}; $('#xfcTts').value = c.tts || ''; $('#xfcIse').value = c.ise || ''; $('#xfcIat').value = c.iat || ''; $('#sAutoPack').checked = settings.autoPack !== false; } $('#sLive').value = settings.liveModel || ''; $('#xfApp').value = settings.xfAppId || ''; $('#xfKey').value = settings.xfKey || ''; $('#xfSec').value = settings.xfSecret || ''; $('#xfVcn').value = settings.xfVcn || ''; $('#sTts').value = settings.ttsModel || ''; $('#sKey').value = settings.apiKey || ''; $('#sModel').value = settings.model || ''; $('#sAudio').value = settings.audioModel || ''; $('#sMsg').textContent = ''; $('#sUse').textContent = 'Hôm nay máy này đã gọi Gemini ' + usedToday() + ' lượt.'; }
+function fillSettings() { showStorage(); showUsage(); packStatus(); { const c = settings.xfConsole || {}; $('#xfcTts').value = c.tts || ''; $('#xfcIse').value = c.ise || ''; $('#xfcIat').value = c.iat || ''; $('#sAutoPack').checked = settings.autoPack !== false; } $('#sLive').value = settings.liveModel || ''; $('#xfApp').value = settings.xfAppId || ''; $('#xfKey').value = settings.xfKey || ''; $('#xfSec').value = settings.xfSecret || ''; $('#xfVcn').value = settings.xfVcn || ''; $('#sTts').value = settings.ttsModel || ''; $('#sKey').value = settings.apiKey || ''; $('#sModel').value = settings.model || ''; $('#sAudio').value = settings.audioModel || ''; $('#sMsg').textContent = ''; $('#sUse').textContent = 'Hôm nay máy này đã gọi Gemini ' + usedToday() + ' lượt.'; }
 function openSettingsForKey(why) {
   fillSettings(); openModal('settings');
   const box = $('#m-settings .box'); if (box) box.scrollTop = 0;
@@ -1457,7 +1483,8 @@ async function useXfVoiceForAll() {
 }
 $('#xfSave').onclick = async () => { await saveSettingsQuiet(); await useXfVoiceForAll(); $('#xfMsg').innerHTML = '<span style="color:var(--jade)">Đã lưu key iFLYTEK' + (XF.ok() ? '. Phần chấm phát âm sẽ dùng iFLYTEK.' : ', nhưng còn thiếu ô nào đó (cần đủ APPID, APIKey, APISecret).') + '</span>'; };
 $('#sSave').onclick = async () => { settings.apiKey = $('#sKey').value.trim(); settings.model = $('#sModel').value.trim(); settings.audioModel = $('#sAudio').value.trim(); settings.ttsModel = $('#sTts').value.trim(); settings.liveModel = $('#sLive').value.trim(); settings.xfAppId = $('#xfApp').value.trim(); settings.xfKey = $('#xfKey').value.trim(); settings.xfSecret = $('#xfSec').value.trim(); settings.xfVcn = $('#xfVcn').value.trim(); await Store.set('settings', settings); closeModal('settings'); toast('Đã lưu cài đặt'); };
-$('#packBuild').onclick = buildVoicePack;
+$('#packBuild').onclick = () => buildVoicePack(false);
+$('#packZip').onclick = () => buildVoicePack(true);
 $('#packGet').onclick = importAllPacks;
 $('#sClearVoice').onclick = async () => { if (!confirm('Xóa các câu giọng đọc đã lưu trên máy này? Khi nghe lại, app sẽ tải lại (tốn lượt iFLYTEK).')) return; await Store.delPrefix('xf:'); await Store.delPrefix('tts:'); await Store.delPrefix('xfb:'); await Store.delPrefix('pack:'); Object.keys(ttsMem).forEach(k => delete ttsMem[k]); showStorage(); toast('Đã xóa giọng đọc đã lưu'); };
 $('#sCopyCfg').onclick = () => {
