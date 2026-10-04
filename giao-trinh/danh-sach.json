@@ -1,1 +1,1 @@
-{"files": ["pinyin.json", "bo-thu.json", "hsk1.json", "hsk2.json", "hsk3.json", "hsk4-tap1.json", "hsk4-tap2.json"]}
+{"files": ["pinyin.json", "bo-thu.json", "bo-sung.json", "hsk1.json", "hsk2.json", "hsk3.json", "hsk4-tap1.json", "hsk4-tap2.json"], "notes": ["ghi-chu-hsk1.json"], "library": ["thu-vien-giao-tiep-mau.json"], "dict": "tu-dien-hsk.json", "chart": "bang-pinyin.json"}
