@@ -368,8 +368,8 @@ nav .badge{position:absolute;top:4px;left:calc(50% + 8px);background:var(--seal)
   <p class="small muted">Làm 3 bước theo thứ tự. Bước ① và ② làm trên <b>máy tính</b> (Chrome hoặc Edge), chỉ cần một người làm.</p>
   <div class="small" id="packState"></div>
   <ol class="small" style="padding-left:18px;margin:8px 0">
-    <li><b>Tạo:</b> bấm "① Tạo bộ giọng đọc". Đoạn nào máy đã có thì không tốn lượt. Giữ trang mở đến khi hiện "Xong"; máy sẽ tải về file <b>am-thanh.zip</b> (thư mục Tải xuống).</li>
-    <li><b>Đưa lên GitHub:</b> giải nén am-thanh.zip ra thư mục <b>am-thanh</b>, vào repo trên GitHub → Add file → Upload files → kéo cả thư mục am-thanh vào (cạnh index.html) → Commit.</li>
+    <li><b>Tạo:</b> bấm "① Tạo bộ giọng đọc". Nếu GitHub đã có bộ giọng đọc, app chỉ tạo <b>phần còn thiếu</b>. Đoạn nào máy đã có thì không tốn lượt. Giữ trang mở đến khi hiện "Xong"; file <b>am-thanh.zip</b> tải về thư mục Tải xuống.</li>
+    <li><b>Đưa lên GitHub:</b> giải nén am-thanh.zip (KHÔNG tải file .zip lên), sẽ thấy các thư mục buoc-1, buoc-2… Với từng bước theo thứ tự: mở thư mục buoc-…, kéo thư mục <b>am-thanh</b> bên trong vào trang Add file → Upload files của repo (thư mục gốc) → Commit. GitHub tự gộp vào am-thanh có sẵn.</li>
     <li><b>Lấy về điện thoại:</b> đợi 1–2 phút, trên mỗi máy bấm "③ Lấy từ GitHub về máy này" (hoặc cứ mở app, máy tự lấy dần).</li>
   </ol>
   <div class="btnrow"><button class="btn sm" id="packBuild">① Tạo bộ giọng đọc</button><button class="btn sm" id="packZip" title="Không gọi iFLYTEK">Chỉ đóng gói phần đã có</button><button class="btn sm" id="packDl" hidden>⬇ Tải lại file am-thanh.zip</button></div>
@@ -1049,16 +1049,23 @@ async function xfAudioB64(text, slow, allowNet = true) {
 }
 // import a shared voice pack from the site (am-thanh/<code>[-n].json, listed in danh-sach.json) into this device, once per version
 let packList = null;
+const packBase = f => String(f).split('/').pop();                 // "phan-2/hsk5-3" → "hsk5-3"
+const packCode = f => packBase(f).replace(/-\d+$/, '');          // "hsk5-3" → "hsk5"
+async function loadPackList(force) {
+  if (!packList || force) { try { const r = await fetch('am-thanh/danh-sach.json', { cache: 'no-cache' }); packList = r.ok ? await r.json() : { packs: [] }; } catch (e) { packList = { packs: [] }; } }
+  return packList;
+}
+// import every pack file of one curriculum code (files may sit in sub-folders phan-1, phan-2 …); each file is fetched once per version
 async function importVoicePack(code, force) {
-  if (!packList) { try { const r = await fetch('am-thanh/danh-sach.json', { cache: 'no-cache' }); packList = r.ok ? await r.json() : { packs: [] }; } catch (e) { packList = { packs: [] }; } }
+  await loadPackList();
   let n = 0;
-  for (const f of arr(packList.packs).filter(f => f === code || f.startsWith(code + '-'))) {
-    const flag = 'pack:' + f, have = await Store.get(flag);
-    if (!force && have && have >= (packList.version || 1)) continue;
+  for (const f of arr(packList.packs).filter(f => packCode(f) === code)) {
+    const want = (packList.ver && packList.ver[f]) || packList.version || 1, flag = 'pack:' + f, have = await Store.get(flag);
+    if (!force && have && have >= want) continue;
     let pack; try { const r = await fetch('am-thanh/' + f + '.json', { cache: 'no-cache' }); if (!r.ok) continue; pack = await r.json(); } catch (e) { continue; }
     for (const [t, b] of Object.entries(pack.audio || {})) { await Store.set('xfb:' + t, b, true); n++; }
     for (const [t, b] of Object.entries(pack.slow || {})) { await Store.set('xfbs:' + t, b, true); n++; }
-    await Store.set(flag, pack.version || packList.version || 1, true);
+    await Store.set(flag, want, true);
   }
   return n;
 }
@@ -1273,7 +1280,7 @@ async function mountDict(box) {
   box.innerHTML = `<button class="btn sm ghost" data-back2>‹ Thư viện</button><h2 style="margin:8px 0">Từ điển HSK 1–5</h2>
     <input id="dQ" placeholder="Gõ chữ Hán, pinyin (không dấu cũng được) hoặc nghĩa">
     <div class="chips wrap" style="margin-top:8px">${[0, 1, 2, 3, 4, 5].map(i => `<button class="chip${i === lv ? ' on' : ''}" data-lv="${i}">${i ? 'HSK ' + i : 'Tất cả'}</button>`).join('')}</div><div id="dList"></div>
-    <p class="small muted">Từ HSK 5 tạm hiển thị nghĩa tiếng Anh (EN); nghĩa tiếng Việt và câu ví dụ sẽ được bổ sung ở giai đoạn 4.</p>`;
+    <p class="small muted">Đủ 2.500 từ HSK 1–5, có nghĩa tiếng Việt và tiếng Anh. Bấm ＋ để đưa từ vào Ôn tập.</p>`;
   box.querySelector('[data-back2]').onclick = () => mountLibrary(box);
   box.querySelector('#dQ').oninput = e => { q = e.target.value; shown = 60; render(); };
   box.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => { lv = +b.dataset.lv; shown = 60; box.querySelectorAll('[data-lv]').forEach(x => x.classList.toggle('on', x === b)); render(); });
@@ -1386,7 +1393,9 @@ function lessonTexts(l) {
 }
 let packZipUrl = null, packBusy = false;
 const warnLeave = e => { e.preventDefault(); e.returnValue = ''; };
-// offlineOnly = true: only package what this device already saved (never calls iFLYTEK)
+// offlineOnly = true: only package what this device already saved (never calls iFLYTEK).
+// If GitHub already has a shared pack, only the MISSING clips are packaged into a new folder am-thanh/phan-N,
+// together with updated danh-sach.json and muc-luc.json — so later uploads stay small.
 async function buildVoicePack(offlineOnly) {
   if (packBusy) return;
   if (!offlineOnly && !XF.ok()) return toast('Cần key iFLYTEK trên máy này để tạo bộ giọng đọc');
@@ -1395,54 +1404,84 @@ async function buildVoicePack(offlineOnly) {
   lessons.filter(l => l.curriculum).forEach(l => { lessonTexts(l).forEach(t => addG(l.curriculum, t)); arr(l.vocab).forEach(v => [...v.hz].filter(isHan).forEach(ch => addG(l.curriculum, ch))); });
   LIB.forEach(c => c.sections.forEach(s => arr(s.items).forEach(it => addG('lib-' + c.code, it.hz))));
   try { const ch = await (await fetch('giao-trinh/bang-pinyin.json', { cache: 'no-cache' })).json(); Object.values(ch.syllables || {}).forEach(x => addG('bang-pinyin', x)); } catch (e) {}
-  const jobs = Object.entries(groups).flatMap(([code, set]) => [...set].flatMap(t => [{ code, t }, { code, t, slow: true }]));
-  const total = jobs.length, saved = (await Store.count('xf:')) ;
-  if (!offlineOnly && !confirm(`Tổng cộng ${total} đoạn giọng đọc (bản thường và bản chậm). Máy này đã có sẵn khoảng ${saved} đoạn, những đoạn đó KHÔNG tốn lượt.\n\nGiữ trang này mở, không tắt máy hay chuyển ứng dụng đến khi hiện "Xong". Nếu bị ngắt, bấm lại nút này để làm tiếp.\n\nBắt đầu?`)) return;
+  // what is already on GitHub
+  const list = await loadPackList(true); let have = { normal: [], slow: [] };
+  try { const r = await fetch('am-thanh/muc-luc.json', { cache: 'no-cache' }); if (r.ok) have = await r.json(); } catch (e) {}
+  const hasN = new Set(have.normal || []), hasS = new Set(have.slow || []), incremental = arr(list.packs).length > 0;
+  const seen = new Set(), jobs = [];
+  for (const [code, set] of Object.entries(groups)) for (const t of set) {
+    if (!hasN.has(t) && !seen.has('n' + t)) { jobs.push({ code, t }); seen.add('n' + t); }
+    if (!hasS.has(t) && !seen.has('s' + t)) { jobs.push({ code, t, slow: true }); seen.add('s' + t); }
+  }
+  const total = jobs.length;
+  if (!total) { msg.innerHTML = '<b style="color:var(--jade)">Bộ giọng đọc trên GitHub đã đủ cho toàn bộ giáo trình hiện tại.</b> Không cần tạo thêm.'; return; }
+  if (!offlineOnly && !confirm(`${incremental ? 'GitHub đã có bộ giọng đọc. Chỉ cần tạo PHẦN BỔ SUNG' : 'Tạo bộ giọng đọc'}: ${total} đoạn (bản thường và bản chậm). Đoạn nào máy này đã có thì KHÔNG tốn lượt.\n\nGiữ trang mở đến khi hiện "Xong". Nếu bị ngắt, bấm lại để làm tiếp.\n\nBắt đầu?`)) return;
   packBusy = true; window.addEventListener('beforeunload', warnLeave);
   let wake = null; try { wake = await navigator.wakeLock.request('screen'); } catch (e) {}
   $('#packBuild').disabled = $('#packZip').disabled = true;
   const audio = {}, slowA = {}; let done = 0, fail = 0, stop = false, capped = 0, net = 0;
+  const vcnNow = (settings.xfVcn || '').trim() || 'x_xiaoyan';
   const show = () => { const p = Math.round(100 * done / total); bar.style.width = p + '%'; msg.textContent = `${offlineOnly ? 'Đang đóng gói' : 'Đang tạo'}: ${done}/${total} (${p}%)${net ? ` · gọi iFLYTEK ${net}` : ''}${fail ? ` · lỗi ${fail}` : ''}${capped ? ` · chưa có ${capped}` : ''}…`; };
   const worker = async () => { while (jobs.length && !stop) { const j = jobs.shift();
-      try { const allow = !offlineOnly && (await xfUsed('tts')) < XF_BUDGET.tts; const before = (await Store.get('xf:' + ((settings.xfVcn || '').trim() || 'x_xiaoyan') + (j.slow ? ':s20' : '') + ':' + j.t)) || (await Store.get((j.slow ? 'xfbs:' : 'xfb:') + j.t));
+      try { const allow = !offlineOnly && (await xfUsed('tts')) < XF_BUDGET.tts; const before = (await Store.get('xf:' + vcnNow + (j.slow ? ':s20' : '') + ':' + j.t)) || (await Store.get((j.slow ? 'xfbs:' : 'xfb:') + j.t));
         const b = before || await xfAudioB64(j.t, j.slow, allow); if (!before && b) net++;
         if (b) ((j.slow ? slowA : audio)[j.code] = (j.slow ? slowA : audio)[j.code] || {})[j.t] = b; else capped++; }
       catch (e) { fail++; if (/11201|11200|hết lượt/.test(e.message)) { stop = true; toast(e.message, 5000); } }
       done++; if (done % 10 === 0 || !jobs.length) show(); } };
   await Promise.all([worker(), worker(), worker(), worker()]); show();
-  msg.textContent = 'Đang đóng gói file am-thanh.zip…';
+  msg.textContent = 'Đang đóng gói…';
   try {
     await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
-    const zip = new JSZip(), ver = Date.now(), vcn = (settings.xfVcn || '').trim() || 'x_xiaoyan', codes = Object.keys(groups), files = [];
-    codes.forEach(code => {
-      let part = 0, cur = { audio: {}, slow: {} }, size = 0;
-      const flush = () => { const name = part ? `${code}-${part + 1}` : code; zip.file(`am-thanh/${name}.json`, JSON.stringify({ code, version: ver, vcn, ...cur })); files.push(name); part++; cur = { audio: {}, slow: {} }; size = 0; };
-      for (const [kind, src] of [['audio', audio[code] || {}], ['slow', slowA[code] || {}]]) for (const [txt, b] of Object.entries(src)) { cur[kind][txt] = b; size += b.length + txt.length; if (size > 12e6) flush(); }
-      if (size || !part) flush();
-    });
-    zip.file('am-thanh/danh-sach.json', JSON.stringify({ version: ver, packs: files }));
+    const zip = new JSZip(), ver = Date.now(), files = [], vers = Object.assign({}, list.ver || {}), sizes = {};
+    arr(list.packs).forEach(f => { if (!vers[f]) vers[f] = list.version || 1; });
+    let phan = Math.max(0, ...arr(list.packs).map(f => +((String(f).match(/^phan-(\d+)\//) || [])[1] || 0))) + 1, phanSize = 0;
+    const firstPhan = phan, LIM = 5 * 1048576, PHAN = 45 * 1048576;
+    const write = (code, part, cur) => {
+      const body = JSON.stringify({ code, version: ver, vcn: vcnNow, ...cur }), size = new Blob([body]).size;
+      if (phanSize + size > PHAN && phanSize > 0) { phan++; phanSize = 0; }
+      const name = `phan-${phan}/${code}${part ? '-' + (part + 1) : ''}`;
+      zip.file(`buoc-${phan - firstPhan + 1}-giong-doc-phan-${phan}/am-thanh/${name}.json`, body); files.push(name); vers[name] = ver; sizes[name] = size; phanSize += size;
+    };
+    for (const code of Object.keys(groups)) {
+      let part = 0, cur = { audio: {}, slow: {} }, size = 0, any = false;
+      for (const [kind, src] of [['audio', audio[code] || {}], ['slow', slowA[code] || {}]]) for (const [txt, b] of Object.entries(src)) {
+        cur[kind][txt] = b; any = true; size += b.length + txt.length * 3 + 8;
+        if (kind === 'audio') hasN.add(txt); else hasS.add(txt);
+        if (size > LIM) { write(code, part, cur); part++; cur = { audio: {}, slow: {} }; size = 0; }
+      }
+      if (any && size) write(code, part, cur);
+    }
+    const allPacks = [...arr(list.packs), ...files];
+    const lastStep = `buoc-${phan - firstPhan + 2}-muc-luc/am-thanh/`;
+    zip.file(lastStep + 'danh-sach.json', JSON.stringify({ version: ver, packs: allPacks, ver: vers }));
+    zip.file(lastStep + 'muc-luc.json', JSON.stringify({ version: ver, normal: [...hasN], slow: [...hasS] }));
     const blob = await zip.generateAsync({ type: 'blob' });
     if (packZipUrl) URL.revokeObjectURL(packZipUrl); packZipUrl = URL.createObjectURL(blob);
-    const ok = done - fail - capped;
-    msg.innerHTML = `<b style="color:var(--jade)">Xong: ${ok}/${total} đoạn</b>${capped ? ` · <span class="err">${capped} đoạn chưa có (${offlineOnly ? 'chưa tạo trên máy này' : 'đã chạm giới hạn 60%'})</span>` : ''}${fail ? ` · ${fail} lỗi, bấm "Tạo" lại để bổ sung` : ''}.<br>File <b>am-thanh.zip</b> (${(blob.size / 1048576).toFixed(1)} MB) đang được tải về thư mục <b>Tải xuống (Downloads)</b>. Nếu không thấy, bấm nút "⬇ Tải lại file" bên dưới. Sau đó làm tiếp bước ③.`;
+    const ok = done - fail - capped, biggest = files.length ? Math.max(...Object.values(sizes)) / 1048576 : 0, folders = [];
+    for (let k = firstPhan; k <= phan; k++) folders.push('phan-' + k);
+    msg.innerHTML = `<b style="color:var(--jade)">Xong: ${ok}/${total} đoạn${incremental ? ' (phần bổ sung)' : ''}</b>${capped ? ` · <span class="err">${capped} đoạn chưa có (${offlineOnly ? 'chưa tạo trên máy này' : 'đã chạm giới hạn 60%'})</span>` : ''}${fail ? ` · ${fail} lỗi, bấm lại để bổ sung` : ''}.
+      <br>File <b>am-thanh.zip</b> (${(blob.size / 1048576).toFixed(1)} MB) đang tải về thư mục Tải xuống. Giải nén ra sẽ thấy ${folders.length + 1} thư mục <b>buoc-1…, buoc-2…</b> (mỗi thư mục tối đa 45 MB, mỗi file tối đa ${Math.max(biggest, 0.1).toFixed(1)} MB).
+      <br><b>Tải lên GitHub theo thứ tự từng bước:</b> mở thư mục buoc-1 → kéo thư mục <b>am-thanh</b> bên trong vào trang Upload files của repo (ở thư mục gốc) → Commit. Làm tương tự với buoc-2, buoc-3… Bước cuối là mục lục. GitHub tự gộp vào thư mục am-thanh có sẵn. Không tải file .zip lên, không xóa thư mục cũ.`;
     $('#packDl').hidden = false; $('#packDl').onclick = () => saveZip();
     saveZip();
   } catch (e) { msg.innerHTML = `<span class="err">Không đóng gói được: ${esc(e.message)}</span>`; }
   packBusy = false; window.removeEventListener('beforeunload', warnLeave); try { wake && wake.release(); } catch (e) {}
   $('#packBuild').disabled = $('#packZip').disabled = false;
+  showStorage(); showUsage(); packStatus();
 }
 function saveZip() { if (!packZipUrl) return; const a = document.createElement('a'); a.href = packZipUrl; a.download = 'am-thanh.zip'; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
 async function packStatus() {
   const el = $('#packState'); if (!el) return;
-  let gh = null; try { const r = await fetch('am-thanh/danh-sach.json', { cache: 'no-cache' }); gh = r.ok ? await r.json() : null; } catch (e) {}
+  let gh = null, ml = null; try { const r = await fetch('am-thanh/danh-sach.json', { cache: 'no-cache' }); gh = r.ok ? await r.json() : null; } catch (e) {}
+  try { const r = await fetch('am-thanh/muc-luc.json', { cache: 'no-cache' }); ml = r.ok ? await r.json() : null; } catch (e) {}
   const local = await Store.count('xf:'), pk = await Store.count('xfb:');
-  el.innerHTML = `<div>① Máy này đã tạo: <b>${local}</b> đoạn giọng đọc.</div><div>② Trên GitHub: ${gh ? `<b style="color:var(--jade)">đã có bộ giọng đọc</b> (${arr(gh.packs).length} file)` : '<b class="err">chưa có thư mục am-thanh</b>'}.</div><div>③ Máy này đã lấy từ bộ dùng chung: <b>${pk}</b> đoạn.</div>`;
+  el.innerHTML = `<div>① Máy này đã tạo: <b>${local}</b> đoạn giọng đọc.</div><div>② Trên GitHub: ${gh ? `<b style="color:var(--jade)">đã có bộ giọng đọc</b> (${arr(gh.packs).length} file${ml ? `, ${arr(ml.normal).length} câu` : ''})` : '<b class="err">chưa có thư mục am-thanh</b>'}.</div><div>③ Máy này đã lấy từ bộ dùng chung: <b>${pk}</b> đoạn.</div>`;
 }
 async function importAllPacks() {
   const msg = $('#packMsg'); msg.textContent = 'Đang tải bộ giọng đọc dùng chung…'; packList = null;
   try { const r = await fetch('am-thanh/danh-sach.json', { cache: 'no-cache' }); if (!r.ok) throw 0; packList = await r.json(); }
   catch (e) { packList = null; msg.innerHTML = '<span class="err">Trên GitHub chưa có thư mục am-thanh.</span> Nút này dùng để LẤY bộ giọng đọc từ GitHub về máy, nên phải làm bước ② trước: giải nén file am-thanh.zip và tải thư mục am-thanh lên GitHub (cạnh index.html).'; return; }
-  const codes = [...new Set(arr(packList.packs).map(f => f.replace(/-\d+$/, '')))]; let n = 0;
+  const codes = [...new Set(arr(packList.packs).map(packCode))]; let n = 0;
   for (const code of codes) { msg.textContent = `Đang tải ${code}…`; n += await importVoicePack(code, true); }
   msg.innerHTML = `<span style="color:var(--jade)">Đã lưu ${n} đoạn giọng đọc vào máy này. Từ giờ nghe các câu đó không cần mạng, không tốn lượt.</span>`; showStorage(); packStatus();
 }
@@ -1683,6 +1722,7 @@ ${PY_RULE}` }] });
 let flow = null;
 /* ---- stage tests: part 1 listening + reading, part 2 speaking; pass at 80 ---- */
 function mountTest(key, l) {
+  if (P.plan === 'hsk') l = { ...l, exercises: arr(l.exercises).filter(x => !x.biz), speak: arr(l.speak).filter(x => !x.biz) };
   const box = $('#v-lesson'), st = lp(key), r = st.test || {};
   const total = (r.p1 != null && r.p2 != null) ? Math.round(r.p1 * 0.7 + r.p2 * 0.3) : null;
   box.innerHTML = `<div class="flowhead"><button class="icon" data-back aria-label="Quay lại">‹</button><h2>${esc(l.title)}</h2></div>
@@ -2555,6 +2595,42 @@ function renderReview() {
 }
 
 /* =============== ME: progress + settings =============== */
+/* ---- in-app user guide ---- */
+const GUIDE = [
+ ['Bắt đầu', [
+  'Mở app bằng Safari (iPhone) hoặc Chrome (Android), bấm Chia sẻ → "Thêm vào Màn hình chính". Từ đó luôn mở app bằng biểu tượng này để dữ liệu được giữ lâu dài.',
+  'Mỗi người trong nhà tạo một hồ sơ riêng (tên, trình độ). Trong "Sửa hồ sơ" chọn Lộ trình học: Đầy đủ (có buôn bán, trà, dược liệu, y học cổ truyền) hoặc Cơ bản (cho các con).',
+  'Key Gemini và iFLYTEK chỉ cần nhập trên một máy; các máy khác bấm "Dán mã cài đặt" trong Cài đặt.']],
+ ['Học mỗi ngày (15–30 phút)', [
+  'Màn Hôm nay luôn chỉ bài tiếp theo và các việc nên làm: học bài mới, ôn thẻ đến hạn, sửa chữ hay đọc sai, luyện nghe 5 phút.',
+  'Mỗi bài có 7 bước theo thứ tự: Từ mới → Nghe → Bài khóa → Nói → Viết → Gõ → Bài tập. Nghe và hiểu trước, nói và viết sau.',
+  'Đọc kỹ ô "💡 Thầy lưu ý" dưới từng câu: phân tích mẫu câu, lỗi người Việt hay sai, cách người bản xứ nói. Bấm 🎤 để đọc thử và được chấm ngay, bấm 💬 để hỏi thầy AI thêm.',
+  'Ôn tập mỗi ngày: thẻ nào sai sẽ quay lại sớm hơn. Câu đọc sai, câu nghe sai đều tự vào Ôn tập.']],
+ ['Lộ trình 5 giai đoạn', [
+  'Giai đoạn 0: phát âm, bộ thủ, số và giá. Giai đoạn 1: HSK 1–2 + tình huống thực tế. Giai đoạn 2: HSK 3 + buôn bán. Giai đoạn 3: HSK 4 + trà, dược liệu, đàm phán. Giai đoạn 4: HSK 5 + đọc hiểu y học cổ truyền, văn bản thương mại.',
+  'Cuối mỗi giai đoạn có bài kiểm tra (nghe – đọc 70%, nói 30%). Đạt từ 80 điểm là sẵn sàng sang giai đoạn sau; chưa đạt thì ôn rồi làm lại, không giới hạn số lần.']],
+ ['Luyện thêm (tab Luyện)', [
+  'Thư viện: mẫu câu WeChat, khẩu ngữ, hội thoại mẫu, từ điển HSK 1–5 (2.500 từ có nghĩa tiếng Việt).',
+  'Luyện nghe: bài nghe tổng hợp, luyện tai thanh điệu, nghe chép. Bảng âm tiết pinyin: nghe và đọc thử mọi âm tiết.',
+  'Hội thoại từng lượt và Gọi thầy (trực tiếp) để luyện phản xạ; khi cần nghe chuẩn, bấm "Nghe giọng chuẩn".']],
+ ['Giọng đọc và dùng khi mất mạng', [
+  'Giọng đọc chuẩn của iFLYTEK được lưu ngay trong máy; đã nghe một lần là lần sau nghe không cần mạng.',
+  'Khi trên GitHub đã có thư mục am-thanh, mở app là máy tự tải giọng đọc của giai đoạn đang học. Muốn tải hết một lần: Cài đặt → "③ Lấy từ GitHub về máy này" (nên dùng wifi).',
+  'Không xóa dữ liệu Safari/Chrome của trang app, vì sẽ mất tiến độ học. Thỉnh thoảng bấm "Xuất file" để sao lưu.']],
+ ['Chi phí và giới hạn', [
+  'iFLYTEK: 100.000 lượt mỗi dịch vụ đến 01/01/2027; app tự dừng tạo giọng đọc ở mức 60%. Xem số lượt đã dùng trong Cài đặt.',
+  'Gemini: gói miễn phí theo từng tài khoản Google. Mỗi người nên dùng key Gemini của tài khoản mình (ô "API key riêng" trong hồ sơ) để không dùng chung hạn mức.']],
+ ['Dành cho người quản lý app', [
+  'Cập nhật app: tải các file mới (index.html, sw.js, thư mục giao-trinh) lên GitHub rồi Commit; điện thoại tắt hẳn app và mở lại.',
+  'Tạo giọng đọc dùng chung (trên máy tính): Cài đặt → ① Tạo bộ giọng đọc. Nếu GitHub đã có bộ giọng đọc, app chỉ tạo phần còn thiếu. Giải nén am-thanh.zip sẽ có các thư mục buoc-1, buoc-2…: lần lượt mở từng thư mục, kéo thư mục am-thanh bên trong vào trang Upload files của repo → Commit. Không tải file .zip lên, không xóa các thư mục cũ trên GitHub.']]];
+function openGuide() {
+  const v = $('#v-me');
+  v.innerHTML = `<div class="flowhead"><button class="icon" data-gb aria-label="Quay lại">‹</button><h2>Hướng dẫn sử dụng</h2></div>
+    ${GUIDE.map(([h, items], i) => `<details class="card"${i === 0 ? ' open' : ''}><summary><b>${esc(h)}</b></summary><ul class="small" style="padding-left:18px;line-height:1.6">${items.map(x => `<li style="margin:6px 0">${esc(x)}</li>`).join('')}</ul></details>`).join('')}`;
+  v.onclick = e => { if (e.target.closest('[data-gb]')) renderMe(); };
+  window.scrollTo(0, 0);
+}
+
 function renderMe() {
   const h = D.history, now = Date.now();
   const sp = h.filter(x => x.type === 'speak'), sp7 = sp.filter(x => x.at > now - 7 * DAY), exs = h.filter(x => x.type === 'ex');
@@ -2572,6 +2648,7 @@ function renderMe() {
     <div class="card"><b>Hoạt động 7 ngày</b><div class="bars">${counts.map(c => `<div><span>${c.n || ''}</span><i style="height:${Math.round(85 * c.n / mx)}%"></i>${c.lab}</div>`).join('')}</div></div>
     <div class="card"><b>Chữ hay đọc sai</b><p class="small muted" style="margin:4px 0 8px">Chạm để nghe. Mục “Sửa chữ hay đọc sai” ở Hôm nay sẽ cho luyện lại.</p>${weak.length ? `<div class="weak">${weak.map(c => `<span data-say="${esc(c)}">${esc(c)}</span>`).join('')}</div>` : '<p class="small muted">Chưa có dữ liệu.</p>'}</div>
     <div class="menu">
+      <button data-m="guide">📘 <span>Hướng dẫn sử dụng</span>›</button>
       <button data-m="profile">✎ <span>Sửa hồ sơ, trình độ, mục tiêu</span>›</button>
       <button data-m="profile">🔊 <span>Giọng đọc: ${voicePref() === 'xf' ? 'Giọng iFLYTEK' : String(P.voice || '').startsWith('gemini:') ? 'Giọng AI Gemini' : esc(zhVoice ? zhVoice.name : 'chưa có')}</span>›</button>
       <button data-m="kb">⌨ <span>Cách gõ tiếng Trung trên điện thoại</span>›</button>
@@ -2580,7 +2657,7 @@ function renderMe() {
       <button data-m="switch">⇄ <span>Đổi người học</span>›</button>
     </div>`;
   $('#v-me').onclick = e => { const m = e.target.closest('[data-m]'); if (!m) return; const k = m.dataset.m;
-    if (k === 'profile') openProfileForm(P); if (k === 'kb') openModal('kb'); if (k === 'settings') { fillSettings(); openModal('settings'); } if (k === 'switch') switchProfile(); if (k === 'path') { pathTab = 'book'; go('path'); } };
+    if (k === 'guide') return openGuide(); if (k === 'profile') openProfileForm(P); if (k === 'kb') openModal('kb'); if (k === 'settings') { fillSettings(); openModal('settings'); } if (k === 'switch') switchProfile(); if (k === 'path') { pathTab = 'book'; go('path'); } };
 }
 
 /* =============== PDF import & chat paste =============== */
