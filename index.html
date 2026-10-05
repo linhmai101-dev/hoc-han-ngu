@@ -336,6 +336,15 @@ nav .badge{position:absolute;top:4px;left:calc(50% + 8px);background:var(--seal)
 .xrow{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
 .xpill{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid var(--line);background:var(--paper);border-radius:16px;padding:10px 12px;font-size:12.5px;min-width:72px}
 .xpill span{font-size:22px}
+
+.tgrid>.tcard:last-child:nth-child(odd){grid-column:span 2;min-height:0}
+.xgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.xgrid .xpill{min-width:0}
+#v-home{padding-bottom:110px}
+body::before{content:'';position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:60;pointer-events:none}
+
+.fab{display:flex;flex-direction:column;align-items:center;justify-content:center;width:58px;height:58px;padding:0;border-radius:50%;gap:0}
+.fab .fic{font-size:22px;line-height:1}.fab .flb{font-size:9.5px;font-weight:600;line-height:1.1;margin-top:1px}
 </style>
 </head>
 <body>
@@ -363,12 +372,12 @@ nav .badge{position:absolute;top:4px;left:calc(50% + 8px);background:var(--seal)
   <section class="view" id="v-me"></section>
 </div>
 
-<button class="fab" id="fab" hidden>💬 Hỏi thầy</button>
+<button class="fab" id="fab" hidden aria-label="Hỏi thầy"><span class="fic">💬</span><span class="flb">Hỏi thầy</span></button>
 
 <nav id="nav" hidden><div class="in">
   <button data-v="home"><span class="g">今</span>Hôm nay</button>
   <button data-v="path"><span class="g">书</span>Lộ trình</button>
-  <button data-v="practice"><span class="g">练</span>Luyện</button>
+  <button data-v="practice"><span class="g">练</span>Luyện thêm</button>
   <button data-v="rev"><span class="g">复</span>Ôn tập<span class="badge" id="revBadge" hidden></span></button>
   <button data-v="me"><span class="g">我</span>Tôi</button>
 </div></nav>
@@ -1375,14 +1384,14 @@ async function mountWsets(box, lv) {
   const sets = wsetsOf(lv), doneN = sets.filter((s, k) => (D.wsets[wsetKey(lv, k)] || {}).done).length;
   box.innerHTML = `<button class="btn sm ghost" data-back2>‹ Thư viện</button><h2 style="margin:8px 0">Học từ vựng theo bộ</h2>
     <p class="small muted">Mỗi bộ 20 từ: nghe từ và câu ví dụ, rồi làm bài kiểm tra nghe – nghĩa. Đạt từ 80 điểm là xong bộ, các từ tự vào Ôn tập.</p>
-    <div class="chips"><button class="chip${wstd() === '2' ? ' on' : ''}" data-wstd="2">Chuẩn cũ HSK 2.0</button><button class="chip${wstd() === '3' ? ' on' : ''}" data-wstd="3">Chuẩn mới HSK 3.0</button></div>
+    <p class="small" style="margin:4px 0">${wstd() === '3' ? 'Đang xem theo <b>chuẩn mới HSK 3.0</b> · <a href="#" data-wstd="2">về chuẩn của giáo trình</a>' : 'Theo đúng các cấp của giáo trình · <a href="#" data-wstd="3" class="muted">nâng cao: chuẩn mới HSK 3.0</a>'}</p>
     <div class="chips wrap">${(wstd() === '3' ? [1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5]).map(i => `<button class="chip${i === lv ? ' on' : ''}" data-lv="${i}">${wstd() === '3' ? 'Cấp ' : 'HSK '}${i}</button>`).join('')}</div>
     ${wstd() === '3' ? '<p class="small muted">Chuẩn mới HSK 3.0: cấp 1–4 (3.245 từ) đã đủ nghĩa tiếng Việt, câu ví dụ và giọng đọc; cấp 5–6 hiện có các từ trùng với chuẩn cũ, phần còn lại sẽ bổ sung dần.</p>' : ''}
     <p class="small"><b>${doneN}/${sets.length}</b> bộ đã xong</p>
     <div class="sylgrid">${sets.map((s, k) => { const r = D.wsets[wsetKey(lv, k)] || {}; return `<button class="${r.done ? 'on' : ''}" data-set="${k}" title="${esc(s[0].hz)} … ${esc(s[s.length - 1].hz)}">${r.done ? '✓ ' : ''}Bộ ${k + 1}${r.score != null && !r.done ? ` · ${r.score}` : ''}</button>`; }).join('')}</div>`;
   box.onclick = e => {
     if (e.target.closest('[data-back2]')) return mountLibrary(box);
-    const sd = e.target.closest('[data-wstd]'); if (sd) { settings.wstd = sd.dataset.wstd; Store.set('settings', settings); return mountWsets(box, 1); }
+    const sd = e.target.closest('[data-wstd]'); if (sd) { e.preventDefault(); settings.wstd = sd.dataset.wstd; Store.set('settings', settings); return mountWsets(box, 1); }
     const l = e.target.closest('[data-lv]'); if (l) return mountWsets(box, +l.dataset.lv);
     const s = e.target.closest('[data-set]'); if (s) mountWset(box, lv, +s.dataset.set);
   };
@@ -1824,7 +1833,7 @@ async function showUsage() {
   const row = (k, n) => { const used = usedOf[k], pct = Math.round(used / 1000); return `<div>${n}: <b>${used.toLocaleString('vi-VN')}</b> / 100.000 lượt (${pct}%)${k === 'tts' ? ` · giới hạn tạo giọng: ${XF_BUDGET.tts.toLocaleString('vi-VN')}` : ''}<div style="height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin:3px 0 6px"><div style="height:100%;width:${Math.min(100, pct)}%;background:${pct >= 60 ? 'var(--seal)' : 'var(--jade)'}"></div></div></div>`; };
   el.innerHTML = row('tts', 'Giọng đọc') + row('ise', 'Chấm phát âm') + row('iat', 'Nghe giọng nói');
 }
-const APP_VER = '2026.10.05-r12';
+const APP_VER = '2026.10.05-r14';
 async function forceUpdate() {
   toast('Đang tải bản mới…', 3000);
   try { for (const k of await caches.keys()) await caches.delete(k); } catch (e) {}
@@ -2227,7 +2236,6 @@ async function mountMock(box) {
   await ensureDict(); D.mock = D.mock || [];
   const last = lv => D.mock.filter(m => m.lv === lv).slice(-1)[0];
   box.innerHTML = `<div class="card"><b>📝 Thi thử HSK</b><p class="small muted" style="margin:6px 0">Mỗi lần thi là một đề mới, theo đúng các dạng câu của đề thật: nghe đúng/sai, nghe chọn câu, nghe hội thoại, điền từ, chọn câu đáp, sắp xếp câu (từ HSK 3). Có tính giờ, <b>không báo đúng sai trong lúc làm</b>, chấm điểm theo phần khi nộp bài.</p>
-    <button class="btn full" data-place style="margin:6px 0">🎯 Kiểm tra xếp lớp (khoảng 10 phút)</button>
     <div class="chips"><button class="chip on" data-len="0">Đề ngắn</button><button class="chip" data-len="1">Đề dài (gấp đôi)</button></div></div>
     <div class="menu">${[1, 2, 3, 4, 5].map(lv => { const p = MOCK_PLAN[lv], r = last(lv); return `<button data-mlv="${lv}">📝 <span>HSK ${lv} <small class="muted">${p.L} nghe · ${p.R} đọc${p.W ? ` · ${p.W} viết` : ''} · ${p.min} phút${r ? ` · lần trước: <b style="color:${scoreCol(r.total)}">${r.total}</b>` : ''}</small></span>›</button>`; }).join('')}</div>`;
   let long = false;
@@ -2419,50 +2427,68 @@ function mountLecture(box) {
   };
 }
 
+// the lesson to practise quickly: the one in progress, otherwise the last finished one
+function quickLesson() {
+  const mine = lessons.filter(l => l.curriculum && l.kind !== 'test' && inPlan(l)).sort(progSort);
+  const nu = nextUnit(), cur = nu && mine.find(l => l.id === nu.key);
+  if (cur && stepCount(cur.id)) return cur;
+  return mine.filter(l => D.lp[l.id] && D.lp[l.id].done).pop() || null;
+}
+const quickItems = l => { const S = arr(l.sentences).filter(s => s.hz && (s.vi || hanCount(s.hz) <= 2)); return (S.length > 5 ? shuffle(S.slice()).slice(0, 5) : S).map(s => ({ hz: s.hz, py: s.py, vi: s.vi })); };
+function learnerStage() { const nu = nextUnit(); return nu && nu.st != null ? nu.st : 4; }
+// extra practice, grouped; each item opens from a given stage on (0 = from the start)
+const EXTRA = [
+  ['Từ vựng', [['wsets', '🧩', 'Học từ theo bộ', 'Ôn từ theo bộ 20 từ, có câu ví dụ', 1], ['dict', '🔎', 'Từ điển', 'Tra nghĩa, câu ví dụ, nghe đọc', 0], ['write', '✍️', 'Viết chữ', 'Thứ tự nét, viết bằng ngón tay', 1], ['type', '⌨️', 'Gõ chữ', 'Gõ pinyin ra chữ Hán', 1]]],
+  ['Nghe', [['listen', '🎧', 'Luyện nghe', 'Nghe chọn, nhận thanh điệu, nghe chép', 0], ['chart', '🔤', 'Bảng âm tiết', 'Mọi âm tiết × 4 thanh', 0], ['radio', '📻', 'Radio', 'Nghe thụ động bài đã học', 1]]],
+  ['Nói', [['read', '🗣️', 'Đọc theo câu', 'Ghi âm, máy chấm từng chữ', 0], ['talk', '💬', 'Hội thoại với thầy AI', 'Nói từng lượt, có sửa lỗi', 1], ['custom', '✏️', 'Tự nhập câu', 'Câu bạn muốn nói', 1], ['live', '📞', 'Gọi thầy trực tiếp', 'Nói liền mạch như gọi điện', 2]]],
+  ['Kiểm tra', [['mock', '📝', 'Thi thử HSK', 'Đề mới mỗi lần, tính giờ', 1]]],
+  ['Tra cứu', [['lib', '📚', 'Thư viện', 'Mẫu câu, ngữ pháp, chuyên đề', 0], ['chatlearn', '📱', 'Học từ đoạn chat', 'Dán tin nhắn WeChat thật', 1]]]];
+function openExtra(k) {
+  if (k === 'wsets' || k === 'dict') { go('practice'); openPractice('lib'); setTimeout(() => (k === 'wsets' ? mountWsets : mountDict)($('#pBody')), 30); return; }
+  if (k === 'chatlearn') return openPaste();
+  go('practice'); openPractice(k);
+}
 function renderHome() {
   const due = dueCards().length, nu = nextUnit(), weak = weakChars(4);
   const revToday = todayHist('rev').length, stepsToday = todayHist('step').length, speakToday = todayHist('speak').length, talkToday = todayHist('talk').length;
-  const tasks = [];
+  const tasks = [], errN = errorPool().length;
+  // 1 · review (due cards + mistakes)
+  tasks.push({ id: 'rev', ic: '复', title: 'Ôn tập', sub: due || errN ? [due ? `${due} thẻ đến hạn` : '', errN ? `${errN} lỗi chờ sửa` : ''].filter(Boolean).join(' · ') : 'Hôm nay không có gì cần ôn', ok: (due === 0 || revToday >= 15) && (errN === 0 || todayHist('fix').length > 0) });
+  // 2 · next lesson on the roadmap
   if (nu) { const done = stepCount(nu.key); tasks.push({ id: 'lesson', main: true, ic: '书', title: done ? 'Học tiếp: ' + nu.t : 'Bài tiếp theo: ' + nu.t, sub: `${nu.kind === 'track' ? TRACKS[nu.track].name + ' · ' : ''}${lvLabel(nu.lv)}`, bar: done / 6, ok: stepsToday >= 2 }); }
-  else tasks.push({ id: 'path', ic: '书', title: 'Chọn bài để học', sub: 'Mở Lộ trình để chọn bài hoặc nhập giáo trình', ok: false });
-  tasks.push({ id: 'rev', ic: '复', cls: due ? 'red' : '', title: due ? `Ôn ${due} thẻ đến hạn` : 'Ôn tập', sub: due ? 'Lỗi sai được đưa lên trước' : 'Không có thẻ đến hạn', ok: due === 0 || revToday >= 15 });
-  { const pool = errorPool(); if (pool.length || weak.length) { const s = errorSummary(); tasks.push({ id: 'fix', ic: '⚡', cls: 'gold', title: '5 phút sửa lỗi', sub: (pool.length ? Object.entries(s).map(([k, n]) => `${FIX_SUB[k] || k} ${n}`).join(' · ') : 'Chữ hay đọc sai: ' + weak.join(' ')), ok: todayHist('fix').length > 0 }); } }
-  tasks.push({ id: 'listen', ic: '听', title: 'Luyện nghe 5 phút', sub: 'Nghe chọn, nhận thanh điệu, nghe chép', ok: todayHist('listen').length > 0 });
-  { const lvW = Math.min(5, Math.max(1, (nu && nu.lv) || P.level || 1)), ws = DICT ? nextWset(lvW) : null; if (ws) tasks.push({ id: 'wset', ic: '词', title: `Học 1 bộ từ mới: HSK ${ws.lv} · bộ ${ws.i + 1}/${ws.n}`, sub: ws.words.slice(0, 6).map(w => w.hz).join(' ') + ' …', ok: todayHist('wset').length > 0, _ws: ws }); }
-  if (!P.placed && !Object.values(D.lp).some(x => x.done)) tasks.unshift({ id: 'place', ic: '🎯', title: 'Kiểm tra xếp lớp (10 phút)', sub: 'Đã biết tiếng Trung? Làm bài để bỏ qua phần đã biết', ok: false });
-  tasks.push({ id: 'radio', ic: '📻', title: 'Radio: nghe thụ động', sub: 'Bật nghe khi đang làm việc khác', ok: todayHist('radio').length > 0, extra: true });
-  tasks.push({ id: 'talk', ic: '话', title: 'Hội thoại 5 phút', sub: currentLesson() ? 'Theo bài: ' + currentLesson().title : 'Chọn tình huống, nói với AI', ok: talkToday > 0 });
-  tasks.push({ id: 'chat', ic: '微', title: 'Học từ đoạn chat WeChat', sub: 'Dán tin nhắn thật, học đọc, viết, gõ', ok: false, extra: true });
+  else tasks.push({ id: 'path', ic: '书', title: 'Đã xong lộ trình', sub: 'Ôn tập và luyện thêm để giữ vững', ok: true });
+  // 3 · quick practice of what was just learned
+  { const ql = quickLesson(); if (ql) tasks.push({ id: 'quick', ic: '说', title: 'Luyện nhanh bài vừa học', sub: `${mapLabel(ql)} · nghe và nói lại 5 câu`, ok: speakToday >= 3 }); }
   const core = tasks.filter(t => !t.extra), done = core.filter(t => t.ok).length, pct = core.length ? done / core.length : 0;
   // smart order for the one-button flow: due reviews first, then the lesson, then the rest
-  const order = ['place', 'rev', 'fix', 'lesson', 'path', 'wset', 'listen', 'talk'], nextTask = order.map(id => core.find(t => t.id === id && !t.ok)).find(Boolean);
+  const order = ['rev', 'lesson', 'quick', 'path'], nextTask = order.map(id => core.find(t => t.id === id && !t.ok)).find(Boolean);
   const C = 2 * Math.PI * 32;
-  const TC = { lesson: ['📖', '#E1F5EE', '#085041'], path: ['🗺', '#E1F5EE', '#085041'], rev: ['🔁', '#E6F1FB', '#0C447C'], fix: ['⚡', '#FAEEDA', '#633806'], listen: ['🎧', '#EEEDFE', '#3C3489'],
+  const TC = { quick: ['🗣️', '#EEEDFE', '#3C3489'], lesson: ['📖', '#E1F5EE', '#085041'], path: ['🗺', '#E1F5EE', '#085041'], rev: ['🔁', '#E6F1FB', '#0C447C'], fix: ['⚡', '#FAEEDA', '#633806'], listen: ['🎧', '#EEEDFE', '#3C3489'],
     wset: ['🧩', '#FBEAF0', '#72243E'], place: ['🎯', '#FAECE7', '#712B13'], talk: ['💬', '#E6F1FB', '#0C447C'], radio: ['📻', '#E1F5EE', '#085041'], chat: ['📱', '#F1EFE8', '#444441'] };
   const nl = nu && lessons.find(l => l.id === nu.key), heroIc = nextTask && nextTask.id === 'lesson' && nl ? topicIcon(nl) : (nextTask ? TC[nextTask.id][0] : '🎉');
   const heroPct = nextTask && nextTask.id === 'lesson' && nu ? Math.round(100 * stepCount(nu.key) / STEPS.length) : 0;
-  const explore = [['radio', '📻', 'Radio'], ['mock', '📝', 'Thi thử'], ['lecture', '🎧', 'Bài giảng'], ['lib', '📚', 'Thư viện']].concat(P.plan === 'hsk' ? [] : [['herbs', '🌿', 'Dược liệu']]);
+  const stg = learnerStage(), explore = [['wsets', '🧩', 'Từ vựng', 1], ['listen', '🎧', 'Nghe', 0], ['read', '🗣️', 'Nói', 0], ['lib', '📚', 'Thư viện', 0]].filter(x => stg >= x[3]);
   $('#v-home').innerHTML = `<div class="hello"><div class="ring"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="32" fill="none" stroke="var(--line)" stroke-width="7"/><circle cx="38" cy="38" r="32" fill="none" stroke="var(--jade)" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct)}"/></svg><b>${done}/${core.length}</b></div>
     <div><h1>Chào ${esc(P.name)}</h1><div class="small muted">${streakDays() ? '🔥 ' + streakDays() + ' ngày liên tiếp' : 'Bắt đầu chuỗi ngày học hôm nay'} · HSK ${P.level}</div></div></div>
     ${nextTask ? `<button class="hhero" data-task="${nextTask.id}"><span class="hic" style="--p:${heroPct}"><span>${heroIc}</span></span><span class="htx"><small>${nextTask.id === 'lesson' ? 'Học tiếp' : 'Việc nên làm tiếp'}</small><b>${esc(nextTask.id === 'lesson' && nl ? mapLabel(nl) : nextTask.title)}</b><small>${esc(nextTask.id === 'lesson' && nu ? `${nl ? nl.title.split(':')[0] : ''} · ${lvLabel(nu.lv)}${heroPct ? ` · ${heroPct}%` : ''}` : nextTask.sub)}</small></span><span class="hgo">▶</span></button>`
       : `<div class="goodbox" style="margin-bottom:12px">🎉 Đã xong việc hôm nay. Muốn học thêm, chọn bất kỳ mục nào bên dưới.</div>`}
-    <div class="hsec">Việc hôm nay <span class="muted small">khoảng 20 phút</span></div>
+    <div class="hsec">Việc hôm nay <span class="muted small">3 việc · khoảng 20 phút</span></div>
     <div class="tgrid">${tasks.filter(x => !x.extra).map(x => { const c = TC[x.id] || ['•', '#F1EFE8', '#444441']; return `<button class="tcard${x.ok ? ' ok' : ''}" data-task="${x.id}" style="--bg:${c[1]};--fg:${c[2]}"><span class="tci">${c[0]}</span><b>${esc(x.title.replace(/^Học tiếp: |^Bài tiếp theo: /, ''))}</b><small>${esc(x.sub)}</small>${x.ok ? '<i class="tok">✓</i>' : ''}</button>`; }).join('')}</div>
-    <div class="hsec">Khám phá</div>
-    <div class="xrow">${explore.map(([k, ic, n]) => `<button class="xpill" data-x="${k}"><span>${ic}</span>${n}</button>`).join('')}</div>
-    <div class="tgrid" style="margin-top:8px">${tasks.filter(x => x.extra && x.id === 'chat').map(x => { const c = TC[x.id]; return `<button class="tcard" data-task="${x.id}" style="--bg:${c[1]};--fg:${c[2]}"><span class="tci">${c[0]}</span><b>${esc(x.title)}</b><small>${esc(x.sub)}</small></button>`; }).join('')}</div>
+    <div class="hsec">Luyện thêm <span class="muted small">khi còn thời gian</span></div>
+    <div class="xgrid">${explore.map(([k, ic, n]) => `<button class="xpill" data-x="${k}"><span>${ic}</span>${n}</button>`).join('')}</div>
     ${!apiKey() ? '<div class="infobox">Chưa có API key. Vào <b>Tôi → Cài đặt</b> để dán key, nếu không các phần chấm điểm và soạn bài sẽ chưa chạy.</div>' : ''}`;
   $('#v-home').onclick = e => {
-    const xp = e.target.closest('[data-x]'); if (xp) { backTo = 'home'; go('practice'); const k = xp.dataset.x; if (k === 'herbs') { openPractice('lib'); setTimeout(() => mountHerbs($('#pBody')), 30); } else openPractice(k); return; }
+    const xp = e.target.closest('[data-x]'); if (xp) { backTo = 'home'; openExtra(xp.dataset.x); return; }
     const t = e.target.closest('[data-task]'); if (!t) return;
-    backTo = ['lesson', 'weak', 'fix', 'talk', 'listen', 'wset', 'place'].includes(t.dataset.task) ? 'home' : null;
+    backTo = ['lesson', 'weak', 'fix', 'talk', 'listen', 'wset', 'quick', 'rev'].includes(t.dataset.task) ? 'home' : null;
     const id = t.dataset.task;
     if (id === 'lesson') openLesson(nextUnit().key);
     else if (id === 'path') go('path');
-    else if (id === 'rev') go('rev');
+    else if (id === 'rev') { if (!dueCards().length && errorPool().length) { go('practice'); openPractice('fix'); } else go('rev'); }
     else if (id === 'weak') { go('practice'); openPractice('read', weakItems()); }
     else if (id === 'fix') { go('practice'); openPractice('fix'); }
     else if (id === 'radio') { go('practice'); openPractice('radio'); }
+    else if (id === 'quick') { const ql = quickLesson(); if (ql) { go('practice'); openPractice('read', quickItems(ql)); } }
     else if (id === 'place') { go('practice'); openPractice('place'); }
     else if (id === 'talk') { go('practice'); openPractice('talk'); }
     else if (id === 'listen') { go('practice'); openPractice('listen'); }
@@ -2520,7 +2546,11 @@ function mapStageHtml(S, g, nu, open) {
       <div class="mlbl">${esc(mapLabel(l))}${n && !done ? ` · ${n}/${STEPS.length}` : ''}</div>${cur ? '<div class="mbub">▶ Bắt đầu</div>' : ''}</div>`;
     if (l.kind !== 'test') pack.push(l.id);
     if (pack.length === 5 && i < g.length - 1) {
-      out += `<div class="mgame"><b>🎮 Trò chơi nhanh</b><div class="mgrid"><button data-game="match" data-ids="${pack.join(',')}">🃏 Ghép đôi chữ – nghĩa</button><button data-game="speed" data-ids="${pack.join(',')}">⚡ Nghe nhanh chọn chữ</button></div></div>`;
+      const qk = pack.join(','), qr = (D.qc || {})[pack[0]], allDone = pack.every(id => D.lp[id] && D.lp[id].done);
+      out += `<div class="mgame"><b>✅ Kiểm tra nhanh 5 bài vừa học</b>${qr ? ` <span class="tag" style="background:var(--jade-soft);color:var(--jade)">${qr.score} điểm</span>` : ''}
+        <div class="small muted" style="margin:4px 0">${allDone ? '10 câu nghe và đọc, khoảng 3 phút.' : 'Làm sau khi học xong 5 bài phía trên.'}</div>
+        <button class="btn sm${allDone && !qr ? ' pri' : ''}" data-qc="${qk}">${qr ? 'Làm lại' : 'Làm bài kiểm tra'}</button>
+        <div class="small" style="margin-top:6px">Chơi cho vui: <a href="#" data-game="match" data-ids="${qk}">🃏 ghép đôi</a> · <a href="#" data-game="speed" data-ids="${qk}">⚡ nghe nhanh</a></div></div>`;
       pack = [];
     }
   });
@@ -2590,7 +2620,8 @@ function gameSpeed(box, ids) {
 
 function renderPath() {
   const box = $('#v-path'); const nu = nextUnit();
-  const seg = `<div class="seg" id="pathSeg"><button data-t="book" class="${pathTab === 'book' ? 'on' : ''}">Giáo trình</button><button data-t="smart" class="${pathTab === 'smart' ? 'on' : ''}">AI theo mục tiêu</button><button data-t="chat" class="${pathTab === 'chat' ? 'on' : ''}">Từ chat</button></div>`;
+  pathTab = 'book';
+  const seg = '' && `<div class="seg" id="pathSeg"><button data-t="book" class="${pathTab === 'book' ? 'on' : ''}">Giáo trình</button><button data-t="smart" class="${pathTab === 'smart' ? 'on' : ''}">AI theo mục tiêu</button><button data-t="chat" class="${pathTab === 'chat' ? 'on' : ''}">Từ chat</button></div>`;
   const row = (key, title, sub, tagHtml) => {
     const s = D.lp[key], n = stepCount(key), done = s && s.done;
     return `<button class="unit${done ? ' done' : n ? ' part' : ''}${nu && nu.key === key ? ' next' : ''}" data-key="${esc(key)}"><span class="st">${done ? '✓' : n ? n + '/' + STEPS.length : '○'}</span><span class="tx"><b>${tagHtml || ''}${esc(title)}</b><small>${esc(sub)}</small></span><span class="muted">›</span></button>`;
@@ -2621,7 +2652,7 @@ function renderPath() {
         + soon.map(m => `<div class="modhead">${esc(m[1])}</div><div class="unit" style="opacity:.55"><span class="st">…</span><span class="tx"><b>${esc(m[1])}</b><small>Sắp có, đang được soạn</small></span></div>`).join('') + '</details>';
     }).join('')
       : `<div class="empty">Chưa có bài nào.<br>Kiểm tra thư mục giao-trinh trên GitHub.</div>`;
-    html += `<button class="btn full" id="lImport" style="margin-top:12px">＋ Nhập thêm bài từ PDF</button>`;
+
   } else {
     const cl = lessons.filter(l => l.kind === 'chat').sort((a, b) => b.createdAt - a.createdAt);
     html += seg + `<button class="btn pri full" id="lPaste" style="margin-bottom:12px">📋 Dán đoạn chat mới</button>`;
@@ -2632,7 +2663,8 @@ function renderPath() {
   box.onclick = e => {
     const s = e.target.closest('#pathSeg button'); if (s) { pathTab = s.dataset.t; renderPath(); return; }
     const pm = e.target.closest('[data-pm]'); if (pm) { settings.pathMap = pm.dataset.pm === '1'; Store.set('settings', settings); renderPath(); return; }
-    const gm = e.target.closest('[data-game]'); if (gm) { backTo = 'path'; go('practice'); openPractice('game', { kind: gm.dataset.game, ids: gm.dataset.ids }); return; }
+    const qc = e.target.closest('[data-qc]'); if (qc) { backTo = 'path'; go('practice'); openPractice('qcheck', { ids: qc.dataset.qc }); return; }
+    const gm = e.target.closest('[data-game]'); if (gm) { e.preventDefault(); backTo = 'path'; go('practice'); openPractice('game', { kind: gm.dataset.game, ids: gm.dataset.ids }); return; }
     if (e.target.closest('#editGoals')) return openProfileForm(P);
     if (e.target.closest('#lImport')) return openImport();
     if (e.target.closest('#lPaste')) return openPaste();
@@ -3289,32 +3321,20 @@ const STARTER = [
 function practiceItems() { const l = currentLesson(); return [...arr(D.custom), ...(l ? speakItems(l) : [])].concat(l || D.custom.length ? [] : STARTER); }
 function renderPractice() {
   $('#fab').hidden = false;
-  const l = currentLesson();
-  $('#v-practice').innerHTML = `<h1>Luyện tập</h1><p class="sub">${l ? 'Đang dùng câu của bài: <b>' + esc(l.title) + '</b>' : 'Chưa chọn bài, đang dùng câu cơ bản.'} Câu bạn tự nhập luôn có ở đầu danh sách.</p>
-    <div class="tiles">
-      <button class="tile" data-p="lecture" style="border-color:var(--jade)"><span class="g">🎧</span><b>Nghe thử bài giảng</b><small>Thầy cô giảng bằng giọng AI tự nhiên, chọn giọng ưng ý</small></button>
-      <button class="tile" data-p="mock" style="border-color:var(--gold)"><span class="g">📝</span><b>Thi thử HSK 1–5</b><small>Đề mới mỗi lần, đúng dạng đề thật, tính giờ, chấm theo phần</small></button>
-      <button class="tile" data-p="radio" style="border-color:var(--jade)"><span class="g">📻</span><b>Radio, nghe thụ động</b><small>Tự phát liên tục bài đang học, từ vựng, hội thoại; không tốn lượt</small></button>
-      <button class="tile" data-p="fix" style="border-color:var(--seal)"><span class="g">⚡</span><b>5 phút sửa lỗi</b><small>Gom lỗi từ mọi nơi, sửa lỗi hay lặp lại trước</small></button>
-      <button class="tile" data-p="lib" style="border-color:var(--gold)"><span class="g">库</span><b>Thư viện</b><small>Mẫu câu, khẩu ngữ, WeChat, từ điển HSK</small></button>
-      <button class="tile" data-p="chart"><span class="g">音</span><b>Bảng âm tiết pinyin</b><small>Đủ mọi âm tiết × 4 thanh, nghe và đọc thử</small></button>
-      <button class="tile" data-p="listen"><span class="g">听</span><b>Luyện nghe</b><small>Nghe chọn, nhận thanh điệu, nghe chép</small></button>
-      <button class="tile" data-p="read"><span class="g">说</span><b>Đọc theo câu</b><small>Ghi âm, AI chấm từng chữ</small></button>
-      <button class="tile" data-p="live" style="border-color:var(--jade)"><span class="g">📞</span><b>Gọi thầy (trực tiếp)</b><small>Nói chuyện liền mạch như gọi điện</small></button>
-      <button class="tile" data-p="talk"><span class="g">话</span><b>Hội thoại từng lượt</b><small>Bấm nói, có sửa lỗi từng câu</small></button>
-      <button class="tile" data-p="type"><span class="g">打</span><b>Gõ trên điện thoại</b><small>Gõ pinyin, app chấm chữ đúng sai</small></button>
-      <button class="tile" data-p="write"><span class="g">写</span><b>Viết chữ</b><small>Thứ tự nét, viết bằng ngón tay</small></button>
-      <button class="tile" data-p="mist"><span class="g">错</span><b>Bài tập lỗi sai</b><small>AI soạn từ lỗi bạn hay mắc</small></button>
-      <button class="tile" data-p="custom"><span class="g">✎</span><b>Tự nhập câu</b><small>Câu bạn muốn nói, tiếng Trung hoặc Việt</small></button>
-    </div>`;
-  $('#v-practice').onclick = e => { const t = e.target.closest('[data-p]'); if (t) openPractice(t.dataset.p); };
+  const l = currentLesson(), stg = learnerStage();
+  let hidden = 0;
+  const groups = EXTRA.map(([name, items]) => { const open = items.filter(x => stg >= x[4]); hidden += items.length - open.length; return open.length ? `<div class="hsec">${esc(name)}</div><div class="tgrid">${open.map(([k, ic, n, sub]) => `<button class="tcard" data-p="${k}" style="--bg:var(--paper);--fg:var(--ink);border:1px solid var(--line);min-height:96px"><span class="tci" style="background:var(--bg)">${ic}</span><b>${esc(n)}</b><small>${esc(sub)}</small></button>`).join('')}</div>` : ''; }).join('');
+  $('#v-practice').innerHTML = `<h1>Luyện thêm</h1><p class="sub">Phần tự chọn, dành cho khi còn thời gian. Việc chính mỗi ngày vẫn là 3 việc ở màn Hôm nay.${l ? ' Câu luyện lấy từ bài: <b>' + esc(l.title) + '</b>.' : ''}</p>
+    ${groups}${hidden ? `<p class="small muted" style="margin-top:12px">🔒 Còn ${hidden} mục sẽ mở khi bạn học tới giai đoạn sau.</p>` : ''}`;
+  $('#v-practice').onclick = e => { const t = e.target.closest('[data-p]'); if (t) { const k = t.dataset.p; if (['wsets', 'dict', 'chatlearn'].includes(k)) openExtra(k); else openPractice(k); } };
+
 }
 function openPractice(kind, items) {
   navMark();
   if (MOCK && MOCK.tick) clearInterval(MOCK.tick);
   if (kind === 'custom') { $('#cText').value = ''; $('#cStatus').innerHTML = ''; openModal('custom'); return; }
   $('#fab').hidden = true;
-  const v = $('#v-practice'), names = { lib: 'Thư viện', chart: 'Bảng âm tiết pinyin', listen: 'Luyện nghe', live: 'Gọi thầy', read: 'Đọc theo câu', talk: 'Hội thoại', type: 'Gõ trên điện thoại', write: 'Viết chữ', mist: 'Bài tập lỗi sai', fix: '5 phút sửa lỗi', radio: 'Radio, nghe thụ động', mock: 'Thi thử HSK', place: 'Kiểm tra xếp lớp', game: 'Trò chơi nhanh', lecture: 'Nghe thử bài giảng' };
+  const v = $('#v-practice'), names = { lib: 'Thư viện', chart: 'Bảng âm tiết pinyin', listen: 'Luyện nghe', live: 'Gọi thầy', read: 'Đọc theo câu', talk: 'Hội thoại', type: 'Gõ trên điện thoại', write: 'Viết chữ', mist: 'Bài tập lỗi sai', fix: '5 phút sửa lỗi', radio: 'Radio, nghe thụ động', mock: 'Thi thử HSK', place: 'Kiểm tra xếp lớp', game: 'Trò chơi nhanh', lecture: 'Nghe thử bài giảng', qcheck: 'Kiểm tra nhanh', quick: 'Luyện nhanh bài vừa học' };
   v.innerHTML = `<div class="flowhead"><button class="icon" data-back aria-label="Quay lại">‹</button><h2>${names[kind]}</h2></div><div id="pBody"></div>`;
   v.onclick = e => { if (e.target.closest('[data-back]')) { if (Rec.recording) Rec.cancel(); if (Live.active) Live.stop(); talk = null; const b = backTo; backTo = null; if (b && b !== 'practice') go(b); else renderPractice(); } };
   const body = $('#pBody'), its = items || practiceItems();
@@ -3326,6 +3346,10 @@ function openPractice(kind, items) {
   if (kind === 'mock') mountMock(body);
   if (kind === 'game') mountGame(body, items || {});
   if (kind === 'lecture') mountLecture(body);
+  if (kind === 'qcheck') { const ids = String((items || {}).ids || '').split(',').filter(Boolean), ls = ids.map(id => lessons.find(l => l.id === id)).filter(Boolean);
+    const qs = buildListening({ vocab: ls.flatMap(l => arr(l.vocab)), sentences: ls.flatMap(l => arr(l.sentences)).filter(s => s.vi) }, 10);
+    logActivity('qcheck', { ids: ids[0] });
+    runExercises(body, qs, () => go('path'), score => { D.qc = D.qc || {}; D.qc[ids[0]] = { score, at: Date.now() }; saveD(); }); }
   if (kind === 'place') { ensureDict().then(() => startPlacement(body)); }
   if (kind === 'read') mountReadAlong(body, its);
   if (kind === 'type') mountTyping(body, its.filter(s => hanCount(s.hz) >= 1 && s.vi));
@@ -3565,7 +3589,8 @@ const GUIDE = [
   'Key Gemini và iFLYTEK chỉ cần nhập trên một máy; các máy khác bấm "Dán mã cài đặt" trong Cài đặt.',
   'Xem tiến độ cả nhà: Tôi → Tiến độ cả nhà, hoặc nút ở màn hình chọn người học. Mỗi người một thẻ: đang học bài nào, bao nhiêu ngày liên tiếp, điểm kiểm tra, số lỗi chờ sửa.']],
  ['Học mỗi ngày (15–30 phút)', [
-  'Mở app chỉ cần bấm nút xanh ▶ Học tiếp ở màn Hôm nay: app tự chọn việc nên làm tiếp (ôn thẻ đến hạn → 5 phút sửa lỗi → bài đang học → một bộ 20 từ → luyện nghe → hội thoại).',
+  'Mỗi ngày chỉ có 3 việc ở màn Hôm nay, làm theo thứ tự: ① Ôn tập (thẻ đến hạn và lỗi chờ sửa) → ② Bài tiếp theo trong lộ trình → ③ Luyện nhanh bài vừa học (nghe và nói lại 5 câu). Thẻ xanh lớn luôn chỉ việc nên làm tiếp.',
+  'Ai muốn luyện thêm thì vào tab Luyện thêm: từ vựng, nghe, nói, thi thử, thư viện. Các mục mở dần theo giai đoạn để không bị rối.',
   'Vuốt hoặc bấm nút quay lại của điện thoại để lùi một màn; không thoát khỏi app.',
   'Mỗi bài có 7 bước theo thứ tự: Từ mới → Nghe → Bài khóa → Nói → Viết → Gõ → Bài tập. Nghe và hiểu trước, nói và viết sau.',
   'Đọc kỹ ô "💡 Thầy lưu ý" dưới từng câu: phân tích mẫu câu, lỗi người Việt hay sai, cách người bản xứ nói. Bấm 🎤 để đọc thử và được chấm ngay, bấm 💬 để hỏi thầy AI thêm.',
