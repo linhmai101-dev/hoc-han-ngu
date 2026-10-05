@@ -300,6 +300,26 @@ nav .badge{position:absolute;top:4px;left:calc(50% + 8px);background:var(--seal)
 .toast{position:fixed;left:50%;bottom:140px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60;max-width:90%;text-align:center}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.mapwrap{padding:8px 0 4px;overflow:hidden}
+.mnode{display:flex;flex-direction:column;align-items:center;margin:14px 0}
+.mring{position:relative;width:78px;height:78px;border-radius:50%;border:none;padding:0;display:grid;place-items:center;background:conic-gradient(var(--c) calc(var(--p)*1%),var(--line) 0);cursor:pointer}
+.mring::before{content:'';position:absolute;inset:6px;border-radius:50%;background:var(--paper)}
+.mring.done::before{background:color-mix(in srgb,var(--c) 18%,var(--paper))}
+.mring.cur{width:92px;height:92px;box-shadow:0 0 0 6px color-mix(in srgb,var(--c) 22%,transparent);animation:mpulse 2s infinite}
+.mring.test::before{border:2px dashed var(--c)}
+.mico{position:relative;z-index:1;font-size:30px;line-height:1}
+.mchk{position:absolute;right:-2px;bottom:-2px;z-index:2;width:24px;height:24px;border-radius:50%;background:var(--c);color:#fff;font-style:normal;font-size:13px;display:grid;place-items:center;border:2px solid var(--paper)}
+.mlbl{font-size:13px;max-width:150px;text-align:center;color:var(--muted);margin-top:6px;line-height:1.3}
+.mbub{background:var(--jade);color:#fff;border-radius:10px;padding:3px 10px;font-size:12px;margin-top:4px}
+.mgame{border:1px solid var(--line);border-radius:14px;padding:10px;margin:14px 6px;background:var(--paper)}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.mgrid button{border:1px solid var(--line);border-radius:12px;padding:10px 6px;background:color-mix(in srgb,#7F77DD 12%,var(--paper));font-size:13px}
+.ggrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0}
+.gcard{min-height:64px;border:1px solid var(--line);border-radius:12px;background:var(--paper);font-size:14px;padding:6px}
+.gcard.hz{font-size:22px}.gcard.sel{outline:3px solid var(--gold)}.gcard.ok{visibility:hidden}.gcard.bad{background:#FCEBEB}
+.opt.right{background:#EAF3DE}.opt.wrong{background:#FCEBEB}
+@keyframes mpulse{0%,100%{box-shadow:0 0 0 6px color-mix(in srgb,var(--c) 22%,transparent)}50%{box-shadow:0 0 0 12px color-mix(in srgb,var(--c) 8%,transparent)}}
 </style>
 </head>
 <body>
@@ -360,6 +380,8 @@ nav .badge{position:absolute;top:4px;left:calc(50% + 8px);background:var(--seal)
   <label class="f" for="xfKey">APIKey</label><input id="xfKey" type="password" autocomplete="off">
   <label class="f" for="xfSec">APISecret</label><input id="xfSec" type="password" autocomplete="off">
   <label class="f" for="xfVcn">Mã giọng đọc iFLYTEK (vcn)</label><input id="xfVcn" placeholder="x_xiaoyan">
+  <label class="f" for="xfVcn2">Giọng thứ hai cho người B trong hội thoại (để trống nếu không dùng)</label><input id="xfVcn2" placeholder="ví dụ: giọng nam">
+  <div class="btnrow"><button class="btn sm" id="xfFind2">🔎 Tìm giọng thứ hai dùng được</button></div><div class="small" id="xfFindMsg"></div>
   <div class="btnrow" style="margin-top:10px"><button class="btn" id="xfTest">Thử kết nối iFLYTEK</button><button class="btn pri" id="xfSave">Lưu</button></div>
   <p class="small" id="xfMsg"></p>
   <h3>Dữ liệu trên máy</h3>
@@ -376,7 +398,10 @@ nav .badge{position:absolute;top:4px;left:calc(50% + 8px);background:var(--seal)
   </ol>
   <div class="btnrow"><button class="btn sm" id="packBuild">① Tạo bộ giọng đọc</button><button class="btn sm" id="packZip" title="Không gọi iFLYTEK">Chỉ đóng gói phần đã có</button><button class="btn sm" id="packDl" hidden>⬇ Tải lại file am-thanh.zip</button></div>
   <div style="height:8px;background:var(--line);border-radius:5px;overflow:hidden;margin:8px 0"><div id="packBar" style="height:100%;width:0;background:var(--jade)"></div></div>
-  <div class="btnrow"><button class="btn sm pri" id="packGet">③ Lấy từ GitHub về máy này</button></div>
+  <div class="btnrow"><button class="btn sm pri" id="packGet">③ Tải trọn bộ giọng đọc về máy này</button><button class="btn sm" id="packCheck">🔎 Kiểm tra đã đủ chưa</button></div>
+  <div style="height:8px;background:var(--line);border-radius:5px;overflow:hidden;margin:8px 0"><div id="getBar" style="height:100%;width:0;background:var(--gold)"></div></div>
+  <p class="small muted">Sao lưu phòng khi trình duyệt xóa dữ liệu: lưu các file giọng đọc vào máy (iPhone: ứng dụng Tệp), khi cần thì khôi phục lại mà không cần mạng.</p>
+  <div class="btnrow"><button class="btn sm" id="vBackup">💾 Sao lưu giọng đọc ra file</button><button class="btn sm" id="vRestore">📂 Khôi phục từ file</button><input type="file" id="vRestoreIn" accept=".json,application/json" multiple hidden></div>
   <p class="small" id="packMsg"></p>
   <h3>Lượt iFLYTEK đã dùng</h3>
   <div class="small" id="xfUse"></div>
@@ -542,6 +567,16 @@ const Store = {
     try { return await new Promise(res => { let n = 0; const q = this.db.transaction('kv').objectStore('kv').openKeyCursor();
       q.onsuccess = () => { const cur = q.result; if (!cur) return res(n); if (String(cur.key).startsWith(prefix)) n++; cur.continue(); }; q.onerror = () => res(n); }); } catch (e) { return 0; }
   },
+  async keysWith(prefixes) {
+    if (!this.db) return [];
+    return new Promise(res => { const out = []; const q = this.db.transaction('kv').objectStore('kv').openKeyCursor();
+      q.onsuccess = () => { const cur = q.result; if (!cur) return res(out); const k = String(cur.key); if (prefixes.some(p => k.startsWith(p))) out.push(k); cur.continue(); }; q.onerror = () => res(out); });
+  },
+  async each(prefixes, cb) {
+    if (!this.db) return;
+    await new Promise(res => { const q = this.db.transaction('kv').objectStore('kv').openCursor();
+      q.onsuccess = () => { const cur = q.result; if (!cur) return res(); const k = String(cur.key); if (prefixes.some(p => k.startsWith(p))) cb(k, cur.value); cur.continue(); }; q.onerror = () => res(); });
+  },
   async delPrefix(prefix) {
     if (!this.db) return;
     await new Promise(res => { const tx = this.db.transaction('kv', 'readwrite'), st = tx.objectStore('kv'), q = st.openKeyCursor();
@@ -641,11 +676,22 @@ let ttsSeq = 0;
 const ttsNorm = text => { text = String(text || '').trim(); return hanCount(text) ? text.replace(/[A-Za-z\u00C0-\u024F\u01CD-\u01DC]+/g, ' ').replace(/\s+/g, ' ').trim() : ''; };
 const b64Url = b => URL.createObjectURL(new Blob([Uint8Array.from(atob(b), ch => ch.charCodeAt(0))], { type: 'audio/mpeg' }));
 // shared voice pack (am-thanh/*.json on GitHub, imported into this device): used before any iFLYTEK call
+async function packAudio2(text, slow) { const k = (slow ? 'xfbs2:' : 'xfb2:') + text; if (ttsMem[k]) return ttsMem[k]; const b = await Store.get(k); return b ? (ttsMem[k] = b64Url(b)) : null; }
+const vcn2 = () => (settings.xfVcn2 || '').trim();
+// dialogue speaker B (and D) uses the second voice when one is set
+const voiceOf = x => (vcn2() && x && ['B', 'D'].includes(x.who || x.tag)) ? 2 : 1;
 async function packAudio(text, slow) { const k = (slow ? 'xfbs:' : 'xfb:') + text; if (ttsMem[k]) return ttsMem[k]; const b = await Store.get(k); return b ? (ttsMem[k] = b64Url(b)) : null; }
 async function playUrl(url, rate, seq) { if (seq !== ttsSeq) return; ttsAudio.src = url; ttsAudio.playbackRate = Math.max(0.5, Math.min(1.2, (rate || speakRate) / 0.85)); const end = playEnded(); await ttsAudio.play(); return end; }
-async function say(text, rate) {
+async function say(text, rate, voice) {
   text = ttsNorm(text); if (!text) return;
   const pref = voicePref(), today = new Date().toISOString().slice(0, 10);
+  if (voice === 2 && vcn2() && !['device', 'system'].includes(pref) && !pref.startsWith('gemini:')) {
+    const seq = ++ttsSeq, slow = rate && rate <= 0.65;
+    try {
+      const url = (slow && await packAudio2(text, true)) || await packAudio2(text) || (XF.ok() ? await xfTts(text, 45, vcn2()) : null);
+      if (url) { try { speechSynthesis.cancel(); } catch (e) {} ttsAudio.pause(); return await playUrl(url, rate, seq); }
+    } catch (e) {}
+  }
   if (!['device', 'system'].includes(pref) && !pref.startsWith('gemini:')) {
     const seq = ++ttsSeq, slow = rate && rate <= 0.65;
     const slowUrl = slow ? await packAudio(text, true).catch(() => null) : null;
@@ -673,13 +719,14 @@ async function say(text, rate) {
   }
 }
 const playIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
-document.addEventListener('click', e => { const b = e.target.closest('[data-say]'); if (b) say(b.dataset.say, b.dataset.rate ? +b.dataset.rate : undefined); });
+document.addEventListener('click', e => { const b = e.target.closest('[data-say]'); if (b) say(b.dataset.say, b.dataset.rate ? +b.dataset.rate : undefined, b.dataset.voice ? +b.dataset.voice : undefined); });
 
 /* =============== recorder: tap to start, tap to stop =============== */
 const Rec = {
   stream: null, mr: null, chunks: [], startAt: 0, timerId: null, maxMs: 30000,
   supported() { return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder); },
   async start(onTick) {
+    try { if (typeof RADIO !== 'undefined' && RADIO.on) radioStop(); } catch (e) {}
     try { ttsAudio.pause(); } catch (e) {}
     if (!this.supported()) throw new Error('Trình duyệt này không ghi âm được. Hãy dùng Chrome (Android) hoặc Safari (iPhone).');
     try { this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
@@ -916,13 +963,13 @@ function parseIse(xml, it) {
   return { audio_ok: true, score: total ?? (chars.length ? Math.round(100 * (chars.length - bad) / chars.length) : 0), chars,
     summary: (parts.length ? 'Điểm thành phần: ' + parts.join(', ') + '. ' : '') + (bad ? `Có ${bad} chữ cần sửa, xem gợi ý bên dưới.` : 'Không phát hiện lỗi.'), heard_text: '', engine: 'iFLYTEK' };
 }
-async function xfTts(text, speed = 45) {
-  const vcn = (settings.xfVcn || '').trim() || 'x_xiaoyan', key = 'xf:' + vcn + (speed !== 45 ? ':s' + speed : '') + ':' + text;
+async function xfTts(text, speed = 45, vcnOver) {
+  const vcn = (vcnOver || settings.xfVcn || '').trim() || 'x_xiaoyan', key = 'xf:' + vcn + (speed !== 45 ? ':s' + speed : '') + ':' + text;
   if (ttsMem[key]) return ttsMem[key];
   const cached = await Store.get(key);
   const toUrl = b64Url;
   if (cached) return (ttsMem[key] = toUrl(cached));
-  const packed = await packAudio(text, speed !== 45); if (packed) return packed;
+  const packed = vcnOver ? await packAudio2(text, speed !== 45) : await packAudio(text, speed !== 45); if (packed) return packed;
   const url = await XF.authUrl('tts-api-sg.xf-yun.com', '/v2/tts'); const chunks = [];
   await XF.session(url, async ws => {
     ws.send(JSON.stringify({ common: { app_id: settings.xfAppId.trim() }, business: { aue: 'lame', sfl: 1, auf: 'audio/L16;rate=16000', vcn, tte: 'UTF8', speed }, data: { status: 2, text: btoa(unescape(encodeURIComponent(text))) } }));
@@ -1042,12 +1089,12 @@ function dictate(lang, onInterim) {
 
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
 
-async function xfAudioB64(text, slow, allowNet = true) {
-  const vcn = (settings.xfVcn || '').trim() || 'x_xiaoyan', own = 'xf:' + vcn + (slow ? ':s20' : '') + ':' + text;
+async function xfAudioB64(text, slow, allowNet = true, v2 = false) {
+  const vcn = ((v2 ? vcn2() : settings.xfVcn) || '').trim() || 'x_xiaoyan', own = 'xf:' + vcn + (slow ? ':s20' : '') + ':' + text;
   const a = await Store.get(own); if (a) return a;
-  const pk = await Store.get((slow ? 'xfbs:' : 'xfb:') + text); if (pk) return pk;
+  const pk = await Store.get((slow ? (v2 ? 'xfbs2:' : 'xfbs:') : (v2 ? 'xfb2:' : 'xfb:')) + text); if (pk) return pk;
   if (!allowNet) return null;
-  await xfTts(text, slow ? 20 : 45); return Store.get(own);
+  await xfTts(text, slow ? 20 : 45, v2 ? vcn : undefined); return Store.get(own);
 }
 // import a shared voice pack from the site (am-thanh/<code>[-n].json, listed in danh-sach.json) into this device, once per version
 let packList = null;
@@ -1067,6 +1114,8 @@ async function importVoicePack(code, force) {
     let pack; try { const r = await fetch('am-thanh/' + f + '.json', { cache: 'no-cache' }); if (!r.ok) continue; pack = await r.json(); } catch (e) { continue; }
     for (const [t, b] of Object.entries(pack.audio || {})) { await Store.set('xfb:' + t, b, true); n++; }
     for (const [t, b] of Object.entries(pack.slow || {})) { await Store.set('xfbs:' + t, b, true); n++; }
+    for (const [t, b] of Object.entries(pack.audio2 || {})) { await Store.set('xfb2:' + t, b, true); n++; }
+    for (const [t, b] of Object.entries(pack.slow2 || {})) { await Store.set('xfbs2:' + t, b, true); n++; }
     await Store.set(flag, want, true);
   }
   return n;
@@ -1269,7 +1318,7 @@ function mountLibrary(box) {
   box.onclick = e => { if (e.target.closest('[data-herbs]')) return mountHerbs(box); if (e.target.closest('[data-gram]')) return mountGrammar(box); if (e.target.closest('[data-wsets]')) return mountWsets(box); if (e.target.closest('[data-dict]')) return mountDict(box); const c = e.target.closest('[data-col]'); if (c) mountCollection(box, cols[+c.dataset.col]); };
 }
 const colItem = (it, k) => `<div class="gram"><div class="row"><div><span class="hz" style="font-size:20px">${esc(it.hz)}</span>${it.tag ? ` <span class="tag">${esc(it.tag)}</span>` : ''}<div class="small">${colorPy(it.py)}</div><div class="small muted">${esc(it.vi)}</div>${it.note ? `<div class="small" style="color:var(--jade)">💡 ${esc(it.note)}</div>` : ''}</div>
-        <div class="acts"><button class="play" data-say="${esc(it.hz)}">${playIcon}</button><button class="play" data-say="${esc(it.hz)}" data-rate="0.5">🐢</button><button class="play linemic" data-rec="${k}">${micIcon}</button><button class="play" data-add="${k}" aria-label="Thêm vào ôn tập">＋</button></div></div><div data-out="${k}"></div></div>`;
+        <div class="acts"><button class="play" data-say="${esc(it.hz)}"${voiceOf(it) === 2 ? ' data-voice="2"' : ''}>${playIcon}</button><button class="play" data-say="${esc(it.hz)}" data-rate="0.5"${voiceOf(it) === 2 ? ' data-voice="2"' : ''}>🐢</button><button class="play linemic" data-rec="${k}">${micIcon}</button><button class="play" data-add="${k}" aria-label="Thêm vào ôn tập">＋</button></div></div><div data-out="${k}"></div></div>`;
 function mountCollection(box, c) {
   navMark();
   const PAGE = 40, big = c.sections.reduce((n, s) => n + arr(s.items).length, 0) > 150;
@@ -1296,8 +1345,9 @@ function mountCollection(box, c) {
 /* ---- word sets: learn the whole HSK list 20 words at a time (dictionary data, examples, quiz, review cards) ---- */
 const WSET = 20;
 async function ensureDict() { if (!DICT && DLIST && DLIST.dict) DICT = await cachedJson(DLIST.dict); return DICT; }
-const wsetsOf = lv => { const ws = arr(DICT && DICT.words).filter(w => w.lv === lv), out = []; for (let i = 0; i < ws.length; i += WSET) out.push(ws.slice(i, i + WSET)); return out; };
-const wsetKey = (lv, i) => `w${lv}-${i}`;
+const wstd = () => settings.wstd || '2';
+const wsetsOf = lv => { const ws = arr(DICT && DICT.words).filter(w => wstd() === '3' ? w.b3 === lv : w.lv === lv), out = []; for (let i = 0; i < ws.length; i += WSET) out.push(ws.slice(i, i + WSET)); return out; };
+const wsetKey = (lv, i) => wstd() === '3' ? `n${lv}-${i}` : `w${lv}-${i}`;
 function nextWset(lv) { const sets = wsetsOf(lv); D.wsets = D.wsets || {}; const i = sets.findIndex((s, k) => !(D.wsets[wsetKey(lv, k)] || {}).done); return i < 0 ? null : { lv, i, words: sets[i], n: sets.length }; }
 async function mountWsets(box, lv) {
   navMark();
@@ -1306,11 +1356,14 @@ async function mountWsets(box, lv) {
   const sets = wsetsOf(lv), doneN = sets.filter((s, k) => (D.wsets[wsetKey(lv, k)] || {}).done).length;
   box.innerHTML = `<button class="btn sm ghost" data-back2>‹ Thư viện</button><h2 style="margin:8px 0">Học từ vựng theo bộ</h2>
     <p class="small muted">Mỗi bộ 20 từ: nghe từ và câu ví dụ, rồi làm bài kiểm tra nghe – nghĩa. Đạt từ 80 điểm là xong bộ, các từ tự vào Ôn tập.</p>
-    <div class="chips wrap">${[1, 2, 3, 4, 5].map(i => `<button class="chip${i === lv ? ' on' : ''}" data-lv="${i}">HSK ${i}</button>`).join('')}</div>
+    <div class="chips"><button class="chip${wstd() === '2' ? ' on' : ''}" data-wstd="2">Chuẩn cũ HSK 2.0</button><button class="chip${wstd() === '3' ? ' on' : ''}" data-wstd="3">Chuẩn mới HSK 3.0</button></div>
+    <div class="chips wrap">${(wstd() === '3' ? [1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5]).map(i => `<button class="chip${i === lv ? ' on' : ''}" data-lv="${i}">${wstd() === '3' ? 'Cấp ' : 'HSK '}${i}</button>`).join('')}</div>
+    ${wstd() === '3' ? '<p class="small muted">Chuẩn mới HSK 3.0: cấp 1–4 (3.245 từ) đã đủ nghĩa tiếng Việt, câu ví dụ và giọng đọc; cấp 5–6 hiện có các từ trùng với chuẩn cũ, phần còn lại sẽ bổ sung dần.</p>' : ''}
     <p class="small"><b>${doneN}/${sets.length}</b> bộ đã xong</p>
     <div class="sylgrid">${sets.map((s, k) => { const r = D.wsets[wsetKey(lv, k)] || {}; return `<button class="${r.done ? 'on' : ''}" data-set="${k}" title="${esc(s[0].hz)} … ${esc(s[s.length - 1].hz)}">${r.done ? '✓ ' : ''}Bộ ${k + 1}${r.score != null && !r.done ? ` · ${r.score}` : ''}</button>`; }).join('')}</div>`;
   box.onclick = e => {
     if (e.target.closest('[data-back2]')) return mountLibrary(box);
+    const sd = e.target.closest('[data-wstd]'); if (sd) { settings.wstd = sd.dataset.wstd; Store.set('settings', settings); return mountWsets(box, 1); }
     const l = e.target.closest('[data-lv]'); if (l) return mountWsets(box, +l.dataset.lv);
     const s = e.target.closest('[data-set]'); if (s) mountWset(box, lv, +s.dataset.set);
   };
@@ -1319,7 +1372,8 @@ function mountWset(box, lv, i) {
   navMark();
   importVoicePack('tu-dien').catch(() => {});
   const words = wsetsOf(lv)[i], key = wsetKey(lv, i), items = [];
-  box.innerHTML = `<button class="btn sm ghost" data-back3>‹ Các bộ HSK ${lv}</button><h2 style="margin:8px 0">HSK ${lv} · Bộ ${i + 1}</h2>
+  const lvName = `${wstd() === '3' ? 'HSK 3.0 cấp' : 'HSK'} ${lv}`;
+  box.innerHTML = `<button class="btn sm ghost" data-back3>‹ Các bộ ${lvName}</button><h2 style="margin:8px 0">${lvName} · Bộ ${i + 1}</h2>
     <div class="btnrow"><button class="btn sm" data-a="all">▶ Nghe cả bộ</button><button class="btn sm pri" data-a="quiz">🎧 Kiểm tra bộ này</button></div>
     ${words.map(w => { const k = items.push({ hz: w.hz, py: w.py, vi: w.vi }) - 1; return `<div class="vrow"><div class="h">${esc(w.hz)}</div><div class="m">${colorPy(w.py)}<br><span class="muted">${esc(w.vi || w.en)}</span>${w.ex ? `<div class="small" style="margin-top:4px"><span class="hz">${esc(w.ex.hz)}</span> <button class="btn sm ghost" data-say="${esc(w.ex.hz)}" style="padding:2px 8px">▶</button><br><span class="muted">${esc(w.ex.vi)}</span></div>` : ''}</div><div class="acts"><button class="play" data-say="${esc(w.hz)}">${playIcon}</button><button class="play linemic" data-rec="${k}">${micIcon}</button></div></div><div data-out="${k}"></div>`; }).join('')}`;
   box.onclick = async e => {
@@ -1416,21 +1470,24 @@ async function mountDict(box) {
   navMark();
   importVoicePack('tu-dien').catch(() => {});
   if (!DICT) { box.innerHTML = spinner('Đang tải từ điển…'); DICT = DLIST && DLIST.dict ? await cachedJson(DLIST.dict) : null; if (!DICT) { box.innerHTML = '<div class="empty">Chưa có file từ điển trên GitHub.</div>'; return; } }
-  let lv = 0, q = '', shown = 60;
+  let lv = 0, q = '', shown = 60, std = settings.wstd || '2';
+  const lvTag = w => `${w.lv ? `<span class="tag">HSK ${w.lv}</span>` : ''}${w.b3 ? ` <span class="tag" style="background:var(--gold-soft);color:var(--gold)">3.0 · cấp ${w.b3}</span>` : ''}`;
   const render = () => {
     const f = q.trim().toLowerCase(), fold = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    const list = DICT.words.filter(w => (!lv || w.lv === lv) && (!f || w.hz.includes(f) || fold(w.py).replace(/\s/g, '').includes(fold(f).replace(/\s/g, '')) || fold(w.vi).includes(fold(f)) || fold(w.en).includes(fold(f))));
+    const list = DICT.words.filter(w => (!lv || (std === '3' ? w.b3 === lv : w.lv === lv)) && (!f || w.hz.includes(f) || fold(w.py).replace(/\s/g, '').includes(fold(f).replace(/\s/g, '')) || fold(w.vi).includes(fold(f)) || fold(w.en).includes(fold(f))));
     const items = list.slice(0, shown);
-    box.querySelector('#dList').innerHTML = `<p class="small muted">${list.length} từ</p>` + items.map((w, i) => `<div class="vrow"><div class="h">${esc(w.hz)}</div><div class="m">${colorPy(w.py)} <span class="tag">HSK ${w.lv}</span><br><span class="muted">${esc(w.vi || w.en)}${w.vi ? '' : ' <i>(EN)</i>'}</span>${w.ex ? `<div class="small" style="margin-top:4px"><span class="hz" style="font-size:16px">${esc(w.ex.hz)}</span> <button class="btn sm ghost" data-say="${esc(w.ex.hz)}" style="padding:2px 8px">▶</button><br>${colorPy(w.ex.py)}<br><span class="muted">${esc(w.ex.vi)}</span></div>` : ''}</div><div class="acts"><button class="play" data-say="${esc(w.hz)}">${playIcon}</button><button class="play" data-add="${i}">＋</button></div></div>`).join('') + (list.length > shown ? `<button class="btn full" data-more>Xem thêm</button>` : '');
+    box.querySelector('#dList').innerHTML = `<p class="small muted">${list.length} từ</p>` + items.map((w, i) => `<div class="vrow"><div class="h">${esc(w.hz)}</div><div class="m">${colorPy(w.py)} ${lvTag(w)}<br><span class="muted">${esc(w.vi || w.en)}${w.vi ? '' : ' <i>(EN)</i>'}</span>${w.ex ? `<div class="small" style="margin-top:4px"><span class="hz" style="font-size:16px">${esc(w.ex.hz)}</span> <button class="btn sm ghost" data-say="${esc(w.ex.hz)}" style="padding:2px 8px">▶</button><br>${colorPy(w.ex.py)}<br><span class="muted">${esc(w.ex.vi)}</span></div>` : ''}</div><div class="acts"><button class="play" data-say="${esc(w.hz)}">${playIcon}</button><button class="play" data-add="${i}">＋</button></div></div>`).join('') + (list.length > shown ? `<button class="btn full" data-more>Xem thêm</button>` : '');
     box.querySelector('#dList').onclick = e => { const ad = e.target.closest('[data-add]'); if (ad) { const w = items[+ad.dataset.add]; addCard({ f: w.hz, py: w.py, vi: w.vi || w.en, kind: 'n' }) ? toast('Đã thêm vào Ôn tập') : toast('Đã có trong Ôn tập'); } if (e.target.closest('[data-more]')) { shown += 100; render(); } };
   };
   box.innerHTML = `<button class="btn sm ghost" data-back2>‹ Thư viện</button><h2 style="margin:8px 0">Từ điển HSK 1–5</h2>
     <input id="dQ" placeholder="Gõ chữ Hán, pinyin (không dấu cũng được) hoặc nghĩa">
-    <div class="chips wrap" style="margin-top:8px">${[0, 1, 2, 3, 4, 5].map(i => `<button class="chip${i === lv ? ' on' : ''}" data-lv="${i}">${i ? 'HSK ' + i : 'Tất cả'}</button>`).join('')}</div><div id="dList"></div>
-    <p class="small muted">Đủ 2.500 từ HSK 1–5, có nghĩa tiếng Việt và tiếng Anh. Bấm ＋ để đưa từ vào Ôn tập.</p>`;
+    <div class="chips" style="margin-top:8px"><button class="chip${std === '2' ? ' on' : ''}" data-std="2">Chuẩn cũ HSK 2.0</button><button class="chip${std === '3' ? ' on' : ''}" data-std="3">Chuẩn mới HSK 3.0</button></div>
+     <div class="chips wrap" style="margin-top:6px" id="dLv">${[0, 1, 2, 3, 4, 5, 6].filter(i => std === '3' || i <= 5).map(i => `<button class="chip${i === lv ? ' on' : ''}" data-lv="${i}">${i ? (std === '3' ? 'Cấp ' : 'HSK ') + i : 'Tất cả'}</button>`).join('')}</div><div id="dList"></div>
+    <p class="small muted">2.500 từ HSK 2.0 (cấp 1–5) và các từ của chuẩn mới HSK 3.0, có nghĩa tiếng Việt, câu ví dụ và giọng đọc. Bấm ＋ để đưa từ vào Ôn tập.</p>`;
   box.querySelector('[data-back2]').onclick = () => mountLibrary(box);
   box.querySelector('#dQ').oninput = e => { q = e.target.value; shown = 60; render(); };
   box.querySelectorAll('[data-lv]').forEach(b => b.onclick = () => { lv = +b.dataset.lv; shown = 60; box.querySelectorAll('[data-lv]').forEach(x => x.classList.toggle('on', x === b)); render(); });
+  box.querySelectorAll('[data-std]').forEach(b => b.onclick = () => { settings.wstd = b.dataset.std; Store.set('settings', settings); navSilent = true; mountDict(box); navSilent = false; });
   render();
 }
 
@@ -1454,6 +1511,7 @@ async function boot() {
   // network refresh runs in parallel, then the current screen is redrawn if something changed
   const [chg] = await Promise.all([loadCurricula(), loadExtras(false)]);
   if (P && (chg || !lessons.length) && ['home', 'path'].includes(curView)) go(curView);
+  setTimeout(() => voiceWatch().catch(() => {}), 3000);
   ensureDict().then(() => { if (P && curView === 'home') renderHome(); }).catch(() => {});
   setTimeout(() => { try { if (settings.autoPack === false || !P) return; const nu = nextUnit(); if (!nu || nu.st == null) return; const codes = new Set(lessons.filter(l => l.curriculum && stageOf(l) === nu.st).map(l => l.curriculum)); codes.forEach(c => importVoicePack(c).catch(() => {})); } catch (e) {} }, 4000);
 }
@@ -1560,28 +1618,36 @@ async function buildVoicePack(offlineOnly) {
   try { const ch = await (await fetch('giao-trinh/bang-pinyin.json', { cache: 'no-cache' })).json(); Object.values(ch.syllables || {}).forEach(x => addG('bang-pinyin', x)); } catch (e) {}
   try { await loadHerbs(); arr(HERBS && HERBS.groups).forEach(g => g.herbs.forEach(h => { addG('duoc-lieu', h.hz); addG('duoc-lieu', h.say); })); } catch (e) {}
   try { if (!DICT && DLIST && DLIST.dict) DICT = await cachedJson(DLIST.dict); arr(DICT && DICT.words).forEach(w => { addG('tu-dien', w.hz); if (w.ex) addG('tu-dien', w.ex.hz); }); } catch (e) {}
+  // dialogue lines spoken by B/D get a second voice (only when one is chosen in Settings)
+  const v2set = new Set(), v2code = {};
+  if (vcn2()) {
+    lessons.filter(l => l.curriculum).forEach(l => arr(l.sentences).forEach(s => { if (['B', 'D'].includes(s.who)) { const x = ttsNorm(s.hz); if (x) { v2set.add(x); v2code[x] = l.curriculum; } } }));
+    LIB.forEach(c => c.sections.forEach(s => arr(s.items).forEach(it => { if (['B', 'D'].includes(it.tag)) { const x = ttsNorm(it.hz); if (x) { v2set.add(x); v2code[x] = 'lib-' + c.code; } } })));
+  }
   // what is already on GitHub
   const list = await loadPackList(true); let have = { normal: [], slow: [] };
   try { const r = await fetch('am-thanh/muc-luc.json', { cache: 'no-cache' }); if (r.ok) have = await r.json(); } catch (e) {}
-  const hasN = new Set(have.normal || []), hasS = new Set(have.slow || []), incremental = arr(list.packs).length > 0;
+  const hasN = new Set(have.normal || []), hasS = new Set(have.slow || []), hasN2 = new Set(have.normal2 || []), hasS2 = new Set(have.slow2 || []), incremental = arr(list.packs).length > 0;
   const seen = new Set(), jobs = [];
   for (const [code, set] of Object.entries(groups)) for (const t of set) {
     if (!hasN.has(t) && !seen.has('n' + t)) { jobs.push({ code, t }); seen.add('n' + t); }
     if (!hasS.has(t) && !seen.has('s' + t)) { jobs.push({ code, t, slow: true }); seen.add('s' + t); }
   }
+  for (const t of v2set) { if (!hasN2.has(t)) jobs.push({ code: v2code[t], t, v2: true }); if (!hasS2.has(t)) jobs.push({ code: v2code[t], t, slow: true, v2: true }); }
   const total = jobs.length;
   if (!total) { msg.innerHTML = '<b style="color:var(--jade)">Bộ giọng đọc trên GitHub đã đủ cho toàn bộ giáo trình hiện tại.</b> Không cần tạo thêm.'; return; }
   if (!offlineOnly && !confirm(`${incremental ? 'GitHub đã có bộ giọng đọc. Chỉ cần tạo PHẦN BỔ SUNG' : 'Tạo bộ giọng đọc'}: ${total} đoạn (bản thường và bản chậm). Đoạn nào máy này đã có thì KHÔNG tốn lượt.\n\nGiữ trang mở đến khi hiện "Xong". Nếu bị ngắt, bấm lại để làm tiếp.\n\nBắt đầu?`)) return;
   packBusy = true; window.addEventListener('beforeunload', warnLeave);
   let wake = null; try { wake = await navigator.wakeLock.request('screen'); } catch (e) {}
   $('#packBuild').disabled = $('#packZip').disabled = true;
-  const audio = {}, slowA = {}; let done = 0, fail = 0, stop = false, capped = 0, net = 0;
+  const audio = {}, slowA = {}, audio2 = {}, slow2 = {}; let done = 0, fail = 0, stop = false, capped = 0, net = 0;
   const vcnNow = (settings.xfVcn || '').trim() || 'x_xiaoyan';
   const show = () => { const p = Math.round(100 * done / total); bar.style.width = p + '%'; msg.textContent = `${offlineOnly ? 'Đang đóng gói' : 'Đang tạo'}: ${done}/${total} (${p}%)${net ? ` · gọi iFLYTEK ${net}` : ''}${fail ? ` · lỗi ${fail}` : ''}${capped ? ` · chưa có ${capped}` : ''}…`; };
   const worker = async () => { while (jobs.length && !stop) { const j = jobs.shift();
-      try { const allow = !offlineOnly && (await xfUsed('tts')) < XF_BUDGET.tts; const before = (await Store.get('xf:' + vcnNow + (j.slow ? ':s20' : '') + ':' + j.t)) || (await Store.get((j.slow ? 'xfbs:' : 'xfb:') + j.t));
-        const b = before || await xfAudioB64(j.t, j.slow, allow); if (!before && b) net++;
-        if (b) ((j.slow ? slowA : audio)[j.code] = (j.slow ? slowA : audio)[j.code] || {})[j.t] = b; else capped++; }
+      try { const allow = !offlineOnly && (await xfUsed('tts')) < XF_BUDGET.tts; const vc = j.v2 ? vcn2() : vcnNow, before = (await Store.get('xf:' + vc + (j.slow ? ':s20' : '') + ':' + j.t)) || (await Store.get((j.slow ? (j.v2 ? 'xfbs2:' : 'xfbs:') : (j.v2 ? 'xfb2:' : 'xfb:')) + j.t));
+        const b = before || await xfAudioB64(j.t, j.slow, allow, !!j.v2); if (!before && b) net++;
+        const bucket = j.v2 ? (j.slow ? slow2 : audio2) : (j.slow ? slowA : audio);
+        if (b) (bucket[j.code] = bucket[j.code] || {})[j.t] = b; else capped++; }
       catch (e) { fail++; if (/11201|11200|hết lượt/.test(e.message)) { stop = true; toast(e.message, 5000); } }
       done++; if (done % 10 === 0 || !jobs.length) show(); } };
   await Promise.all([worker(), worker(), worker(), worker()]); show();
@@ -1593,24 +1659,25 @@ async function buildVoicePack(offlineOnly) {
     let phan = Math.max(0, ...arr(list.packs).map(f => +((String(f).match(/^phan-(\d+)\//) || [])[1] || 0))) + 1, phanSize = 0;
     const firstPhan = phan, LIM = 4 * 1048576, PHAN = 18 * 1048576;   // small enough for GitHub's web upload
     const write = (code, part, cur) => {
-      const body = JSON.stringify({ code, version: ver, vcn: vcnNow, ...cur }), size = new Blob([body]).size;
+      const body = JSON.stringify({ code, version: ver, vcn: vcnNow, vcn2: vcn2() || undefined, ...cur }), size = new Blob([body]).size;
       if (phanSize + size > PHAN && phanSize > 0) { phan++; phanSize = 0; }
       const name = `phan-${phan}/${code}${part ? '-' + (part + 1) : ''}`;
       zip.file(`buoc-${phan - firstPhan + 1}-giong-doc-phan-${phan}/am-thanh/${name}.json`, body); files.push(name); vers[name] = ver; sizes[name] = size; phanSize += size;
     };
-    for (const code of Object.keys(groups)) {
-      let part = 0, cur = { audio: {}, slow: {} }, size = 0, any = false;
-      for (const [kind, src] of [['audio', audio[code] || {}], ['slow', slowA[code] || {}]]) for (const [txt, b] of Object.entries(src)) {
+    const codesAll = [...new Set([...Object.keys(groups), ...Object.keys(audio2), ...Object.keys(slow2)])];
+    for (const code of codesAll) {
+      let part = 0, cur = { audio: {}, slow: {}, audio2: {}, slow2: {} }, size = 0, any = false;
+      for (const [kind, src] of [['audio', audio[code] || {}], ['slow', slowA[code] || {}], ['audio2', audio2[code] || {}], ['slow2', slow2[code] || {}]]) for (const [txt, b] of Object.entries(src)) {
         cur[kind][txt] = b; any = true; size += b.length + txt.length * 3 + 8;
-        if (kind === 'audio') hasN.add(txt); else hasS.add(txt);
-        if (size > LIM) { write(code, part, cur); part++; cur = { audio: {}, slow: {} }; size = 0; }
+        ({ audio: hasN, slow: hasS, audio2: hasN2, slow2: hasS2 })[kind].add(txt);
+        if (size > LIM) { write(code, part, cur); part++; cur = { audio: {}, slow: {}, audio2: {}, slow2: {} }; size = 0; }
       }
       if (any && size) write(code, part, cur);
     }
     const allPacks = [...arr(list.packs), ...files];
     const lastStep = `buoc-${phan - firstPhan + 2}-muc-luc/am-thanh/`;
     zip.file(lastStep + 'danh-sach.json', JSON.stringify({ version: ver, packs: allPacks, ver: vers }));
-    zip.file(lastStep + 'muc-luc.json', JSON.stringify({ version: ver, normal: [...hasN], slow: [...hasS] }));
+    zip.file(lastStep + 'muc-luc.json', JSON.stringify({ version: ver, normal: [...hasN], slow: [...hasS], normal2: [...hasN2], slow2: [...hasS2], vcn2: vcn2() || undefined }));
     const blob = await zip.generateAsync({ type: 'blob' });
     if (packZipUrl) URL.revokeObjectURL(packZipUrl); packZipUrl = URL.createObjectURL(blob);
     const ok = done - fail - capped, biggest = files.length ? Math.max(...Object.values(sizes)) / 1048576 : 0, folders = [];
@@ -1633,13 +1700,96 @@ async function packStatus() {
   const local = await Store.count('xf:'), pk = await Store.count('xfb:');
   el.innerHTML = `<div>① Máy này đã tạo: <b>${local}</b> đoạn giọng đọc.</div><div>② Trên GitHub: ${gh ? `<b style="color:var(--jade)">đã có bộ giọng đọc</b> (${arr(gh.packs).length} file${ml ? `, ${arr(ml.normal).length} câu` : ''})` : '<b class="err">chưa có thư mục am-thanh</b>'}.</div><div>③ Máy này đã lấy từ bộ dùng chung: <b>${pk}</b> đoạn.</div>`;
 }
+// coverage: how many of the clips listed on GitHub (muc-luc.json) are on this device
+async function findSecondVoice() {
+  const msg = $('#xfFindMsg'); if (!XF.ok()) { msg.textContent = 'Cần nhập APPID, APIKey, APISecret trước.'; return; }
+  const main = (settings.xfVcn || '').trim() || 'x_xiaoyan';
+  const cands = ['x_xiaofeng', 'x_aisjiuxu', 'x_xiaoyu', 'x_xiaozhong', 'x_xiaoming', 'x_aisxping', 'x_xiaomei', 'x_xiaoqi', 'aisjiuxu', 'xiaofeng'].filter(v => v !== main);
+  const ok = []; msg.textContent = 'Đang thử từng giọng (mỗi giọng dùng được tốn 1 lượt)…';
+  for (const v of cands) { try { await xfTts('你好，我是第二个声音。', 45, v); ok.push(v); msg.textContent = `Đã thấy ${ok.length} giọng dùng được, đang thử tiếp…`; } catch (e) {} }
+  msg.innerHTML = ok.length ? `Giọng dùng được: ${ok.map(v => `<button class="btn sm" data-try2="${v}">▶ ${v}</button>`).join(' ')}<br>Bấm để nghe thử, chọn giọng ưng ý rồi bấm "Dùng giọng này".` : 'Tài khoản iFLYTEK này chưa có giọng thứ hai nào dùng được. Hội thoại vẫn dùng một giọng như hiện tại.';
+  msg.onclick = async e => { const b = e.target.closest('[data-try2]'); if (b) { const url = await xfTts('你好，我是第二个声音。', 45, b.dataset.try2); ttsAudio.src = url; ttsAudio.play().catch(() => {});
+      msg.querySelectorAll('[data-use2]').forEach(x => x.remove()); b.insertAdjacentHTML('afterend', ` <button class="btn sm pri" data-use2="${b.dataset.try2}">Dùng giọng này</button>`); }
+    const u = e.target.closest('[data-use2]'); if (u) { settings.xfVcn2 = u.dataset.use2; $('#xfVcn2').value = u.dataset.use2; Store.set('settings', settings); toast('Đã chọn giọng thứ hai: ' + u.dataset.use2); } };
+}
+async function voiceCoverage() {
+  let ml = null; try { const r = await fetch('am-thanh/muc-luc.json', { cache: 'no-cache' }); if (r.ok) ml = await r.json(); } catch (e) {}
+  if (!ml) ml = await Store.get('gt:muc-luc');
+  if (!ml) return null; Store.set('gt:muc-luc', ml, true);
+  const keys = new Set(await Store.keysWith(['xfb:', 'xfbs:', 'xfb2:', 'xfbs2:']));
+  const lists = [['xfb:', ml.normal], ['xfbs:', ml.slow], ['xfb2:', ml.normal2], ['xfbs2:', ml.slow2]];
+  let total = 0, have = 0; lists.forEach(([p, l]) => arr(l).forEach(x => { total++; if (keys.has(p + x)) have++; }));
+  return { total, have, pct: total ? Math.round(100 * have / total) : 100 };
+}
 async function importAllPacks() {
-  const msg = $('#packMsg'); msg.textContent = 'Đang tải bộ giọng đọc dùng chung…'; packList = null;
+  const msg = $('#packMsg'), bar = $('#getBar');
+  try { await navigator.storage.persist(); } catch (e) {}
+  msg.textContent = 'Đang đọc danh sách bộ giọng đọc…'; packList = null;
   try { const r = await fetch('am-thanh/danh-sach.json', { cache: 'no-cache' }); if (!r.ok) throw 0; packList = await r.json(); }
-  catch (e) { packList = null; msg.innerHTML = '<span class="err">Trên GitHub chưa có thư mục am-thanh.</span> Nút này dùng để LẤY bộ giọng đọc từ GitHub về máy, nên phải làm bước ② trước: giải nén file am-thanh.zip và tải thư mục am-thanh lên GitHub (cạnh index.html).'; return; }
-  const codes = [...new Set(arr(packList.packs).map(packCode))]; let n = 0;
-  for (const code of codes) { msg.textContent = `Đang tải ${code}…`; n += await importVoicePack(code, true); }
-  msg.innerHTML = `<span style="color:var(--jade)">Đã lưu ${n} đoạn giọng đọc vào máy này. Từ giờ nghe các câu đó không cần mạng, không tốn lượt.</span>`; showStorage(); packStatus();
+  catch (e) { packList = null; msg.innerHTML = '<span class="err">Không đọc được thư mục am-thanh trên GitHub</span> (chưa có, hoặc máy đang mất mạng).'; return; }
+  const files = arr(packList.packs); let n = 0, k = 0, skipped = 0;
+  window.addEventListener('beforeunload', warnLeave); let wake = null; try { wake = await navigator.wakeLock.request('screen'); } catch (e) {}
+  for (const f of files) {
+    k++; bar.style.width = Math.round(100 * k / files.length) + '%';
+    const want = (packList.ver && packList.ver[f]) || packList.version || 1, flag = 'pack:' + f;
+    if ((await Store.get(flag)) >= want) { skipped++; continue; }            // already on this device: resume where it stopped
+    msg.textContent = `Đang tải file ${k}/${files.length} (${f})… Giữ trang mở.`;
+    let pack; try { const r = await fetch('am-thanh/' + f + '.json', { cache: 'no-cache' }); if (!r.ok) continue; pack = await r.json(); } catch (e) { continue; }
+    for (const [pre, src] of [['xfb:', pack.audio], ['xfbs:', pack.slow], ['xfb2:', pack.audio2], ['xfbs2:', pack.slow2]]) for (const [t0, b] of Object.entries(src || {})) { await Store.set(pre + t0, b, true); n++; }
+    await Store.set(flag, want, true);
+  }
+  window.removeEventListener('beforeunload', warnLeave); try { wake && wake.release(); } catch (e) {}
+  const cov = await voiceCoverage(); if (cov) { settings.voiceBest = Math.max(settings.voiceBest || 0, cov.have); Store.set('settings', settings); }
+  msg.innerHTML = `<span style="color:var(--jade)">Xong. Tải mới ${n} đoạn${skipped ? `, ${skipped} file đã có sẵn nên bỏ qua` : ''}.</span>${cov ? ` Máy này có <b>${cov.have}/${cov.total}</b> đoạn (${cov.pct}%).${cov.pct < 100 ? ' Bấm lại nút ③ để tải bù phần còn thiếu.' : ' Đã đủ trọn bộ.'}` : ''}`;
+  showStorage(); packStatus();
+}
+async function checkVoices() {
+  const msg = $('#packMsg'); msg.textContent = 'Đang kiểm tra…';
+  const cov = await voiceCoverage();
+  msg.innerHTML = cov ? `Máy này có <b>${cov.have}/${cov.total}</b> đoạn giọng đọc của bộ dùng chung (<b>${cov.pct}%</b>). ${cov.pct < 100 ? 'Bấm "③ Tải trọn bộ" để tải bù, các file đã có sẽ được bỏ qua.' : '✅ Đã đủ trọn bộ.'}` : 'Chưa có mục lục bộ giọng đọc (máy mất mạng hoặc GitHub chưa có am-thanh).';
+}
+// backup: every voice clip on this device → JSON files of about 25 MB, saved where the user chooses (iPhone: Files)
+async function backupVoices() {
+  const msg = $('#packMsg'); msg.textContent = 'Đang gom giọng đọc trên máy…';
+  const vcn = (settings.xfVcn || '').trim() || 'x_xiaoyan', v2 = vcn2();
+  let part = 1, cur = { app: 'hanngu-voice-backup', v: 1, audio: {}, slow: {}, audio2: {}, slow2: {} }, size = 0, total = 0, files = 0;
+  const flush = () => { if (!size) return; const blob = new Blob([JSON.stringify(cur)], { type: 'application/json' }), a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `giong-doc-sao-luu-${new Date().toISOString().slice(0, 10)}-${part}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    files++; part++; cur = { app: 'hanngu-voice-backup', v: 1, audio: {}, slow: {}, audio2: {}, slow2: {} }; size = 0; };
+  const put = (kind, txt, b) => { if (cur[kind][txt]) return; cur[kind][txt] = b; size += b.length + txt.length * 3; total++; if (size > 25e6) flush(); };
+  await Store.each(['xfb:', 'xfbs:', 'xfb2:', 'xfbs2:', 'xf:'], (k, b) => {
+    if (typeof b !== 'string') return;
+    if (k.startsWith('xfbs2:')) return put('slow2', k.slice(6), b);
+    if (k.startsWith('xfb2:')) return put('audio2', k.slice(5), b);
+    if (k.startsWith('xfbs:')) return put('slow', k.slice(5), b);
+    if (k.startsWith('xfb:')) return put('audio', k.slice(4), b);
+    const m = k.match(/^xf:([^:]+)(:s20)?:(.+)$/); if (!m) return;
+    if (m[1] === vcn) put(m[2] ? 'slow' : 'audio', m[3], b); else if (v2 && m[1] === v2) put(m[2] ? 'slow2' : 'audio2', m[3], b);
+  });
+  flush();
+  msg.innerHTML = total ? `<span style="color:var(--jade)">Đã xuất ${total} đoạn thành ${files} file "giong-doc-sao-luu-…json".</span> Trên iPhone chọn "Lưu vào Tệp" cho từng file; cất cả bộ file ở một thư mục.` : 'Máy này chưa có giọng đọc nào để sao lưu.';
+}
+async function restoreVoices(fileList) {
+  const msg = $('#packMsg'); let n = 0, bad = 0;
+  for (const f of fileList) {
+    msg.textContent = `Đang khôi phục ${f.name}…`;
+    try { const j = JSON.parse(await f.text()); if (j.app !== 'hanngu-voice-backup' && !j.audio) { bad++; continue; }
+      for (const [pre, src] of [['xfb:', j.audio], ['xfbs:', j.slow], ['xfb2:', j.audio2], ['xfbs2:', j.slow2]]) for (const [t0, b] of Object.entries(src || {})) { await Store.set(pre + t0, b, true); n++; }
+    } catch (e) { bad++; }
+  }
+  msg.innerHTML = `<span style="color:var(--jade)">Đã khôi phục ${n} đoạn giọng đọc.</span>${bad ? ` ${bad} file không đọc được.` : ''}`; showStorage(); packStatus();
+}
+// after the app opens: if the browser wiped many clips, warn once and offer a one-tap restore
+async function voiceWatch() {
+  if (!settings.voiceBest || !navigator.onLine) return;
+  if (settings.voiceCheckedDay === today()) return; settings.voiceCheckedDay = today(); Store.set('settings', settings);
+  const cov = await voiceCoverage(); if (!cov) return;
+  if (cov.have < settings.voiceBest * 0.8) {
+    const h = $('#v-home'); if (!h || !P) return;
+    const div = document.createElement('div'); div.className = 'goodbox'; div.style.borderColor = 'var(--seal)';
+    div.innerHTML = `⚠ Giọng đọc trên máy này bị xóa bớt (còn ${cov.have}/${cov.total} đoạn). <button class="btn sm" data-vfix>Tải lại trọn bộ</button>`;
+    h.prepend(div); div.querySelector('[data-vfix]').onclick = () => { fillSettings(); openModal('settings'); importAllPacks(); };
+  }
 }
 async function showStorage() {
   const el = $('#sStore'); if (!el) return;
@@ -1655,7 +1805,7 @@ async function showUsage() {
   const row = (k, n) => { const used = usedOf[k], pct = Math.round(used / 1000); return `<div>${n}: <b>${used.toLocaleString('vi-VN')}</b> / 100.000 lượt (${pct}%)${k === 'tts' ? ` · giới hạn tạo giọng: ${XF_BUDGET.tts.toLocaleString('vi-VN')}` : ''}<div style="height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin:3px 0 6px"><div style="height:100%;width:${Math.min(100, pct)}%;background:${pct >= 60 ? 'var(--seal)' : 'var(--jade)'}"></div></div></div>`; };
   el.innerHTML = row('tts', 'Giọng đọc') + row('ise', 'Chấm phát âm') + row('iat', 'Nghe giọng nói');
 }
-function fillSettings() { showStorage(); showUsage(); packStatus(); { const c = settings.xfConsole || {}; $('#xfcTts').value = c.tts || ''; $('#xfcIse').value = c.ise || ''; $('#xfcIat').value = c.iat || ''; $('#sAutoPack').checked = settings.autoPack !== false; } $('#sLive').value = settings.liveModel || ''; $('#xfApp').value = settings.xfAppId || ''; $('#xfKey').value = settings.xfKey || ''; $('#xfSec').value = settings.xfSecret || ''; $('#xfVcn').value = settings.xfVcn || ''; $('#sTts').value = settings.ttsModel || ''; $('#sKey').value = settings.apiKey || ''; $('#sModel').value = settings.model || ''; $('#sAudio').value = settings.audioModel || ''; $('#sMsg').textContent = ''; $('#sUse').textContent = 'Hôm nay máy này đã gọi Gemini ' + usedToday() + ' lượt.'; }
+function fillSettings() { showStorage(); showUsage(); packStatus(); { const c = settings.xfConsole || {}; $('#xfcTts').value = c.tts || ''; $('#xfcIse').value = c.ise || ''; $('#xfcIat').value = c.iat || ''; $('#sAutoPack').checked = settings.autoPack !== false; } $('#sLive').value = settings.liveModel || ''; $('#xfApp').value = settings.xfAppId || ''; $('#xfKey').value = settings.xfKey || ''; $('#xfSec').value = settings.xfSecret || ''; $('#xfVcn').value = settings.xfVcn || ''; if ($('#xfVcn2')) $('#xfVcn2').value = settings.xfVcn2 || ''; $('#sTts').value = settings.ttsModel || ''; $('#sKey').value = settings.apiKey || ''; $('#sModel').value = settings.model || ''; $('#sAudio').value = settings.audioModel || ''; $('#sMsg').textContent = ''; $('#sUse').textContent = 'Hôm nay máy này đã gọi Gemini ' + usedToday() + ' lượt.'; }
 function openSettingsForKey(why) {
   fillSettings(); openModal('settings');
   const box = $('#m-settings .box'); if (box) box.scrollTop = 0;
@@ -1664,12 +1814,12 @@ function openSettingsForKey(why) {
   setTimeout(() => k.focus(), 300);
 }
 // every settings field saves itself as soon as it changes, so nothing is lost if the person forgets to press Lưu
-['xfcTts', 'xfcIse', 'xfcIat', 'sAutoPack', 'sKey', 'sModel', 'sAudio', 'sTts', 'sLive', 'xfApp', 'xfKey', 'xfSec', 'xfVcn'].forEach(id => { const el = $('#' + id); if (el) el.addEventListener('change', () => saveSettingsQuiet()); });
+['xfcTts', 'xfcIse', 'xfcIat', 'sAutoPack', 'sKey', 'sModel', 'sAudio', 'sTts', 'sLive', 'xfApp', 'xfKey', 'xfSec', 'xfVcn', 'xfVcn2'].forEach(id => { const el = $('#' + id); if (el) el.addEventListener('change', () => saveSettingsQuiet()); });
 async function saveSettingsQuiet() {
   const prevC = settings.xfConsole || {}; settings.xfConsole = { tts: +$('#xfcTts').value || 0, ise: +$('#xfcIse').value || 0, iat: +$('#xfcIat').value || 0 };
   { const u = (await Store.get('xfuse')) || {}; settings.xfConsoleBase = settings.xfConsoleBase || {}; ['tts', 'ise', 'iat'].forEach(k => { if (settings.xfConsole[k] !== (prevC[k] || 0)) settings.xfConsoleBase[k] = u[k] || 0; }); } settings.autoPack = $('#sAutoPack').checked; showUsage();
   settings.apiKey = $('#sKey').value.trim(); settings.model = $('#sModel').value.trim(); settings.audioModel = $('#sAudio').value.trim(); settings.ttsModel = $('#sTts').value.trim(); settings.liveModel = $('#sLive').value.trim();
-  settings.xfAppId = $('#xfApp').value.trim(); settings.xfKey = $('#xfKey').value.trim(); settings.xfSecret = $('#xfSec').value.trim(); settings.xfVcn = $('#xfVcn').value.trim();
+  settings.xfAppId = $('#xfApp').value.trim(); settings.xfKey = $('#xfKey').value.trim(); settings.xfSecret = $('#xfSec').value.trim(); settings.xfVcn = $('#xfVcn').value.trim(); settings.xfVcn2 = ($('#xfVcn2') ? $('#xfVcn2').value.trim() : settings.xfVcn2 || '');
   await Store.set('settings', settings);
 }
 async function useXfVoiceForAll() {
@@ -1681,9 +1831,14 @@ $('#sSave').onclick = async () => { settings.apiKey = $('#sKey').value.trim(); s
 $('#packBuild').onclick = () => buildVoicePack(false);
 $('#packZip').onclick = () => buildVoicePack(true);
 $('#packGet').onclick = importAllPacks;
+$('#packCheck').onclick = checkVoices;
+$('#vBackup').onclick = backupVoices;
+$('#vRestore').onclick = () => $('#vRestoreIn').click();
+$('#vRestoreIn').onchange = e => { if (e.target.files.length) restoreVoices([...e.target.files]); e.target.value = ''; };
+$('#xfFind2').onclick = findSecondVoice;
 $('#sClearVoice').onclick = async () => { if (!confirm('Xóa các câu giọng đọc đã lưu trên máy này? Khi nghe lại, app sẽ tải lại (tốn lượt iFLYTEK).')) return; await Store.delPrefix('xf:'); await Store.delPrefix('tts:'); await Store.delPrefix('xfb:'); await Store.delPrefix('pack:'); Object.keys(ttsMem).forEach(k => delete ttsMem[k]); showStorage(); toast('Đã xóa giọng đọc đã lưu'); };
 $('#sCopyCfg').onclick = () => {
-  const cfg = { apiKey: settings.apiKey || '', xfAppId: settings.xfAppId || '', xfKey: settings.xfKey || '', xfSecret: settings.xfSecret || '', xfVcn: settings.xfVcn || '' };
+  const cfg = { apiKey: settings.apiKey || '', xfAppId: settings.xfAppId || '', xfKey: settings.xfKey || '', xfSecret: settings.xfSecret || '', xfVcn: settings.xfVcn || '', xfVcn2: settings.xfVcn2 || '' };
   if (!cfg.apiKey && !cfg.xfAppId) return toast('Máy này chưa có key nào để sao chép');
   copyText('HNCFG:' + btoa(unescape(encodeURIComponent(JSON.stringify(cfg)))));
   toast('Đã sao chép mã cài đặt. Chỉ gửi cho người trong nhà, vì mã chứa key.', 4000);
@@ -1693,7 +1848,7 @@ $('#sPasteCfg').onclick = async () => {
   if (!/^HNCFG:/.test(s || '')) s = prompt('Dán mã cài đặt (bắt đầu bằng HNCFG:)') || '';
   try {
     const cfg = JSON.parse(decodeURIComponent(escape(atob(s.trim().replace(/^HNCFG:/, '')))));
-    ['apiKey', 'xfAppId', 'xfKey', 'xfSecret', 'xfVcn'].forEach(k => { if (cfg[k]) settings[k] = cfg[k]; });
+    ['apiKey', 'xfAppId', 'xfKey', 'xfSecret', 'xfVcn', 'xfVcn2'].forEach(k => { if (cfg[k]) settings[k] = cfg[k]; });
     await Store.set('settings', settings); fillSettings(); if (XF.ok()) await useXfVoiceForAll();
     $('#sMsg').innerHTML = '<span style="color:var(--jade)">Đã nhập key Gemini và iFLYTEK cho máy này.</span>';
   } catch (e) { toast('Mã cài đặt không đúng'); }
@@ -1881,6 +2036,281 @@ function showFixDone(box, score) {
   box.onclick = e => { if (e.target.closest('[data-back2]')) { const b = backTo; backTo = null; if (b) go(b); else renderPractice(); } };
 }
 
+/* ---- 📻 Radio: hands-free listening, plays what the learner is studying; by default only clips already on the device ---- */
+const RADIO = { on: false, list: [], i: 0, ch: null, endAt: 0, played: 0, logged: false, wake: null, seq: 0 };
+const radioCfg = () => (settings.radio = Object.assign({ rate: 'normal', rep: 1, gap: 2, vi: true, onlyCached: true, shuffle: false, sleep: 30 }, settings.radio || {}));
+function radioChannels() {
+  const ch = [
+    { id: 'lesson', ic: '📖', name: 'Bài đang học', desc: 'Bài khóa và mẫu câu của giai đoạn đang học' },
+    { id: 'words', ic: '🧩', name: 'Từ vựng và câu ví dụ', desc: 'Từ của cấp HSK đang học, mỗi từ kèm một câu' },
+    { id: 'talk', ic: '💬', name: 'Hội thoại và tình huống', desc: 'Hội thoại tình huống, hội thoại mẫu, tin nhắn WeChat' },
+    { id: 'review', ic: '🔁', name: 'Ôn tập và lỗi hay sai', desc: 'Thẻ đến hạn và lỗi đang chờ sửa' }];
+  if (P.plan !== 'hsk') ch.splice(3, 0, { id: 'herbs', ic: '🌿', name: 'Dược liệu', desc: 'Tên vị thuốc, tính vị, quy kinh, công hiệu' });
+  return ch;
+}
+async function radioBuild(id) {
+  const nu = nextUnit(), st = nu && nu.st != null ? nu.st : 1, out = [];
+  const add = (hz, py, vi, tag, who) => { if (hanCount(hz)) out.push({ hz, py: py || '', vi: vi || '', tag: tag || '', who: who || '' }); };
+  const mine = lessons.filter(l => l.curriculum && l.kind !== 'test' && inPlan(l)).sort(progSort);
+  if (id === 'lesson') {
+    const k = mine.findIndex(l => nu && l.id === nu.key), upto = k < 0 ? mine.length : k + 1;
+    mine.slice(0, upto).filter(l => stageOf(l) === st || (nu && l.id === nu.key)).slice(-8)
+      .forEach(l => { arr(l.sentences).forEach(s => add(s.hz, s.py, s.vi, l.title, s.who)); arr(l.grammar).forEach(g => add(g.example_hz, g.example_py, g.example_vi, l.title)); });
+  }
+  if (id === 'words') {
+    await ensureDict(); const lv = Math.min(5, Math.max(1, st || 1));
+    arr(DICT && DICT.words).filter(w => w.lv === lv).forEach(w => { add(w.hz, w.py, w.vi, 'HSK ' + lv); if (w.ex) add(w.ex.hz, w.ex.py, w.ex.vi, w.hz); });
+  }
+  if (id === 'talk') {
+    mine.filter(l => /tinh-huong|buon-ban|dam-phan|ngoc|so-gia/.test(l.curriculum) && stageOf(l) <= Math.max(st, 1)).forEach(l => arr(l.sentences).forEach(s => add(s.hz, s.py, s.vi, l.title, s.who)));
+    LIB.filter(c => /hoi-thoai|wechat|khau-ngu/.test(c.code) && !(P.plan === 'hsk' && c.track === 'biz')).forEach(c => c.sections.forEach(s => arr(s.items).forEach(it => add(it.hz, it.py, it.vi, s.title, it.tag))));
+  }
+  if (id === 'herbs') { await loadHerbs(); arr(HERBS && HERBS.groups).forEach(g => g.herbs.forEach(h => add(h.say, h.sayPy, `${h.hv}: ${h.vi}`, g.vi))); }
+  if (id === 'review') { const seen = new Set(); [...dueCards(), ...errorPool().map(x => x.c)].forEach(c => { const hz = c.fix || c.f; if (!seen.has(hz)) { seen.add(hz); add(hz, c.py, c.vi, 'Ôn tập'); } }); }
+  return out;
+}
+async function radioFilterCached(list) {
+  const ok = await Promise.all(list.map(it => xfAudioB64(ttsNorm(it.hz), radioCfg().rate === 'slow', false).then(b => !!b).catch(() => false)));
+  return list.filter((_, k) => ok[k]);
+}
+function radioStop(keepUi) {
+  RADIO.on = false; RADIO.seq++; try { ttsAudio.pause(); } catch (e) {} try { speechSynthesis.cancel(); } catch (e) {}
+  try { RADIO.wake && RADIO.wake.release(); } catch (e) {} RADIO.wake = null;
+  if (!keepUi) radioMini();
+  const b = document.querySelector('[data-r=play]'); if (b) b.textContent = '▶ Phát';
+}
+async function radioLoop() {
+  const my = ++RADIO.seq, cfg = radioCfg(), rate = cfg.rate === 'slow' ? 0.6 : 0.95;
+  try { RADIO.wake = await navigator.wakeLock.request('screen'); } catch (e) {}
+  while (RADIO.on && my === RADIO.seq && RADIO.i < RADIO.list.length) {
+    if (RADIO.endAt && Date.now() > RADIO.endAt) { radioStop(); toast('📻 Đã tắt theo hẹn giờ'); return; }
+    const it = RADIO.list[RADIO.i]; radioNow(it);
+    for (let r = 0; r < cfg.rep && RADIO.on && my === RADIO.seq; r++) { await say(it.hz, rate, voiceOf(it)); await wait(cfg.gap * 400); }
+    if (cfg.vi && it.vi && RADIO.on && my === RADIO.seq) { await sayVi(it.vi); }
+    await wait(cfg.gap * 1000);
+    if (!RADIO.on || my !== RADIO.seq) return;
+    RADIO.played += 1; RADIO.i++;
+    if (!RADIO.logged && Date.now() - RADIO.startAt > 5 * 60e3) { RADIO.logged = true; logActivity('listen', { kind: 'radio' }); }
+  }
+  if (RADIO.on && my === RADIO.seq) { RADIO.i = 0; if (radioCfg().shuffle) RADIO.list = shuffle(RADIO.list); radioLoop(); }   // loop the playlist
+}
+function radioNow(it) {
+  const box = document.querySelector('#radioNow');
+  if (box) box.innerHTML = `<div class="small muted">${esc(it.tag)} · ${RADIO.i + 1}/${RADIO.list.length}</div><div class="hz" style="font-size:24px;margin:6px 0">${esc(it.hz)}</div><div class="small">${colorPy(it.py)}</div><div class="small muted">${esc(it.vi)}</div>`;
+  radioMini(it);
+  try { if ('mediaSession' in navigator) { navigator.mediaSession.metadata = new MediaMetadata({ title: it.hz, artist: 'Học Hán ngữ · Radio', album: RADIO.ch ? RADIO.ch.name : '' });
+    navigator.mediaSession.setActionHandler('pause', () => radioStop(true)); navigator.mediaSession.setActionHandler('play', () => { if (!RADIO.on) { RADIO.on = true; radioLoop(); } });
+    navigator.mediaSession.setActionHandler('nexttrack', () => radioSkip(1)); navigator.mediaSession.setActionHandler('previoustrack', () => radioSkip(-1)); } } catch (e) {}
+}
+function radioSkip(d) { if (!RADIO.list.length) return; RADIO.seq++; try { ttsAudio.pause(); speechSynthesis.cancel(); } catch (e) {} RADIO.i = (RADIO.i + d + RADIO.list.length) % RADIO.list.length; if (RADIO.on) radioLoop(); else radioNow(RADIO.list[RADIO.i]); }
+function radioMini(it) {   // small bar so the radio can keep playing while the learner browses elsewhere
+  let m = document.querySelector('#radioMini');
+  if (!RADIO.on) { if (m) m.remove(); return; }
+  if (!m) { m = document.createElement('div'); m.id = 'radioMini'; m.style.cssText = 'position:fixed;left:8px;right:8px;bottom:calc(64px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--card,#fff);border:1px solid var(--line);border-radius:14px;padding:8px 12px;display:flex;gap:8px;align-items:center;box-shadow:0 4px 14px rgba(0,0,0,.12)'; document.body.appendChild(m);
+    m.onclick = e => { if (e.target.closest('[data-rm=stop]')) return radioStop(); if (e.target.closest('[data-rm=next]')) return radioSkip(1); go('practice'); openPractice('radio'); }; }
+  const cur = it || RADIO.list[RADIO.i] || {};
+  m.innerHTML = `<span>📻</span><span class="hz" style="flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${esc(cur.hz || '')}</span><button class="btn sm ghost" data-rm="next" aria-label="Câu tiếp">⏭</button><button class="btn sm" data-rm="stop" aria-label="Dừng">⏸</button>`;
+}
+async function mountRadio(box) {
+  const cfg = radioCfg(), chans = radioChannels();
+  const opt = (k, v, label) => `<button class="chip${cfg[k] === v ? ' on' : ''}" data-ro="${k}" data-v="${v}">${label}</button>`;
+  box.innerHTML = `<div class="card"><b>📻 Radio, nghe thụ động</b><p class="small muted" style="margin:6px 0">Tự phát liên tục bằng giọng chuẩn, kèm nghĩa tiếng Việt. Dùng khi lái xe, nấu ăn, sắc thuốc. Mặc định chỉ phát câu đã có giọng trên máy nên <b>không tốn lượt</b>.</p></div>
+    <div class="menu">${chans.map(c => `<button data-ch="${c.id}" class="${RADIO.ch && RADIO.ch.id === c.id ? 'on' : ''}">${c.ic} <span>${esc(c.name)} <small class="muted">${esc(c.desc)}</small></span>›</button>`).join('')}</div>
+    <div class="card" id="radioCtl" ${RADIO.ch ? '' : 'hidden'}>
+      <div id="radioNow" style="text-align:center;min-height:90px"></div>
+      <div class="btnrow" style="justify-content:center"><button class="btn sm" data-r="prev">⏮</button><button class="btn pri" data-r="play">${RADIO.on ? '⏸ Dừng' : '▶ Phát'}</button><button class="btn sm" data-r="next">⏭</button></div>
+    </div>
+    <div class="card"><b class="small">Cài đặt</b>
+      <div class="small" style="margin-top:6px">Tốc độ: ${opt('rate', 'normal', 'Bình thường')}${opt('rate', 'slow', '🐢 Chậm')}</div>
+      <div class="small">Mỗi câu đọc: ${opt('rep', 1, '1 lần')}${opt('rep', 2, '2 lần')}</div>
+      <div class="small">Nghỉ giữa câu: ${opt('gap', 2, 'Ngắn')}${opt('gap', 4, 'Dài (để nhắc lại)')}</div>
+      <div class="small">Đọc nghĩa tiếng Việt: ${opt('vi', true, 'Có')}${opt('vi', false, 'Không')}</div>
+      <div class="small">Thứ tự: ${opt('shuffle', false, 'Lần lượt')}${opt('shuffle', true, 'Trộn')}</div>
+      <div class="small">Hẹn giờ tắt: ${opt('sleep', 15, '15 phút')}${opt('sleep', 30, '30 phút')}${opt('sleep', 60, '60 phút')}${opt('sleep', 0, 'Không')}</div>
+      <div class="small">Câu chưa có giọng: ${opt('onlyCached', true, 'Bỏ qua (0 lượt)')}${opt('onlyCached', false, 'Vẫn phát (tốn lượt)')}</div>
+      <p class="small muted" style="margin-top:6px">iPhone có thể dừng phát khi khóa màn hình; app giữ màn hình sáng trong lúc phát. Có thể vừa nghe vừa mở mục khác, thanh 📻 ở cuối màn hình để dừng hoặc chuyển câu.</p></div>`;
+  if (RADIO.ch && RADIO.list[RADIO.i]) radioNow(RADIO.list[RADIO.i]);
+  box.onclick = async e => {
+    const o = e.target.closest('[data-ro]');
+    if (o) { const k = o.dataset.ro, raw = o.dataset.v, v = raw === 'true' ? true : raw === 'false' ? false : isNaN(+raw) ? raw : +raw; cfg[k] = v; Store.set('settings', settings);
+      box.querySelectorAll(`[data-ro="${k}"]`).forEach(b => b.classList.toggle('on', b === o)); if (k === 'sleep' && RADIO.on) RADIO.endAt = v ? Date.now() + v * 60e3 : 0; return; }
+    const c = e.target.closest('[data-ch]');
+    if (c) {
+      radioStop(true); box.querySelectorAll('[data-ch]').forEach(b => b.classList.toggle('on', b === c));
+      const ctl = box.querySelector('#radioCtl'); ctl.hidden = false; box.querySelector('#radioNow').innerHTML = '<p class="small muted">Đang chuẩn bị danh sách…</p>';
+      RADIO.ch = chans.find(x => x.id === c.dataset.ch); let list = await radioBuild(RADIO.ch.id); const total = list.length;
+      if (cfg.onlyCached) list = await radioFilterCached(list);
+      if (cfg.shuffle) list = shuffle(list);
+      RADIO.list = list; RADIO.i = 0;
+      if (!list.length) { box.querySelector('#radioNow').innerHTML = `<p class="small">${total ? `Chưa có câu nào của kênh này có giọng đọc trên máy (${total} câu). Vào Cài đặt → "③ Lấy từ GitHub về máy này", hoặc chọn "Câu chưa có giọng: Vẫn phát".` : 'Kênh này chưa có nội dung cho giai đoạn của bạn.'}</p>`; return; }
+      box.querySelector('#radioNow').innerHTML = `<p class="small">${list.length} câu${cfg.onlyCached && total > list.length ? ` (bỏ qua ${total - list.length} câu chưa có giọng)` : ''}. Bấm ▶ Phát.</p>`;
+      return;
+    }
+    const r = e.target.closest('[data-r]'); if (!r) return;
+    if (r.dataset.r === 'play') {
+      if (RADIO.on) { radioStop(); r.textContent = '▶ Phát'; return; }
+      if (!RADIO.list.length) return;
+      RADIO.on = true; RADIO.startAt = Date.now(); RADIO.logged = false; RADIO.endAt = cfg.sleep ? Date.now() + cfg.sleep * 60e3 : 0; r.textContent = '⏸ Dừng';
+      logActivity('radio', { ch: RADIO.ch.id }); radioLoop();
+    }
+    if (r.dataset.r === 'next') radioSkip(1);
+    if (r.dataset.r === 'prev') radioSkip(-1);
+  };
+}
+
+/* ---- 📝 Thi thử HSK 1–5: a fresh paper every time, built from the dictionary, example sentences and lesson dialogues ---- */
+const MOCK_PLAN = { 1: { L: 10, R: 10, W: 0, min: 15 }, 2: { L: 12, R: 12, W: 0, min: 18 }, 3: { L: 12, R: 12, W: 5, min: 25 }, 4: { L: 14, R: 14, W: 6, min: 30 }, 5: { L: 15, R: 15, W: 6, min: 35 } };
+let MOCK = null;
+function mockSegment(s, words) {           // split a sentence into 3–6 chunks using dictionary words (longest match)
+  const h = [...s].filter(isHan).join(''), dict = new Set(words), out = []; let i = 0;
+  while (i < h.length) { let k = Math.min(4, h.length - i); while (k > 1 && !dict.has(h.slice(i, i + k))) k--; out.push(h.slice(i, i + k)); i += k; }
+  while (out.length > 6) { let j = out.reduce((b, x, q) => (x.length + (out[q + 1] || '').length < out[b].length + (out[b + 1] || '').length && q < out.length - 1 ? q : b), 0); out.splice(j, 2, out[j] + out[j + 1]); }
+  return out.length >= 3 ? out : null;
+}
+function buildMock(lv, long) {
+  const plan = MOCK_PLAN[lv], k = long ? 2 : 1, all = arr(DICT && DICT.words), pick = (a, n) => shuffle(a.slice()).slice(0, n);
+  const pool = all.filter(w => w.ex && w.lv >= 1 && (w.lv === lv || (w.lv < lv && Math.random() < 0.4)));
+  const same = (w, n) => pick(all.filter(x => x.hz !== w.hz && x.lv >= 1 && x.lv <= lv && [...x.hz].length === [...w.hz].length), n);
+  const dlg = []; lessons.filter(l => l.curriculum && (l.level || 0) <= lv && l.kind !== 'test').forEach(l => { const S = arr(l.sentences); for (let i = 0; i + 1 < S.length; i++) if (S[i].who && S[i + 1].who && S[i].who !== S[i + 1].who && hanCount(S[i].hz) >= 3) dlg.push([S[i], S[i + 1]]); });
+  const withPy = lv <= 2, show = (hz, py) => withPy && py ? `${hz}\n${py}` : hz;
+  const L = [], R = [], W = [];
+  pick(pool, plan.L * k * 2).forEach((w, i) => {
+    if (L.length >= plan.L * k) return;
+    const t = i % 4;
+    if (t === 0) { const right = Math.random() < 0.5, other = same(w, 1)[0] || w, shown = right ? w : other, heard = lv <= 2 ? w.hz : w.ex.hz;
+      L.push({ sec: 'L', say: heard, q: `Nghe rồi chọn ĐÚNG hay SAI: câu vừa nghe có từ "${shown.hz}"${withPy ? ` (${shown.py})` : ''}`, options: ['Đúng', 'Sai'], answer: heard.includes(shown.hz) ? 0 : 1, explain: `${heard}${lv <= 2 ? ' (' + w.py + ')' : ''}` }); }
+    if (t === 1) { const ds = pick(pool.filter(x => x !== w), 3).map(x => show(x.ex.hz, x.ex.py)); L.push({ sec: 'L', say: w.ex.hz, q: 'Nghe rồi chọn câu đúng với câu vừa nghe', options: [show(w.ex.hz, w.ex.py), ...ds], answer: 0, explain: w.ex.vi }); }
+    if (t === 2) { const ds = pick(pool.filter(x => x !== w && x.ex.vi !== w.ex.vi), 3).map(x => x.ex.vi); L.push({ sec: 'L', say: w.ex.hz, q: 'Câu vừa nghe có nghĩa là?', options: [w.ex.vi, ...ds], answer: 0, explain: w.ex.hz }); }
+    if (t === 3 && dlg.length > 4) { const [a, b] = dlg[Math.floor(Math.random() * dlg.length)]; const ds = pick(dlg.filter(x => x[1].hz !== b.hz), 3).map(x => show(x[1].hz, x[1].py));
+      L.push({ sec: 'L', say: a.hz, say2: b.hz, q: 'Nghe đoạn hội thoại: người thứ hai đã trả lời thế nào?', options: [show(b.hz, b.py), ...ds], answer: 0, explain: `${a.hz} / ${b.hz}` }); }
+  });
+  pick(pool, plan.R * k * 2).forEach((w, i) => {
+    if (R.length >= plan.R * k) return;
+    const t = i % 3;
+    if (t === 0 && w.ex.hz.includes(w.hz)) { const ds = same(w, 3).map(x => x.hz); if (ds.length === 3) R.push({ sec: 'R', q: `Chọn từ điền vào chỗ trống:\n${w.ex.hz.replace(w.hz, '（　　）')}`, options: [w.hz, ...ds], answer: 0, explain: `${w.ex.hz} — ${w.ex.vi}` }); }
+    if (t === 1 && dlg.length > 4) { const [a, b] = dlg[Math.floor(Math.random() * dlg.length)]; const ds = pick(dlg.filter(x => x[1].hz !== b.hz), 3).map(x => x[1].hz);
+      R.push({ sec: 'R', q: `Chọn câu đáp phù hợp:\n${a.hz}`, options: [b.hz, ...ds], answer: 0, explain: `${a.vi} — ${b.vi}` }); }
+    if (t === 2) { const ds = pick(pool.filter(x => x !== w && x.ex.vi !== w.ex.vi), 3).map(x => x.ex.vi); R.push({ sec: 'R', q: `Câu sau có nghĩa là?\n${show(w.ex.hz, w.ex.py)}`, options: [w.ex.vi, ...ds], answer: 0, explain: w.ex.hz }); }
+  });
+  if (plan.W) { const words = all.filter(x => x.lv <= 5).map(x => x.hz); for (const w of pick(pool.filter(x => hanCount(x.ex.hz) >= 6 && hanCount(x.ex.hz) <= 16), 40)) { if (W.length >= plan.W * k) break; const seg = mockSegment(w.ex.hz, words); if (seg) W.push({ sec: 'W', type: 'order', words: shuffle(seg.slice()), answer: seg.join(''), q: 'Sắp xếp thành câu đúng', explain: `${w.ex.hz} — ${w.ex.vi}` }); } }
+  const shuf = q => { if (q.type === 'order' || q.options.length === 2) return q; const o = q.options.map((t, i) => ({ t, ok: i === q.answer })); const s = shuffle(o); return { ...q, options: s.map(x => x.t), answer: s.findIndex(x => x.ok) }; };
+  return { lv, long, min: plan.min * k, qs: [...L, ...R, ...W].map(shuf), ans: [], i: 0, start: Date.now() };
+}
+async function mountMock(box) {
+  await ensureDict(); D.mock = D.mock || [];
+  const last = lv => D.mock.filter(m => m.lv === lv).slice(-1)[0];
+  box.innerHTML = `<div class="card"><b>📝 Thi thử HSK</b><p class="small muted" style="margin:6px 0">Mỗi lần thi là một đề mới, theo đúng các dạng câu của đề thật: nghe đúng/sai, nghe chọn câu, nghe hội thoại, điền từ, chọn câu đáp, sắp xếp câu (từ HSK 3). Có tính giờ, <b>không báo đúng sai trong lúc làm</b>, chấm điểm theo phần khi nộp bài.</p>
+    <button class="btn full" data-place style="margin:6px 0">🎯 Kiểm tra xếp lớp (khoảng 10 phút)</button>
+    <div class="chips"><button class="chip on" data-len="0">Đề ngắn</button><button class="chip" data-len="1">Đề dài (gấp đôi)</button></div></div>
+    <div class="menu">${[1, 2, 3, 4, 5].map(lv => { const p = MOCK_PLAN[lv], r = last(lv); return `<button data-mlv="${lv}">📝 <span>HSK ${lv} <small class="muted">${p.L} nghe · ${p.R} đọc${p.W ? ` · ${p.W} viết` : ''} · ${p.min} phút${r ? ` · lần trước: <b style="color:${scoreCol(r.total)}">${r.total}</b>` : ''}</small></span>›</button>`; }).join('')}</div>`;
+  let long = false;
+  box.onclick = e => {
+    if (e.target.closest('[data-place]')) { startPlacement(box); return; }
+    const l = e.target.closest('[data-len]'); if (l) { long = l.dataset.len === '1'; box.querySelectorAll('[data-len]').forEach(x => x.classList.toggle('on', x === l)); return; }
+    const m = e.target.closest('[data-mlv]'); if (m) { MOCK = buildMock(+m.dataset.mlv, long); logActivity('mock', { lv: MOCK.lv }); mockQ(box); }
+  };
+}
+function mockLeft() { return Math.max(0, MOCK.start + MOCK.min * 60e3 - Date.now()); }
+function mockQ(box) {
+  clearInterval(MOCK.tick);
+  if (MOCK.i >= MOCK.qs.length || !mockLeft()) return mockDone(box);
+  const q = MOCK.qs[MOCK.i], secName = { L: 'Nghe', R: 'Đọc', W: 'Viết' }[q.sec], n = MOCK.i + 1;
+  const fmt = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
+  box.innerHTML = `<div class="row small" style="justify-content:space-between"><b>HSK ${MOCK.lv} · ${secName}</b><span>Câu ${n}/${MOCK.qs.length} · ⏱ <b id="mkT">${fmt(mockLeft())}</b></span></div>
+    <div style="height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin:6px 0"><div style="height:100%;width:${Math.round(100 * MOCK.i / MOCK.qs.length)}%;background:var(--jade)"></div></div>
+    <div class="card"><p class="qtext" style="white-space:pre-line">${esc(q.q)}</p>${q.say ? `<button class="btn sm" data-replay>🔁 Nghe lại (${q.replays ? 0 : 1} lần)</button>` : ''}
+    ${q.type === 'order' ? `<div class="wbank" style="margin:10px 0">${q.words.map((w, i) => `<button class="chip" data-w="${i}">${esc(w)}</button>`).join('')}</div><div class="hz" id="mkBuilt" style="min-height:36px;font-size:22px"></div><div class="btnrow"><button class="btn sm ghost" data-undo>↺ Làm lại</button><button class="btn pri" data-ok>Xong</button></div>`
+      : `<div>${q.options.map((o, i) => `<button class="opt" data-o="${i}" style="white-space:pre-line">${esc(o)}</button>`).join('')}</div>`}</div>
+    <button class="btn sm ghost" data-quit>Nộp bài sớm</button>`;
+  MOCK.tick = setInterval(() => { const t = $('#mkT'); if (!t || !box.isConnected) return clearInterval(MOCK.tick); const ms = mockLeft(); t.textContent = fmt(ms); if (!ms) { clearInterval(MOCK.tick); mockDone(box); } }, 1000);
+  const play = async () => { await say(q.say, lv5rate()); if (q.say2) { await wait(500); await say(q.say2, lv5rate(), 2); } };
+  const lv5rate = () => MOCK.lv <= 2 ? 0.8 : undefined;
+  if (q.say) (async () => { await wait(300); await play(); await wait(1200); if (MOCK && MOCK.qs[MOCK.i] === q) await play(); })();
+  const built = [];
+  box.onclick = e => {
+    if (e.target.closest('[data-replay]') && !q.replays) { q.replays = 1; e.target.closest('[data-replay]').disabled = true; play(); return; }
+    if (e.target.closest('[data-quit]')) { if (confirm('Nộp bài ngay? Các câu chưa làm tính là sai.')) mockDone(box); return; }
+    const o = e.target.closest('[data-o]'); if (o) { MOCK.ans[MOCK.i] = +o.dataset.o; MOCK.i++; return mockQ(box); }
+    const w = e.target.closest('[data-w]'); if (w && !w.disabled) { built.push(+w.dataset.w); w.disabled = true; $('#mkBuilt').textContent = built.map(k => q.words[k]).join(''); return; }
+    if (e.target.closest('[data-undo]')) { built.length = 0; box.querySelectorAll('[data-w]').forEach(b => b.disabled = false); $('#mkBuilt').textContent = ''; return; }
+    if (e.target.closest('[data-ok]')) { MOCK.ans[MOCK.i] = built.map(k => q.words[k]).join(''); MOCK.i++; return mockQ(box); }
+  };
+}
+function mockDone(box) {
+  clearInterval(MOCK.tick); try { ttsAudio.pause(); } catch (e) {}
+  if (MOCK.place) { const okN = MOCK.qs.filter((q, i) => MOCK.ans[i] === q.answer).length; return placeAfterBlock(box, Math.round(100 * okN / MOCK.qs.length)); }
+  const ok = (q, i) => q.type === 'order' ? MOCK.ans[i] === q.answer : MOCK.ans[i] === q.answer;
+  const sec = s => { const idx = MOCK.qs.map((q, i) => i).filter(i => MOCK.qs[i].sec === s); return idx.length ? Math.round(100 * idx.filter(i => ok(MOCK.qs[i], i)).length / idx.length) : null; };
+  const L = sec('L'), R = sec('R'), W = sec('W'), parts = [L, R, W].filter(x => x != null), total = Math.round(parts.reduce((a, b) => a + b, 0) / parts.length);
+  const wrong = MOCK.qs.map((q, i) => ({ q, i })).filter(x => !ok(x.q, x.i));
+  D.mock = D.mock || []; D.mock.push({ lv: MOCK.lv, at: Date.now(), L, R, W, total, pass: total >= 60, long: MOCK.long }); saveD();
+  const used = Math.round((Date.now() - MOCK.start) / 60000);
+  box.innerHTML = `<div class="card" style="text-align:center"><div class="small muted">Thi thử HSK ${MOCK.lv} · ${used} phút</div><div style="font-size:46px;font-weight:700;color:${scoreCol(total)}">${total}</div>
+    <p>${total >= 60 ? '🎉 Đạt (từ 60 điểm). ' + (total >= 80 ? 'Rất vững, có thể thử cấp cao hơn.' : 'Ôn thêm phần yếu để chắc chắn hơn.') : 'Chưa đạt 60 điểm. Ôn lại phần yếu rồi thi lại nhé.'}</p>
+    <div class="small">Nghe <b>${L ?? '—'}</b> · Đọc <b>${R ?? '—'}</b>${W != null ? ` · Viết <b>${W}</b>` : ''}</div></div>
+    ${wrong.length ? `<div class="card"><b>${wrong.length} câu sai</b> <button class="btn sm" data-addwrong>＋ Đưa vào "5 phút sửa lỗi"</button>
+      ${wrong.slice(0, 40).map(({ q, i }) => `<div class="gram"><div class="small muted">${esc(q.q.split('\n')[0])}</div><div class="small">Đáp án: <b class="hz">${esc(q.type === 'order' ? q.answer : String(q.options[q.answer]).split('\n')[0])}</b>${q.say ? ` <button class="btn sm ghost" data-say="${esc(q.say)}" style="padding:2px 8px">▶</button>` : ''}</div><div class="small muted">${esc(q.explain || '')}</div></div>`).join('')}</div>` : ''}
+    <div class="btnrow"><button class="btn pri" data-again>Thi đề mới</button><button class="btn" data-back2>Chọn cấp khác</button></div>`;
+  box.onclick = e => {
+    if (e.target.closest('[data-addwrong]')) { let n = 0; wrong.forEach(({ q }) => { const right = q.type === 'order' ? q.answer : String(q.options[q.answer]).split('\n')[0]; if (hanCount(right) || hanCount(q.say || '')) { addCard({ f: hanCount(right) ? right : q.say, py: '', vi: (q.explain || '').slice(0, 120), kind: 'e', sub: 'ex' }); n++; } }); toast(`Đã đưa ${n} câu vào phần sửa lỗi`); return; }
+    if (e.target.closest('[data-again]')) { MOCK = buildMock(MOCK.lv, MOCK.long); mockQ(box); return; }
+    if (e.target.closest('[data-back2]')) mountMock(box);
+  };
+}
+
+/* ---- 🎯 Kiểm tra xếp lớp: adaptive, about 10 minutes, then (with the learner's OK) marks what they already know ---- */
+let PLACE = null;
+function startPlacement(box) { PLACE = { lv: 1, res: [] }; placeIntro(box); }
+function placeIntro(box) {
+  box.innerHTML = `<div class="card"><b>🎯 Kiểm tra xếp lớp · phần HSK ${PLACE.lv}</b>
+    <p class="small muted" style="margin:6px 0">Mỗi phần khoảng 10 câu (nghe, đọc${PLACE.lv >= 3 ? ', sắp xếp câu' : ''}), 3 phút. Đạt từ 75% thì sang phần cấp cao hơn; không đạt thì dừng và app đề xuất điểm bắt đầu. Không biết thì cứ chọn bừa hoặc bấm "Nộp bài sớm", không sao cả.</p>
+    ${PLACE.res.length ? `<p class="small">${PLACE.res.map(r => `HSK ${r.lv}: <b style="color:${scoreCol(r.pct)}">${r.pct}%</b>`).join(' · ')}</p>` : ''}
+    <button class="btn pri full" data-pgo>Bắt đầu phần HSK ${PLACE.lv}</button></div>`;
+  box.onclick = e => {
+    if (!e.target.closest('[data-pgo]')) return;
+    const m = buildMock(PLACE.lv, false), take = (s, n) => m.qs.filter(q => q.sec === s).slice(0, n);
+    MOCK = { ...m, qs: [...take('L', 4), ...take('R', 4), ...(PLACE.lv >= 3 ? take('W', 2) : [])], min: 3, start: Date.now(), ans: [], i: 0, place: true };
+    mockQ(box);
+  };
+}
+function placeAfterBlock(box, pct) {
+  PLACE.res.push({ lv: PLACE.lv, pct });
+  if (pct >= 75 && PLACE.lv < 5) { PLACE.lv++; placeIntro(box); return; }
+  placeResult(box);
+}
+function placeLessonsFor(passed, withBasics) {
+  // stage tests count as done when the whole stage is covered: stage 1 = HSK 1–2, stage 2 = HSK 3, stage 3 = HSK 4, stage 4 = HSK 5
+  return lessons.filter(l => l.curriculum && inPlan(l) && !(D.lp[l.id] && D.lp[l.id].done) &&
+    (l.kind === 'test' ? passed >= (l.stage || 9) + 1 :
+      (((l.level ?? 9) >= 1 && (l.level ?? 9) <= passed) || (withBasics && (l.level ?? 9) < 1))));
+}
+function placeResult(box) {
+  let passed = 0; for (const r of PLACE.res) { if (r.pct >= 75) passed = r.lv; else break; }
+  const start = passed >= 5 ? 'đã vững HSK 5, nên ôn bằng Thi thử và các chuyên đề' : `bắt đầu từ HSK ${passed + 1}`;
+  const basics = passed >= 2;
+  const list = () => placeLessonsFor(passed, $('#plBasics') ? $('#plBasics').checked : basics);
+  box.innerHTML = `<div class="card" style="text-align:center"><div style="font-size:40px">🎯</div><b>Kết quả xếp lớp</b>
+    <p class="small" style="margin:6px 0">${PLACE.res.map(r => `HSK ${r.lv}: <b style="color:${scoreCol(r.pct)}">${r.pct}%</b>`).join(' · ')}</p>
+    <p>${passed ? `Bạn đã nắm được trình độ <b>HSK ${passed}</b>. Đề xuất: <b>${start}</b>.` : 'Đề xuất: học từ đầu, bắt đầu với phần phát âm. Phần đầu đi nhanh nên đừng lo.'}</p></div>
+    ${passed ? `<div class="card"><label class="small" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="plBasics" ${basics ? 'checked' : ''} style="width:auto"> Đánh dấu cả phần phát âm, bộ thủ, số và giá là đã học</label>
+      <p class="small muted" id="plCount" style="margin:6px 0"></p>
+      <button class="btn pri full" data-papply>Đánh dấu các bài đã biết</button>
+      <p class="small muted" style="margin-top:6px">Các bài được đánh dấu vẫn mở lại được để ôn. Từ của các cấp đã đạt cũng được đánh dấu xong trong "Học từ vựng theo bộ".</p></div>` : ''}
+    <div class="btnrow"><button class="btn" data-pskip>${passed ? 'Không đánh dấu, tự học từ đầu' : 'Bắt đầu học'}</button><button class="btn ghost" data-pagain>Làm lại bài xếp lớp</button></div>`;
+  const cnt = () => { const c = box.querySelector('#plCount'); if (c) c.textContent = `Sẽ đánh dấu ${list().length} bài là đã học.`; };
+  cnt(); const cb = box.querySelector('#plBasics'); if (cb) cb.onchange = cnt;
+  box.onclick = e => {
+    if (e.target.closest('[data-papply]')) {
+      const ls = list(); ls.forEach(l => { const st = lp(l.id); st.done = true; st.placed = true; st.at = st.at || Date.now(); });
+      D.wsets = D.wsets || {}; for (let lv = 1; lv <= passed; lv++) wsetsOf(lv).forEach((s, k) => { D.wsets[wsetKey(lv, k)] = D.wsets[wsetKey(lv, k)] || { score: null, done: true, placed: true, at: Date.now() }; });
+      P.placed = { at: Date.now(), passed, res: PLACE.res }; Store.set('profiles', profiles); logActivity('place', { passed }); saveD();
+      toast(`Đã đánh dấu ${ls.length} bài. Bắt đầu học thôi!`); go('home'); return;
+    }
+    if (e.target.closest('[data-pskip]')) { P.placed = { at: Date.now(), passed, res: PLACE.res, skipped: true }; Store.set('profiles', profiles); saveD(); go('home'); return; }
+    if (e.target.closest('[data-pagain]')) startPlacement(box);
+  };
+}
+
 function renderHome() {
   const due = dueCards().length, nu = nextUnit(), weak = weakChars(4);
   const revToday = todayHist('rev').length, stepsToday = todayHist('step').length, speakToday = todayHist('speak').length, talkToday = todayHist('talk').length;
@@ -1891,11 +2321,13 @@ function renderHome() {
   { const pool = errorPool(); if (pool.length || weak.length) { const s = errorSummary(); tasks.push({ id: 'fix', ic: '⚡', cls: 'gold', title: '5 phút sửa lỗi', sub: (pool.length ? Object.entries(s).map(([k, n]) => `${FIX_SUB[k] || k} ${n}`).join(' · ') : 'Chữ hay đọc sai: ' + weak.join(' ')), ok: todayHist('fix').length > 0 }); } }
   tasks.push({ id: 'listen', ic: '听', title: 'Luyện nghe 5 phút', sub: 'Nghe chọn, nhận thanh điệu, nghe chép', ok: todayHist('listen').length > 0 });
   { const lvW = Math.min(5, Math.max(1, (nu && nu.lv) || P.level || 1)), ws = DICT ? nextWset(lvW) : null; if (ws) tasks.push({ id: 'wset', ic: '词', title: `Học 1 bộ từ mới: HSK ${ws.lv} · bộ ${ws.i + 1}/${ws.n}`, sub: ws.words.slice(0, 6).map(w => w.hz).join(' ') + ' …', ok: todayHist('wset').length > 0, _ws: ws }); }
+  if (!P.placed && !Object.values(D.lp).some(x => x.done)) tasks.unshift({ id: 'place', ic: '🎯', title: 'Kiểm tra xếp lớp (10 phút)', sub: 'Đã biết tiếng Trung? Làm bài để bỏ qua phần đã biết', ok: false });
+  tasks.push({ id: 'radio', ic: '📻', title: 'Radio: nghe thụ động', sub: 'Bật nghe khi đang làm việc khác', ok: todayHist('radio').length > 0, extra: true });
   tasks.push({ id: 'talk', ic: '话', title: 'Hội thoại 5 phút', sub: currentLesson() ? 'Theo bài: ' + currentLesson().title : 'Chọn tình huống, nói với AI', ok: talkToday > 0 });
   tasks.push({ id: 'chat', ic: '微', title: 'Học từ đoạn chat WeChat', sub: 'Dán tin nhắn thật, học đọc, viết, gõ', ok: false, extra: true });
   const core = tasks.filter(t => !t.extra), done = core.filter(t => t.ok).length, pct = core.length ? done / core.length : 0;
   // smart order for the one-button flow: due reviews first, then the lesson, then the rest
-  const order = ['rev', 'fix', 'lesson', 'path', 'wset', 'listen', 'talk'], nextTask = order.map(id => core.find(t => t.id === id && !t.ok)).find(Boolean);
+  const order = ['place', 'rev', 'fix', 'lesson', 'path', 'wset', 'listen', 'talk'], nextTask = order.map(id => core.find(t => t.id === id && !t.ok)).find(Boolean);
   const C = 2 * Math.PI * 32;
   $('#v-home').innerHTML = `<div class="hello"><div class="ring"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="32" fill="none" stroke="var(--line)" stroke-width="7"/><circle cx="38" cy="38" r="32" fill="none" stroke="var(--jade)" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct)}"/></svg><b>${done}/${core.length}</b></div>
     <div><h1>Chào ${esc(P.name)}</h1><div class="small muted">${streakDays() ? '🔥 ' + streakDays() + ' ngày liên tiếp' : 'Bắt đầu chuỗi ngày học hôm nay'} · HSK ${P.level}</div></div></div>
@@ -1905,13 +2337,15 @@ function renderHome() {
     ${!apiKey() ? '<div class="infobox">Chưa có API key. Vào <b>Tôi → Cài đặt</b> để dán key, nếu không các phần chấm điểm và soạn bài sẽ chưa chạy.</div>' : ''}`;
   $('#v-home').onclick = e => {
     const t = e.target.closest('[data-task]'); if (!t) return;
-    backTo = ['lesson', 'weak', 'fix', 'talk', 'listen', 'wset'].includes(t.dataset.task) ? 'home' : null;
+    backTo = ['lesson', 'weak', 'fix', 'talk', 'listen', 'wset', 'place'].includes(t.dataset.task) ? 'home' : null;
     const id = t.dataset.task;
     if (id === 'lesson') openLesson(nextUnit().key);
     else if (id === 'path') go('path');
     else if (id === 'rev') go('rev');
     else if (id === 'weak') { go('practice'); openPractice('read', weakItems()); }
     else if (id === 'fix') { go('practice'); openPractice('fix'); }
+    else if (id === 'radio') { go('practice'); openPractice('radio'); }
+    else if (id === 'place') { go('practice'); openPractice('place'); }
     else if (id === 'talk') { go('practice'); openPractice('talk'); }
     else if (id === 'listen') { go('practice'); openPractice('listen'); }
     else if (id === 'wset') { const tk = tasks.find(x => x.id === 'wset'); go('practice'); openPractice('lib'); setTimeout(() => mountWset($('#pBody'), tk._ws.lv, tk._ws.i), 50); }
@@ -1930,6 +2364,112 @@ function weakItems() {
 
 /* =============== PATH =============== */
 let pathTab = 'book';
+/* ---- 🗺 Lộ trình dạng bản đồ chủ đề + 🎮 trò chơi nhanh ---- */
+const TOPIC_ICONS = [
+  [/thanh điệu|phát âm|vận mẫu|thanh mẫu|pinyin|âm/i, '🔤'], [/bộ thủ/i, '部'],
+  [/chào|xin chào|giới thiệu|tên là|làm quen|gặp/i, '👋'], [/gia đình|bố mẹ|con cái|cha mẹ|người nhà/i, '👨‍👩‍👧'], [/cảm ơn|xin lỗi/i, '🙏'],
+  [/mua|cửa hàng|siêu thị|shop|online|quần áo/i, '🛒'], [/ăn|nhà hàng|gọi món|món|cơm|đồ ăn/i, '🍜'], [/trà|quán trà/i, '🍵'],
+  [/thời gian|giờ|ngày|tuần|lịch|hẹn/i, '⏰'], [/thời tiết|mưa|nắng|lạnh/i, '⛅'], [/bệnh|khám|thuốc|bác sĩ|ốm|sức khỏe|giảm cân/i, '🏥'],
+  [/dược liệu|vị thuốc|bài thuốc|y học|đông y|mạch|lưỡi|vọng|bát cương|chẩn/i, '🌿'], [/ngọc|phỉ thúy|đá quý|vòng|trang sức/i, '💎'],
+  [/tàu|xe|đường|taxi|sân bay|đi lại|du lịch|chuyến/i, '🚄'], [/điện thoại|wechat|mạng|tin nhắn|email|internet/i, '📱'],
+  [/nhà|thuê|phòng|khách sạn|tứ hợp viện/i, '🏠'], [/học|trường|lớp|thi|phỏng vấn|đọc sách/i, '🎓'], [/công việc|làm việc|công ty|đi làm|công sở/i, '💼'],
+  [/hợp đồng|đàm phán|giao hàng|hải quan|thương mại|buôn bán|đại lý|đơn hàng/i, '🤝'], [/cưới|tình yêu|bạn bè|chia tay|tiệc/i, '💞'],
+  [/ngân hàng|thanh toán|tài khoản/i, '🏦'], [/thể thao|bóng|chạy/i, '⚽'], [/văn hóa|truyền thống|tết|lễ|giao thừa/i, '🏮'], [/thành ngữ|chuyện|câu chuyện|kể/i, '📜'], [/số|giá|tiền|mặc cả|báo giá/i, '💰']];
+const STAGE_COL = ['#7F77DD', '#1D9E75', '#378ADD', '#D85A30', '#BA7517'];
+function mapLabel(l) {
+  if (l.kind === 'test') return l.title;
+  const vi = String(l.intro_vi || '').split(' — ')[0];
+  if (vi && vi.length <= 42 && !/^Tình huống|^Phát âm|^Bộ thủ/.test(l.title)) return vi;
+  return String(l.title).replace(/^[^:]*:\s*/, '');
+}
+function topicIcon(l) {
+  if (l.kind === 'test') return '🏆';
+  const s = `${l.title} ${l.intro_vi || ''}`;
+  // match whole Vietnamese words only ("giá" must not match inside "giáo")
+  const w = ' ' + s.toLowerCase().replace(/[.,;:!?()“”"—–-]/g, ' ') + ' ';
+  for (const [re, ic] of TOPIC_ICONS) { const alts = re.source.split('|'); if (alts.some(a => w.includes(' ' + a.toLowerCase() + ' '))) return ic; }
+  return [...String(l.title).replace(/^[^:]*:\s*/, '')].find(isHan) || '📖';
+}
+function mapStageHtml(S, g, nu, open) {
+  const dn = g.filter(l => D.lp[l.id] && D.lp[l.id].done).length, pct = g.length ? Math.round(100 * dn / g.length) : 0, col = STAGE_COL[S.id] || STAGE_COL[1];
+  const pos = ['0px', '-70px', '0px', '70px'];
+  let out = '', pack = [];
+  g.forEach((l, i) => {
+    const st = D.lp[l.id], n = stepCount(l.id), done = st && st.done, cur = nu && nu.key === l.id;
+    const p = done ? 100 : Math.round(100 * n / STEPS.length);
+    out += `<div class="mnode" style="transform:translateX(${pos[i % 4]})">
+      <button class="mring${done ? ' done' : n ? ' part' : ''}${cur ? ' cur' : ''}${l.kind === 'test' ? ' test' : ''}" data-key="${esc(l.id)}" style="--p:${p};--c:${col}" aria-label="${esc(l.title)}"><span class="mico">${topicIcon(l)}</span>${done ? '<i class="mchk">✓</i>' : ''}</button>
+      <div class="mlbl">${esc(mapLabel(l))}${n && !done ? ` · ${n}/${STEPS.length}` : ''}</div>${cur ? '<div class="mbub">▶ Bắt đầu</div>' : ''}</div>`;
+    if (l.kind !== 'test') pack.push(l.id);
+    if (pack.length === 5 && i < g.length - 1) {
+      out += `<div class="mgame"><b>🎮 Trò chơi nhanh</b><div class="mgrid"><button data-game="match" data-ids="${pack.join(',')}">🃏 Ghép đôi chữ – nghĩa</button><button data-game="speed" data-ids="${pack.join(',')}">⚡ Nghe nhanh chọn chữ</button></div></div>`;
+      pack = [];
+    }
+  });
+  return `<details class="lv mapst"${open ? ' open' : ''}><summary style="border-left:6px solid ${col};border-radius:0"><span>${esc(S.name)}<br><span class="small muted" style="font-weight:400">${esc(S.desc)}</span></span><span class="small" style="font-weight:400;margin-left:auto;margin-right:8px;color:${col}">${dn}/${g.length} · ${pct}%</span></summary><div class="mapwrap">${out}</div></details>`;
+}
+/* games: words come from the lessons right before the game node */
+function gameWords(ids, n) {
+  const seen = new Set(), out = [];
+  const add = v => { if (v && v.hz && v.vi && hanCount(v.hz) >= 1 && hanCount(v.hz) <= 4 && !seen.has(v.hz)) { seen.add(v.hz); out.push({ hz: v.hz, py: v.py, vi: String(v.vi).split(/[;,]/)[0].trim() }); } };
+  ids.forEach(id => { const l = lessons.find(x => x.id === id); if (l) arr(l.vocab).forEach(add); });
+  if (out.length < n) lessons.filter(l => l.curriculum && inPlan(l) && D.lp[l.id] && D.lp[l.id].done).forEach(l => arr(l.vocab).forEach(add));
+  return shuffle(out).slice(0, n);
+}
+function mountGame(box, opt) {
+  const ids = String(opt.ids || '').split(',').filter(Boolean);
+  if (opt.kind === 'match') return gameMatch(box, ids);
+  return gameSpeed(box, ids);
+}
+function gameMatch(box, ids) {
+  const ws = gameWords(ids, 6); if (ws.length < 3) { box.innerHTML = '<div class="empty">Chưa đủ từ để chơi. Học thêm vài bài nhé.</div>'; return; }
+  const cards = shuffle([...ws.map((w, i) => ({ t: w.hz, k: i, hz: 1 })), ...ws.map((w, i) => ({ t: w.vi, k: i, hz: 0 }))]);
+  let sel = null, left = ws.length, miss = 0; const t0 = Date.now();
+  box.innerHTML = `<div class="card"><b>🃏 Ghép đôi chữ – nghĩa</b><p class="small muted" style="margin:4px 0">Bấm một chữ Hán rồi bấm nghĩa của nó. Bấm chữ sẽ nghe đọc.</p>
+    <div class="ggrid">${cards.map((c, i) => `<button class="gcard${c.hz ? ' hz' : ''}" data-c="${i}">${esc(c.t)}</button>`).join('')}</div><p class="small" id="gInfo">Còn ${left} cặp · sai ${miss}</p></div>`;
+  box.onclick = e => {
+    const b = e.target.closest('[data-c]'); if (!b || b.classList.contains('ok')) return;
+    const c = cards[+b.dataset.c]; if (c.hz) say(c.t);
+    if (!sel) { sel = b; b.classList.add('sel'); return; }
+    const a = cards[+sel.dataset.c];
+    if (sel === b) { b.classList.remove('sel'); sel = null; return; }
+    if (a.k === c.k && a.hz !== c.hz) { sel.classList.add('ok'); b.classList.add('ok'); left--; }
+    else { miss++; b.classList.add('bad'); sel.classList.add('bad'); const s0 = sel; setTimeout(() => { b.classList.remove('bad'); s0.classList.remove('bad'); }, 500); }
+    sel.classList.remove('sel'); sel = null;
+    $('#gInfo').textContent = `Còn ${left} cặp · sai ${miss}`;
+    if (!left) { const sec = Math.round((Date.now() - t0) / 1000); logActivity('game', { kind: 'match' });
+      setTimeout(() => { box.innerHTML = `<div class="card" style="text-align:center"><div style="font-size:40px">${miss === 0 ? '🌟' : miss <= 2 ? '👍' : '💪'}</div><b>Xong trong ${sec} giây, sai ${miss} lần</b><div class="btnrow" style="justify-content:center;margin-top:10px"><button class="btn pri" data-again>Chơi lại</button><button class="btn" data-speed>⚡ Nghe nhanh</button></div></div>`;
+        box.onclick = e2 => { if (e2.target.closest('[data-again]')) gameMatch(box, ids); if (e2.target.closest('[data-speed]')) gameSpeed(box, ids); }; }, 400); }
+  };
+}
+function gameSpeed(box, ids) {
+  const ws = gameWords(ids, 20); if (ws.length < 4) { box.innerHTML = '<div class="empty">Chưa đủ từ để chơi. Học thêm vài bài nhé.</div>'; return; }
+  let score = 0, wrong = [], end = Date.now() + 30000, q = null, tick = null, k = 0;
+  const next = () => {
+    if (Date.now() >= end) return finish();
+    q = ws[k++ % ws.length]; const opts = shuffle([q, ...shuffle(ws.filter(w => w !== q)).slice(0, 3)]);
+    box.querySelector('#gOpts').innerHTML = opts.map(o => `<button class="opt hz" data-h="${esc(o.hz)}" style="font-size:22px">${esc(o.hz)}</button>`).join('');
+    say(q.hz);
+  };
+  const finish = () => { clearInterval(tick); logActivity('game', { kind: 'speed', score }); logActivity('listen', { kind: 'game' });
+    box.innerHTML = `<div class="card" style="text-align:center"><div style="font-size:40px">⚡</div><b>${score} câu đúng trong 30 giây</b>
+      ${wrong.length ? `<div style="text-align:left;margin-top:8px">${[...new Map(wrong.map(w => [w.hz, w])).values()].map(w => `<div class="small"><span class="hz">${esc(w.hz)}</span> ${colorPy(w.py || '')} · ${esc(w.vi)} <button class="btn sm ghost" data-say="${esc(w.hz)}" style="padding:2px 8px">▶</button></div>`).join('')}</div><button class="btn sm" data-addw style="margin-top:6px">＋ Đưa từ sai vào sửa lỗi</button>` : ''}
+      <div class="btnrow" style="justify-content:center;margin-top:10px"><button class="btn pri" data-again>Chơi lại</button><button class="btn" data-match>🃏 Ghép đôi</button></div></div>`;
+    box.onclick = e => { if (e.target.closest('[data-again]')) gameSpeed(box, ids); if (e.target.closest('[data-match]')) gameMatch(box, ids);
+      if (e.target.closest('[data-addw]')) { wrong.forEach(w => addCard({ f: w.hz, py: w.py, vi: w.vi, kind: 'e', sub: 'pron' })); toast('Đã đưa vào phần sửa lỗi'); } };
+  };
+  box.innerHTML = `<div class="card"><div class="row" style="justify-content:space-between"><b>⚡ Nghe nhanh chọn chữ</b><span>⏱ <b id="gT">30</b> · ✓ <b id="gS">0</b></span></div>
+    <p class="small muted" style="margin:4px 0">Nghe rồi bấm đúng chữ, càng nhanh càng nhiều điểm.</p><button class="btn sm ghost" data-rep>🔁 Nghe lại</button><div id="gOpts" style="margin-top:8px"></div></div>`;
+  tick = setInterval(() => { const t = $('#gT'); if (!t || !box.isConnected) return clearInterval(tick); const s = Math.max(0, Math.ceil((end - Date.now()) / 1000)); t.textContent = s; if (!s) finish(); }, 250);
+  box.onclick = e => {
+    if (e.target.closest('[data-rep]') && q) return say(q.hz);
+    const b = e.target.closest('[data-h]'); if (!b || !q) return;
+    if (b.dataset.h === q.hz) { score++; $('#gS').textContent = score; b.classList.add('right'); setTimeout(next, 250); }
+    else { wrong.push(q); b.classList.add('wrong'); const r = box.querySelector(`[data-h="${CSS.escape(q.hz)}"]`); if (r) r.classList.add('right'); setTimeout(next, 700); }
+  };
+  next();
+}
+
 function renderPath() {
   const box = $('#v-path'); const nu = nextUnit();
   const seg = `<div class="seg" id="pathSeg"><button data-t="book" class="${pathTab === 'book' ? 'on' : ''}">Giáo trình</button><button data-t="smart" class="${pathTab === 'smart' ? 'on' : ''}">AI theo mục tiêu</button><button data-t="chat" class="${pathTab === 'chat' ? 'on' : ''}">Từ chat</button></div>`;
@@ -1951,8 +2491,10 @@ function renderPath() {
     const nCur = bl.filter(l => l.curriculum).length;
     html += seg + (nCur ? `<p class="sub">Phát âm pinyin đầy đủ, bộ thủ cơ bản và giáo trình chuẩn HSK 1–4 soạn sẵn (${nCur} bài). Nên học hết phần phát âm trước. Học không tốn lượt AI, chỉ phần chấm phát âm và hội thoại mới dùng Gemini.</p>`
       : `<div class="infobox">Chưa nạp được giáo trình soạn sẵn. Kiểm tra trên GitHub đã có thư mục <b>giao-trinh</b> nằm cạnh index.html chưa, rồi mở lại app.</div>`);
-    const openSt = nu && nu.kind === 'book' ? nu.st : 0, mine = bl.filter(inPlan);
-    html += mine.length ? STAGES.map(S => {
+    const openSt = nu && nu.kind === 'book' ? nu.st : 0, mine = bl.filter(inPlan), asMap = settings.pathMap !== false;
+    html += `<div class="chips" style="margin:4px 0 8px"><button class="chip${asMap ? ' on' : ''}" data-pm="1">🗺 Bản đồ</button><button class="chip${asMap ? '' : ' on'}" data-pm="0">☰ Danh sách</button></div>`;
+    if (asMap && mine.length) html += STAGES.map(S => { const g = mine.filter(l => stageOf(l) === S.id).sort(progSort); return g.length ? mapStageHtml(S, g, nu, S.id === openSt) : ''; }).join('');
+    else html += mine.length ? STAGES.map(S => {
       const g = mine.filter(l => stageOf(l) === S.id).sort(progSort), dn = g.filter(l => D.lp[l.id] && D.lp[l.id].done).length;
       const soon = S.mods.filter(m => m[2] === 'soon' && !(P.plan === 'hsk' && m[3] === 'biz') && !g.some(l => l.curriculum === m[0]));
       let lastMod = '';
@@ -1968,8 +2510,11 @@ function renderPath() {
     html += cl.length ? cl.map(l => row(l.id, l.title, `${arr(l.sentences).length} câu · ${new Date(l.createdAt).toLocaleDateString('vi-VN')}`)).join('') : `<div class="empty">Chưa có đoạn chat nào.<br>Sao chép tin nhắn trong WeChat rồi dán vào đây để học.</div>`;
   }
   box.innerHTML = html;
+  setTimeout(() => { const c = box.querySelector('.mring.cur'); if (c) c.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 60);
   box.onclick = e => {
     const s = e.target.closest('#pathSeg button'); if (s) { pathTab = s.dataset.t; renderPath(); return; }
+    const pm = e.target.closest('[data-pm]'); if (pm) { settings.pathMap = pm.dataset.pm === '1'; Store.set('settings', settings); renderPath(); return; }
+    const gm = e.target.closest('[data-game]'); if (gm) { backTo = 'path'; go('practice'); openPractice('game', { kind: gm.dataset.game, ids: gm.dataset.ids }); return; }
     if (e.target.closest('#editGoals')) return openProfileForm(P);
     if (e.target.closest('#lImport')) return openImport();
     if (e.target.closest('#lPaste')) return openPaste();
@@ -2026,6 +2571,7 @@ function mountTest(key, l) {
 }
 
 async function openLesson(key) {
+  if (RADIO.on) radioStop();
   try { const ll = lessons.find(x => x.id === key); if (ll && ll.curriculum) importVoicePack(ll.curriculum).catch(() => {}); } catch (e) {}
   go('lesson'); const box = $('#v-lesson');
   let l = lessonByKey(key); const u = l ? null : unitByKey(key);
@@ -2168,7 +2714,7 @@ function mountVocab(box, l) {
 function mountText(box, l) {
   const S = arr(l.sentences), tItems = [...S];
   box.innerHTML = `${notesOf(l, 'bai').length ? `<div class="card"><b>Thầy lưu ý cho bài này</b>${notesHtml(notesOf(l, 'bai'), tItems)}</div>` : ''}<div class="card"><div class="row" style="align-items:center"><b>${l.kind === 'chat' ? 'Các câu trong đoạn chat' : isPinyin(l) ? 'Luyện đọc' : 'Bài khóa'}</b><label class="small muted"><input type="checkbox" id="pyT" checked style="width:auto"> pinyin</label></div>
-    <div id="sents">${S.map((s, i) => `<div class="gram">${s.who ? `<div class="who-l">${esc(s.who)}</div>` : ''}<div class="row"><div>${ruby(s.hz, s.py)}</div><div class="acts"><button class="play" data-say="${esc(s.hz)}">${playIcon}</button><button class="play linemic" data-rec="${i}" aria-label="Đọc và chấm">${micIcon}</button></div></div><div data-out="${i}"></div>${noteBlock(notesOf(l, 's:' + i), tItems, s.hz)}<div class="small muted">${esc(s.vi)}</div>${sentenceDetail(s)}</div>`).join('')}</div></div>
+    <div id="sents">${S.map((s, i) => `<div class="gram">${s.who ? `<div class="who-l">${esc(s.who)}</div>` : ''}<div class="row"><div>${ruby(s.hz, s.py)}</div><div class="acts"><button class="play" data-say="${esc(s.hz)}"${voiceOf(s) === 2 ? ' data-voice="2"' : ''}>${playIcon}</button><button class="play linemic" data-rec="${i}" aria-label="Đọc và chấm">${micIcon}</button></div></div><div data-out="${i}"></div>${noteBlock(notesOf(l, 's:' + i), tItems, s.hz)}<div class="small muted">${esc(s.vi)}</div>${sentenceDetail(s)}</div>`).join('')}</div></div>
     ${arr(l.grammar).length && !isPinyin(l) ? `<div class="card"><b>Ngữ pháp</b>${l.grammar.map(g => `<div class="gram"><b class="hz" style="font-size:17px">${esc(g.pattern)}</b><div class="small">${esc(g.vi)}</div>${g.example_hz ? `<div style="margin-top:6px" class="row"><div><span class="hz" style="font-size:19px">${esc(g.example_hz)}</span><div class="small">${colorPy(g.example_py)}</div><div class="small muted">${esc(g.example_vi)}</div></div><button class="play" data-say="${esc(g.example_hz)}">${playIcon}</button></div>` : ''}</div>`).join('')}</div>` : ''}
     ${arr(l.replies).length ? `<div class="card"><b>Câu trả lời gợi ý</b><p class="small muted" style="margin:4px 0 0">Bấm ⧉ để sao chép rồi dán vào WeChat.</p>${l.replies.map(s => `<div class="gram"><div class="row"><div>${ruby(s.hz, s.py)}</div><div class="acts"><button class="play" data-say="${esc(s.hz)}">${playIcon}</button><button class="play" data-copy="${esc(s.hz)}" aria-label="Sao chép">⧉</button></div></div><div class="small muted">${esc(s.vi)}</div></div>`).join('')}</div>` : ''}`;
   box.querySelector('#pyT').onchange = e => box.querySelector('#sents').classList.toggle('nopy', !e.target.checked);
@@ -2363,7 +2909,7 @@ async function runShadowing(box, items, onScore, onBack) {
     const it = items[i], n = hanCount(it.hz), dur = Math.min(9000, 1600 + n * 650);
     set('shStep', `Câu ${i + 1}/${items.length}`); set('shTarget', ruby(it.hz, it.py)); set('shVi', esc(it.vi || ''));
     set('shState', '🔊 Nghe mẫu…'); box.querySelector('#shBar').style.width = '0';
-    await say(it.hz); if (stop) break; await wait(250);
+    await say(it.hz, undefined, voiceOf(it)); if (stop) break; await wait(250);
     set('shState', '<span style="color:var(--seal)">● Đến lượt bạn: đọc theo</span>');
     try { await Rec.start(ms => { const b = box.querySelector('#shBar'); if (b) b.style.width = Math.min(100, ms / dur * 100) + '%'; }); }
     catch (err) { toast(err.message, 5000); break; }
@@ -2486,7 +3032,7 @@ function mountListen(box, l, opts = {}) {
     <div class="card"><b>2. Bài nghe</b><p class="small muted" style="margin:4px 0 8px">Khoảng 10 câu: nghe chọn chữ, chọn nghĩa, nhận thanh điệu, nghe câu đúng/sai. Mỗi câu có nút nghe lại, nghe chậm.</p>
     <button class="btn pri full" data-a="quiz">Làm bài nghe</button></div>`;
   let stop = false;
-  const playAll = async rate => { stop = false; for (const s of S) { if (stop || !box.isConnected) break; await say(s.hz, rate); await wait(rate ? 700 : 450); } };
+  const playAll = async rate => { stop = false; for (const s of S) { if (stop || !box.isConnected) break; await say(s.hz, rate, voiceOf(s)); await wait(rate ? 700 : 450); } };
   box.onclick = e => {
     const a = e.target.closest('[data-a]'); if (!a) return;
     if (a.dataset.a === 'all') playAll();
@@ -2628,6 +3174,8 @@ function renderPractice() {
   const l = currentLesson();
   $('#v-practice').innerHTML = `<h1>Luyện tập</h1><p class="sub">${l ? 'Đang dùng câu của bài: <b>' + esc(l.title) + '</b>' : 'Chưa chọn bài, đang dùng câu cơ bản.'} Câu bạn tự nhập luôn có ở đầu danh sách.</p>
     <div class="tiles">
+      <button class="tile" data-p="mock" style="border-color:var(--gold)"><span class="g">📝</span><b>Thi thử HSK 1–5</b><small>Đề mới mỗi lần, đúng dạng đề thật, tính giờ, chấm theo phần</small></button>
+      <button class="tile" data-p="radio" style="border-color:var(--jade)"><span class="g">📻</span><b>Radio, nghe thụ động</b><small>Tự phát liên tục bài đang học, từ vựng, hội thoại; không tốn lượt</small></button>
       <button class="tile" data-p="fix" style="border-color:var(--seal)"><span class="g">⚡</span><b>5 phút sửa lỗi</b><small>Gom lỗi từ mọi nơi, sửa lỗi hay lặp lại trước</small></button>
       <button class="tile" data-p="lib" style="border-color:var(--gold)"><span class="g">库</span><b>Thư viện</b><small>Mẫu câu, khẩu ngữ, WeChat, từ điển HSK</small></button>
       <button class="tile" data-p="chart"><span class="g">音</span><b>Bảng âm tiết pinyin</b><small>Đủ mọi âm tiết × 4 thanh, nghe và đọc thử</small></button>
@@ -2644,9 +3192,10 @@ function renderPractice() {
 }
 function openPractice(kind, items) {
   navMark();
+  if (MOCK && MOCK.tick) clearInterval(MOCK.tick);
   if (kind === 'custom') { $('#cText').value = ''; $('#cStatus').innerHTML = ''; openModal('custom'); return; }
   $('#fab').hidden = true;
-  const v = $('#v-practice'), names = { lib: 'Thư viện', chart: 'Bảng âm tiết pinyin', listen: 'Luyện nghe', live: 'Gọi thầy', read: 'Đọc theo câu', talk: 'Hội thoại', type: 'Gõ trên điện thoại', write: 'Viết chữ', mist: 'Bài tập lỗi sai', fix: '5 phút sửa lỗi' };
+  const v = $('#v-practice'), names = { lib: 'Thư viện', chart: 'Bảng âm tiết pinyin', listen: 'Luyện nghe', live: 'Gọi thầy', read: 'Đọc theo câu', talk: 'Hội thoại', type: 'Gõ trên điện thoại', write: 'Viết chữ', mist: 'Bài tập lỗi sai', fix: '5 phút sửa lỗi', radio: 'Radio, nghe thụ động', mock: 'Thi thử HSK', place: 'Kiểm tra xếp lớp', game: 'Trò chơi nhanh' };
   v.innerHTML = `<div class="flowhead"><button class="icon" data-back aria-label="Quay lại">‹</button><h2>${names[kind]}</h2></div><div id="pBody"></div>`;
   v.onclick = e => { if (e.target.closest('[data-back]')) { if (Rec.recording) Rec.cancel(); if (Live.active) Live.stop(); talk = null; const b = backTo; backTo = null; if (b && b !== 'practice') go(b); else renderPractice(); } };
   const body = $('#pBody'), its = items || practiceItems();
@@ -2654,6 +3203,10 @@ function openPractice(kind, items) {
   if (kind === 'chart') mountChart(body);
   if (kind === 'lib') mountLibrary(body);
   if (kind === 'fix') mountFix(body);
+  if (kind === 'radio') mountRadio(body);
+  if (kind === 'mock') mountMock(body);
+  if (kind === 'game') mountGame(body, items || {});
+  if (kind === 'place') { ensureDict().then(() => startPlacement(body)); }
   if (kind === 'read') mountReadAlong(body, its);
   if (kind === 'type') mountTyping(body, its.filter(s => hanCount(s.hz) >= 1 && s.vi));
   if (kind === 'write') { const l = currentLesson(); mountWriter(body, l ? lessonChars(l) : [...new Set(its.flatMap(s => [...s.hz].filter(isHan)))].slice(0, 10)); }
@@ -2899,6 +3452,7 @@ const GUIDE = [
   'Ôn tập mỗi ngày: thẻ nào sai sẽ quay lại sớm hơn. Câu đọc sai, câu nghe sai đều tự vào Ôn tập.']],
  ['Lộ trình 5 giai đoạn', [
   'Giai đoạn 0: phát âm, bộ thủ, số và giá. Giai đoạn 1: HSK 1–2 + tình huống thực tế. Giai đoạn 2: HSK 3 + buôn bán. Giai đoạn 3: HSK 4 + trà, dược liệu, đàm phán. Giai đoạn 4: HSK 5 + đọc hiểu y học cổ truyền, văn bản thương mại.',
+  'Màn Lộ trình có dạng bản đồ: mỗi bài là một vòng tròn, viền màu cho biết đã xong mấy bước trong 7 bước; bài đang học to hơn và có nút ▶ Bắt đầu. Sau mỗi 5 bài có 🎮 trò chơi nhanh (ghép đôi chữ – nghĩa, nghe nhanh chọn chữ). Muốn xem kiểu cũ thì bấm ☰ Danh sách.',
   'Cuối mỗi giai đoạn có bài kiểm tra (nghe – đọc 70%, nói 30%). Đạt từ 80 điểm là sẵn sàng sang giai đoạn sau; chưa đạt thì ôn rồi làm lại, không giới hạn số lần.']],
  ['Luyện thêm (tab Luyện)', [
   'Thư viện: ô Tìm nhanh (chữ Hán, pinyin không dấu hoặc tiếng Việt), Sổ tay ngữ pháp, Học từ vựng theo bộ 20 từ (đủ 2.500 từ HSK 1–5 kèm câu ví dụ), từ điển, mẫu câu WeChat, khẩu ngữ, hội thoại mẫu.',
@@ -2909,7 +3463,10 @@ const GUIDE = [
  ['Giọng đọc và dùng khi mất mạng', [
   'Giọng đọc chuẩn của iFLYTEK được lưu ngay trong máy; đã nghe một lần là lần sau nghe không cần mạng.',
   'Khi trên GitHub đã có thư mục am-thanh, mở app là máy tự tải giọng đọc của giai đoạn đang học. Muốn tải hết một lần: Cài đặt → "③ Lấy từ GitHub về máy này" (nên dùng wifi).',
-  'Không xóa dữ liệu Safari/Chrome của trang app, vì sẽ mất tiến độ học. Thỉnh thoảng bấm "Xuất file" để sao lưu.']],
+  'Tải trọn bộ giọng đọc: Cài đặt → "③ Tải trọn bộ giọng đọc về máy này" (dùng wifi). Bị ngắt thì bấm lại, file đã có sẽ được bỏ qua. "🔎 Kiểm tra đã đủ chưa" cho biết máy có bao nhiêu phần trăm.',
+  'Sao lưu giọng đọc: "💾 Sao lưu giọng đọc ra file" lưu các file vào máy (iPhone: Lưu vào Tệp). Nếu trình duyệt xóa dữ liệu, bấm "📂 Khôi phục từ file" là có lại ngay, không cần mạng. Bản gốc luôn còn trên GitHub.',
+  'Nếu app thấy giọng đọc trên máy bị xóa bớt, màn Hôm nay sẽ hiện cảnh báo kèm nút "Tải lại trọn bộ".',
+  'Không xóa dữ liệu Safari/Chrome của trang app, vì sẽ mất tiến độ học. Thỉnh thoảng bấm "Xuất file" để sao lưu tiến độ.']],
  ['Chi phí và giới hạn', [
   'iFLYTEK: 100.000 lượt mỗi dịch vụ đến 01/01/2027; app tự dừng tạo giọng đọc ở mức 60%. Xem số lượt đã dùng trong Cài đặt.',
   'Gemini: gói miễn phí theo từng tài khoản Google. Mỗi người nên dùng key Gemini của tài khoản mình (ô "API key riêng" trong hồ sơ) để không dùng chung hạn mức.']],
@@ -2940,7 +3497,7 @@ function learnerStats() {
       const byStage = STAGES.map(s => { const ls = mine.filter(l => stageOf(l) === s.id); return { id: s.id, n: ls.length, done: ls.filter(l => d.lp[l.id] && d.lp[l.id].done).length }; });
       const todayN = d.history.filter(h => dayKey(h.at) === today()).length;
       return { p, done, total: mine.length, nu, st, streak: streakDays(), last: lastAt(d), due: dueCards().length, errors: errorPool().length,
-        wsets: Object.values(d.wsets || {}).filter(x => x.done).length, herbs: Object.values(d.herbs || {}).filter(x => x.done).length, tests, byStage, todayN };
+        wsets: Object.values(d.wsets || {}).filter(x => x.done).length, herbs: Object.values(d.herbs || {}).filter(x => x.done).length, tests, byStage, todayN, mocks: [1, 2, 3, 4, 5].map(lv => arr(d.mock).filter(m => m.lv === lv).slice(-1)[0]).filter(Boolean) };
     });
   }));
 }
@@ -2959,6 +3516,7 @@ async function openFamily(fromPicker) {
         <div style="height:8px;background:var(--line);border-radius:5px;overflow:hidden;margin:6px 0"><div style="height:100%;width:${pct}%;background:var(--jade)"></div></div>
         <div class="small">${r.done}/${r.total} bài (${pct}%)</div>
         <div class="small muted" style="margin-top:4px">${r.byStage.filter(s => s.n).map(s => `GĐ ${s.id}: ${s.done}/${s.n}`).join(' · ')}</div>
+        ${r.mocks.length ? `<div class="small" style="margin-top:6px">Thi thử: ${r.mocks.map(m => `HSK ${m.lv} <b style="color:${scoreCol(m.total)}">${m.total}</b>`).join(' · ')}</div>` : ''}
         <div class="small" style="margin-top:6px">Kiểm tra: ${r.tests.map(t => `GĐ ${t.st} ${t.total == null ? '—' : `<b style="color:${scoreCol(t.total)}">${t.total}</b>`}`).join(' · ')}</div>
         <div class="small" style="margin-top:4px">📚 ${r.due} thẻ đến hạn · ⚡ ${r.errors} lỗi chờ sửa · 🧩 ${r.wsets} bộ từ${r.p.plan === 'hsk' ? '' : ` · 🌿 ${r.herbs} nhóm dược liệu`}</div>
         ${r.p.id !== (P && P.id) ? `<button class="btn sm" data-goto="${r.p.id}" style="margin-top:8px">Chuyển sang ${esc(r.p.name)}</button>` : ''}</div>`; }).join('') || '<div class="empty">Chưa có người học nào.</div>'}`;
